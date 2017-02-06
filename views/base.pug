@@ -1,0 +1,45 @@
+doctype html
+
+html(lang=lang)
+	head
+		title= title
+
+		unless justContent
+			meta(name="viewport", content="width=device-width, initial-scale=1")
+			meta(charset="UTF-8")
+			link(rel="shortcut icon", href="/favicon.ico")
+
+			if metas
+				each attr in metas
+					meta&attributes(attr)
+
+			if hreflangs
+				each uri, hreflang in hreflangs
+					link(rel="alternate", hreflang=hreflang, href=uri)
+
+			if cssHead
+				each s in cssHead
+					link(rel='stylesheet', href=s.src + (s.m ? '?_' + s.m : ''), property="stylesheet")
+
+			if cssDeferred
+				each s in cssDeferred
+					if s.data && s.data.length < 8000
+						style!= s.data
+					else
+						link(rel='stylesheet', href=s.src + (s.m ? '?_' + s.m : ''), property="stylesheet")
+
+			if js && js.head
+				each s in js.head
+					script(src=s.src + (s.m ? '?_' + s.m : ''))
+
+			if js && js.headInline
+				script!=js.headInline
+
+	body(id=page ? "euca_page-" + page : null)
+		block body
+
+		if(js && js.body)
+			each s in js.body
+				script(src=s.src + (s.m ? '?_' + s.m : ''))
+		if(js && js.bodyInline)
+			script!= js.bodyInline

@@ -1,0 +1,49 @@
+extends ../base
+
+block body
+	.ui-page(data-role="page")
+		.ui-header(data-role="header", data-position="fixed")
+			if q.referer
+				a.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left(href=q.referer)=LC._BACK
+			else
+				a.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left(data-rel="back")=LC._BACK
+			h1.ui-title= title
+
+		.ui-content
+			if(!item)
+				h3 No item
+			else
+				if msg
+					h3=msg
+				else
+					p: a.ui-btn.ui-btn-inline.ui-corner-all(href="/mail-templates?s=" + q.s + "&id=" + q.id + "&type=" + q.type + "&referer=" + q.referer) Preview
+
+					form#notiForm(method="POST")
+						input(type="hidden",name="schema",value=item.schema)
+						input(type="hidden",name="id",value=item.id)
+						input(type="hidden",name="_csrf",value=csrfToken)
+
+						ul(data-role="listview", data-inset="true")
+							li#test-mode-block
+								span Modo de prueba:&nbsp;
+								input(type="checkbox",data-role="flipswitch",name="testmode")
+								p(style="clear:both"): i Se envía sólo un email al administrador y webmaster
+
+						div
+							if !q.type || q.type === "newItem"
+								button(data-inline="true",type="submit",name="type",value="itemCreated",disabled=!!item.notifiedNew) Notificar novedad
+							if !q.type || q.type === "itemActivated"
+								button(data-inline="true",type="submit",name="type",value="itemActivated",disabled=hideBackButton) Notificar activación
+
+					if notifications
+						table#noti-list
+							thead: tr
+								th=LC._DATE
+								th Tipo
+							tbody
+								each noti in notifications
+									tr
+										td=noti.date
+										td=noti.action
+					else
+						h3="No se han emitido notificaciones de " + item.title

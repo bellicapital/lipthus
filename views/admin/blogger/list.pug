@@ -1,0 +1,42 @@
+extends ../../base
+
+block body
+	#list-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-home.ui-btn-icon-left.ui-shadow.ui-corner-all(
+				href=reflink
+			)=LC._HOME
+			h1.ui-title(style="margin:0 130px")=blogTitle
+			a.ui-btn-right.ui-link.ui-btn.ui-icon-plus.ui-btn-icon-right.ui-shadow.ui-corner-all(
+				href="/blogger/" + schema + "/new-post/edit",
+				data-ajax="false"
+			) Nuevo post
+
+		.ui-content
+			if !posts.length
+				h3= "No hay posts a mostrar"
+			else
+				ul(
+					data-role="listview",
+					data-inset="true",
+					style="max-width:1100px;margin: 0 auto",
+					data-split-icon="eye"
+				)
+					each p in posts
+						li(data-theme=p.active ? "d" : "c")
+							a(href="/blogger/" + schema + "/" + p._id + "/edit", data-ajax="false")
+								if p.image
+									img(src=p.image.uri)
+								span(
+								style=
+								"position:absolute;" +
+								"font-style:italic;" +
+								"font-size:12px;" +
+								"font-weight:normal;" +
+								"top:2px;" +
+								"right:4px;" +
+								"font.size:10px"
+								)= p.created
+								h2!=p.title
+								p=p.description
+							a(href=p.url)

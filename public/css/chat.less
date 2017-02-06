@@ -1,0 +1,84 @@
+#chatContainer {
+	position: fixed;
+	bottom: 0;
+	left: 10px;
+	z-index: 10;
+}
+#chatUsers {
+	width: 160px;
+}
+#chatUsersToggle, #chatUsersHeader {
+	cursor: pointer;
+	padding: 5px;
+}
+#chatUsersToggle {
+	height: 15px;
+}
+#chatUsersHeader span {
+	position: absolute;
+	right: 10px;
+	top: 0;
+	font-size: 1.4em;
+}
+#chatUsersListBox {
+	display: none;
+}
+#chatUsersList li{
+	list-style: none;
+	padding: 3px;
+	cursor: pointer;
+}
+.chatbox {
+	width: 225px;
+	bottom: 0;
+	position: fixed;
+}
+.chatboxbody {
+	width: 225px;
+	height: 278px;
+}
+
+.chatboxcontent {
+	height:200px;
+	width:209px;
+	overflow-y:auto;
+	overflow-x:auto;
+	padding:7px;
+}
+.chatboxcontent p{
+	font-size: 13px;
+	margin: 1px;
+	padding: 2px;
+}
+
+.chatboxinput {
+	padding: 5px;
+}
+
+.chatboxtextarea {
+	width: 206px;
+	height:44px;
+	padding:3px 0pt 3px 3px;
+	border: 1px solid #eeeeee;
+	margin: 1px;
+	overflow:hidden;
+}
+
+.chatboxtextarea:focus {
+	border: 2px solid #f99d39;
+	margin:0;
+}
+.chatTime{
+	float: right;
+	font-weight: normal;
+}
+.chatSelf, .chatTo{
+	color: #999;
+	font-weight: bold;
+	padding: 2px;
+	margin: 6px 0 0;
+	border-top: 1px solid #CCC;
+}
+.chatHide, .chatShow{
+	float:right;position:relative;top:3px;
+}

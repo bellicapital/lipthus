@@ -1,0 +1,15 @@
+extends ../../base
+
+block body
+	#home-page.ui-page(data-role="page",data-theme="c")
+		.ui-header(data-role="header", data-theme="b", data-position="fixed")
+			h1.ui-title= sitename + ' Blogger'
+
+		.ui-content
+			if !blogs
+				h3= "Este sitio no tiene blog"
+			else
+				ul(data-role="listview", data-inset="true", style="max-width:600px;margin: 0 auto")
+					each blog in blogs
+						li: a(href="/blogger/" + blog.schema)= blog.title
+							span.ui-li-count= blog.items

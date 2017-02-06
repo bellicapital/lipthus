@@ -1,0 +1,22 @@
+extends ../../base
+
+block body
+	#home-page.ui-page.ui-page-theme-b(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-home.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/translate") Menu
+			.ui-btn-right
+				select#langSel(data-native-menu="false")
+					each lang, code in langs
+						option(value=code,selected=code===toLang)=lang
+
+			h1.ui-title Site Translate Page
+
+		.ui-content
+			if cols && Object.keys(cols).length
+				ul.colSel(data-role="listview", data-inset="true")
+					each tt, code in cols
+						li
+							a(href="/translate/"+toLang+'/'+code)=tt.title
+								span.ui-li-count= tt.count
+			else
+				h4.ui-body.ui-body-a.ui-corner-all No hay nada a traducir

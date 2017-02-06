@@ -1,0 +1,43 @@
+extends base
+
+block body
+
+	.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			h3=sitename
+		.ui-content
+			if msg && msg.length
+				.msg.ui-body.ui-body-e.ui-corner-all #{msg}
+
+			fieldset#login-cont
+				legend(style="font-weight: bold;")= LC._US_LOGIN
+
+				form(action="/login", method="post")
+					span= LC._US_USERNAME || LC._US_EMAIL
+					input(type="text", name="username", size="26", maxlength="25", value="", required)
+					br
+					span= LC._US_PASSWORD
+					input(type="password", name="password", size="21", maxlength="32", required)
+					br
+					input(type="hidden", name="op", value="login")
+					input(type="hidden", name="redirect", value="redirect_page")
+					div
+						input(type="submit", value=LC._US_LOGIN)
+						fb:login-button(style="margin-left: 150px", perms="email")
+					br
+					a(name="lost")
+
+					if allowRegister
+						div!= LC._US_NOTREGISTERED
+						br
+
+					fieldset(style="padding: 10px;")
+						legend(style="font-weight: bold;")!= LC._US_LOSTPASSWORD
+						br
+						div!= LC._US_NOPROBLEM
+						form(action="lostpass.php", method="post")
+							!= LC._US_EMAIL
+							input(type="text", name="email", size="26", maxlength="60")
+							span &nbsp;&nbsp;
+							input(type="hidden", name="op", value="mailpasswd")
+							input(type="submit", value=LC._US_SENDPASSWORD)

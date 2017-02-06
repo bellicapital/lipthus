@@ -1,0 +1,22 @@
+extends ../base
+
+block body
+	#allLogPage.ui-page(data-role="page",data-theme="b")
+		.ui-bar-inherit.ui-header-fixed.slidedown(data-role="header",data-position="fixed")
+			a(data-rel="back",data-icon="back",data-theme="b") Volver
+			h1.ui-title=item.title + ' · Log'
+		.ui-content(data-role="content",data-theme="c")
+			table.ui-body-d.ui-shadow.table-stripe.ui-responsive.ui-table.ui-table-columntoggle
+				thead
+					tr
+						th=LC._DATE
+						th Quién
+						th Campo
+						th Valor
+				tbody
+					each u in logs
+						tr
+							td=u.date
+							td=u.uname
+							td=u.field
+							td(style="max-width:50%")!=u.value

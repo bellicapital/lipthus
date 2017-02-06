@@ -1,0 +1,63 @@
+extends base
+
+block body
+	#commentsPage.ui-page(data-role="page",data-theme="b")
+		.ui-header.ui-bar-inherit(data-role="header",data-position="fixed",data-tap-toggle="false")
+			a(href="/comments",data-icon="back") Volver
+			h1.ui-title=title
+			div(data-role="navbar")
+				ul
+					li: a(href="?f=pending",class={"ui-btn-active":filter==="pending"}) Pendientes
+					li: a(href="?f=active",class={"ui-btn-active":filter==="active"}) Aprobados
+					li: a(href="?f=refused",class={"ui-btn-active":filter==="refused"}) Rechazados
+		.ui-content
+			if comments
+				ul#comments(data-role="listview" data-inset="true" data-theme="c" data-db=db)
+					each c in comments
+						li(id=c.id)
+							div(data-role="controlgroup", data-type="horizontal", data-mini="true")
+								a(href="#status-popup",data-rel="popup",data-position-to="window",data-transition="pop").comment-actions-btn.ui-btn.ui-corner-all.ui-btn-icon-notext.ui-icon-action Action
+								a.ui-btn.ui-corner-all.ui-btn-icon-notext.ui-icon-edit=LC._EDIT
+								a(href="/lmns/" + db + "." + c.item.schema + "/" + c.item.id).ui-btn.ui-corner-all.ui-btn-icon-notext.ui-icon-eye Ver
+
+							h3.author=c.name+" · "+c.item.title
+							span.location=c.iplocation.toString()
+							p.text=c.text
+
+							if c.answers.length
+								each answer in c.answers
+									p.answer=answer.text
+
+							.ui-li-aside=c.created.toUserDatetimeString('es', '-')
+								if c.modifier
+									.manager Gestionado por
+										span=c.modifier.uname
+
+		if paginator
+			.ui-footer(data-role="footer",data-position="fixed",data-tap-toggle="false")
+				include paginator
+
+		#status-popup.ui-content(data-role="popup")
+			form(method="POST", action=location.href)
+				h3=popupMsg
+				
+				unless filter==="active"
+					input(type="submit",value="Aprobar",name="active",data-rel="back",data-inline="true",data-icon="check")
+				unless filter==="refused"
+					input(type="submit",value="Rechazar",name="refuse",data-rel="back",data-inline="true",data-icon="check")
+
+				a#answer-btn.ui-shadow.ui-btn.ui-corner-all.ui-btn-inline.ui-mini.ui-btn-c Responder
+				a.ui-shadow.ui-btn.ui-corner-all.ui-btn-inline.ui-mini.ui-btn-c(data-rel="back") Cancelar
+				
+				input(type="hidden", name="db", value=db)
+				input.comment-id(type="hidden",name="id")
+
+		#answer-popup.ui-content(data-role="popup")
+			form(method="POST")
+				h3 Respuesta de #{sitename}:
+				textarea#answer(name="answer")
+				input(type="submit",data-rel="back",data-inline="true",data-icon="check",value=LC._SUBMIT)
+				a.ui-shadow.ui-btn.ui-corner-all.ui-btn-inline.ui-mini.ui-btn-c(data-rel="back") Cancelar
+
+				input(type="hidden", name="db", value=db)
+				input.comment-id(type="hidden",name="id")

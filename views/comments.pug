@@ -1,0 +1,23 @@
+.comments(data-colname=item.schema.options.collection, data-itemid=item.id, data-dbname=item.db.name)
+	.commentsTitle= LC._COMMENTS
+
+	if item.comments
+		each comment in item.comments
+			.comment.ui-widget-content.ui-corner-all(id="comment-" + comment.id)
+				.comment-date= comment.created
+				.comment-author= comment.name
+				if showloc && comment.city
+					.comment-city(data-latlang=comment.latlng)=comment.city
+				if user && user.isAdmin
+					commentAdmin.ui-buttonset
+						button.ui-button.ui-widget.ui-state-default.ui-corner-left.ui-button-icon-only(title= LC._EDIT)
+							span.ui-button-icon-primary.ui-icon.ui-icon-pencil
+							span.ui-button-text= LC._EDIT
+						button.ui-button.ui-widget.ui-state-default.ui-corner-right.ui-button-icon-only(title= LC._DELETE)
+							span.ui-button-icon-primary.ui-icon.ui-icon-trash
+							span.ui-button-text= LC._DELETE
+				.message!= comment.text
+				div(style="clear:left")
+		span.nocomments(style="display:none")= LC._CM_NOCOMMENTS
+	else
+		span.nocomments= LC._CM_NOCOMMENTS

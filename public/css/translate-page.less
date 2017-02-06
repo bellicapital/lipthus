@@ -1,0 +1,86 @@
+.ui-content .ui-listview-inset{
+	max-width: 500px;
+	margin: 1em auto;
+}
+#fieldForm {
+	label {
+		text-align: right;
+	}
+	.ui-field-contain label:after {
+		content: ":";
+	}
+	pre {
+		font-size: 1.2em;
+		font-style: italic;
+		float: left;
+		margin: 0.25em 0;
+		padding: .4em 0;
+		white-space: pre-wrap;
+		width: 78%;
+	}
+	.ui-flipswitch {
+		position: absolute;
+		right: 1.1em;
+		top: -0.25em;
+	}
+	.ui-li-count{
+		right: 11em;
+	}
+	.ui-li-count:after{
+		content: ' palabras';
+  	}
+}
+/* Custom indentations are needed because the length of custom labels differs from
+   the length of the standard labels */
+.custom-size-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+    text-indent: -5.9em;
+}
+.custom-size-flipswitch.ui-flipswitch .ui-flipswitch-off {
+    text-indent: 0.5em;
+}
+/* Custom widths are needed because the length of custom labels differs from
+   the length of the standard labels */
+.custom-size-flipswitch.ui-flipswitch {
+    width: 8.875em;
+}
+.custom-size-flipswitch.ui-flipswitch.ui-flipswitch-active {
+    padding-left: 7em;
+    width: 1.875em;
+}
+
+.ui-footer .custom-size-flipswitch{
+	margin: .2em .4em;
+	.ui-btn {
+		font-size: 16px;
+	}
+}
+
+#itemSel>li>a.ui-btn{
+	padding: 0.5em 3em 0.5em 1.8em;
+}
+.ui-content>.custom-size-flipswitch:first-child{
+	left: 117px;
+    position: absolute;
+    top: -1px;
+    z-index: 1000;
+}
+.ui-li-check{
+	position: absolute;
+	left: 9px;
+	top: 6px;
+	z-index: 1;
+	width: 1em;
+	height: 1em;
+}
+
+#translated-stats{
+	border-collapse: collapse;
+	margin: 0 auto;
+}
+#translated-stats tbody{
+	text-align: right;
+}
+#translated-stats th, #translated-stats td{
+	border: 1px solid #ccc;
+	padding: 4px 8px;
+}

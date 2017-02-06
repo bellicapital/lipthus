@@ -1,0 +1,14 @@
+extends ../base
+
+block body
+	#file-page.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+
+		.ui-content
+			ul(data-role="listview",data-inset="true", data-theme="c")
+				each client in clients
+					li
+						each v,k in client
+							div=k+': '+v

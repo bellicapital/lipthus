@@ -1,0 +1,34 @@
+extends ../base
+
+block body
+	#itemLogPage.ui-page(data-role="page",data-theme="b")
+		.ui-bar-inherit.ui-header-fixed.slidedown(data-role="header",data-position="fixed")
+			a(data-rel="back",data-icon="back",data-theme="b") Volver
+			h1.ui-title=title + ' · Log'
+		.ui-content(data-role="content",data-theme="c")
+			table#log-list.ui-body-d.ui-shadow.table-stripe.ui-responsive.ui-table.ui-table-columntoggle
+				thead
+					tr
+						each th in ths
+							th=th
+				tbody
+					each u in logs
+						tr
+							each field in fields
+								td!=u[field]
+
+	style.
+		#log-list{
+			table-layout:fixed;
+			font-size: .8em;
+			margin: 0 auto;
+		}
+		#log-list>thead>tr>th:last-child{
+			width:30%;
+		}
+		#log-list td, #log-list th{
+			text-align: center;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}

@@ -1,0 +1,11 @@
+extends ../base.pug
+
+block body
+	#header(class="ui-widget ui-widget-content")
+		.usernav
+
+		a(href="/", title=sitename)
+			img#sitelogo(src=logo.uri, style="height:"+logo.height+"px;width:"+logo.width+"px", alt=sitename)
+
+	#content
+		img.throbber_(src="/cms/img/throbber.gif")

@@ -1,0 +1,14 @@
+a#bot-back(href="#",style="float:left;text-decoration:none;font-size:2em;line-height:.5em") &#8676;
+h3(style="text-align:center")=bot.title
+div(style="clear:both;font-style:italic")
+	each agent in bot.agents
+		div=agent
+
+a(href=bot.url,target="_blank")=bot.url
+hr
+table
+	each bl in botlogs
+		tr
+			td=bl.created.toUserDatetimeString()
+			td: a(href=bl.url)=bl.url
+			//- td: i=bl.referer

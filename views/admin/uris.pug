@@ -1,0 +1,65 @@
+extends ../base
+
+block body
+	style.
+		#uris{
+			width: 100%;
+			border-spacing: 4px;
+			table-layout: fixed;
+		}
+		#uris td {
+			background-color: #fff;
+			margin: 8px;
+			padding: 8px;
+			border: 1px solid #e6e6e6;
+			cursor: pointer;
+			font-size: .8em;
+		}
+		#uris td:hover {
+			background-color: #efefff;
+		}
+		#popup-param-edit{
+			min-width: 500px;
+		}
+		#popup-bottom{
+			position:relative;
+			height: 28px;
+			padding:20px;
+		}
+		#val-form{
+			padding:10px 20px;
+		}
+
+	#uris-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+			.ui-btn-right
+				select#lang-selector(data-mini="true", data-inline="true")
+					each name, code in langNames
+						option(value=code, selected=formLang==code)=name
+		.ui-content
+			table#uris
+				thead
+					tr
+						th Uri
+						th title
+						th description
+						th h1
+						th p
+				tbody
+					each uri in uris
+						tr(data-id=uri.id)
+							td(data-name="uri")=uri.uri
+							td(data-name="title."+formLang)=uri.title
+							td(data-name="description."+formLang)=uri.description
+							td(data-name="h1." + formLang)=uri.h1
+							td(data-name="p."+formLang)=uri.p
+
+		div.ui-corner-all(data-role="popup", id="popup-param-edit")
+			a.ui-btn.ui-corner-all.ui-shadow.ui-btn-a.ui-icon-delete.ui-btn-icon-notext.ui-btn-right(href="#",data-rel="back") Close
+			form#val-form
+				textarea( id="param", placeholder="valor", data-theme="a")
+				#popup-bottom Caracteres:&nbsp;
+					span#charcount
+					button.ui-btn.ui-corner-all.ui-shadow.ui-btn-icon-left.ui-icon-check.ui-btn-inline.ui-btn-right(type="submit") Enviar

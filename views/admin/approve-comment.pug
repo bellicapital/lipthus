@@ -1,0 +1,39 @@
+extends ../layout-mobile
+
+block content
+	h3 Comentario de 
+		if item.url
+			a(href=item.url)= item.title
+		else
+			= item.title
+
+	b De: 
+	span= comment.name
+	br
+
+	if comment.iplocation
+		b IP: 
+		span= comment.iplocation.ip
+		br
+
+		b Población: 
+		span= comment.iplocation.city
+		br
+
+	b Fecha: 
+	span= comment.date
+	br
+
+	b Comentario: 
+	span= comment.text
+	br
+	br
+
+	form
+		label(for="aprove-checkbox", style="display:inline;font-weight:bold") Aprobado:&nbsp;
+		input(type="checkbox", data-inline="true", data-role="flipswitch", id="aprove-checkbox", data-on-text="Sí", data-off-text="No", checked=comment.active, data-id=comment.id)
+
+	br
+	br
+	
+	a.ui-btn.ui-corner-all.ui-btn-inline(href="/")= LC._HOME

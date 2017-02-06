@@ -1,0 +1,8 @@
+extends layout-mobile
+
+block content
+	if message
+		h1=message.title||message
+
+		if message.msg
+			div!=message.msg

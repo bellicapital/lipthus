@@ -1,0 +1,58 @@
+extends ../base
+
+block body
+	#cert-page.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+			a#refresh-all.ui-btn-right.ui-link.ui-btn.ui-icon-refresh.ui-btn-icon-left.ui-shadow.ui-corner-all Actualizar Todos
+
+		.ui-content
+			if result
+				span Showing results for&nbsp;
+					a(href=url)=url
+
+				unless result.length
+					style.
+						.success{
+							background-color: #ccffcc;	border: 1px solid #ccc;border-radius: 4px;padding: 0.5em;
+						}
+
+					p.success Document checking completed. No errors or warnings to show.
+				else
+					style.
+						.extract b{background-color:#ffff80}
+						.ui-li-divider strong{
+							border-radius:6px;
+							padding:1px 6px 1px 6px;
+							border:1px solid #ccc;
+						}
+						.ui-li-divider .info {background-color:#ccffcc}
+						.ui-li-divider .warning {background-color:#ffffcc}
+						.ui-li-divider .error {background-color:#ffcccc}
+						.ui-listview>.ui-li-static code{white-space:normal}
+
+					ul(data-role="listview", data-inset="true", data-split-icon="refresh")
+						each r in result
+							li(data-role="list-divider")
+								strong(class=r.type)=r.type
+
+								if r.where
+									p.ui-li-aside=r.where
+							li
+								p=r.message
+
+								if r.extract
+									.extract
+										code=r.extract.pre
+											b=r.extract.hilite
+											=r.extract.post
+
+				//- code: pre(style="white-space:pre-wrap;word-wrap: break-word;")=context
+			else
+				ul(data-role="listview", data-inset="true", data-split-icon="refresh", data-theme="d", style="max-width:700px; margin: 0 auto")
+					each r,uri in uris
+						li
+							a(href="/w3cv?uri="+r.enc)=uri
+								span.ui-li-count=r.count
+							a.validate(data-uri=r.enc) Analizar

@@ -1,0 +1,69 @@
+doctype html
+
+html
+	head
+		style.
+			table{border-collapse: collapse;}
+			table td{padding: 1px 3px;}
+			#formlist{margin-top:40px}
+			#formlist>tbody>tr>td{border: 1px solid}
+			img{margin: 4px;}
+			#tagsel{position:fixed;top:0;padding:10px;background-color:white;width:100%;border-bottom:1px solid gray;height:20px}
+			#tagsel a{margin-right: 80px}
+			#tagsel label{margin-left:12px}
+			.caption{font-weight: bold}
+			.caption:after{content:":"}
+			.field{margin:5px}
+
+		script(src="https://code.jquery.com/jquery-1.11.1.min.js")
+		script(src="/cms/js/admin/admin_formlog.js")
+
+	body
+		form#tagsel
+			if reflink
+				a(href=reflink)="<= " + LC._BACK
+
+			if tags
+				each c,t in tags
+					label
+						input(type="radio",name="tag",value=t,checked=tag===t)
+						=t+" ("+c+")"
+
+			else
+				span No hay formularios enviados
+
+		if forms
+			table#formlist
+				each f in forms
+					tr
+						td
+							table
+								tr
+									td Fecha:
+									td= f.created.toUserDateString()
+								tr
+									td Name:
+									td= f.name
+								tr
+									td Email:
+									td: a(href="mailto:"+f.email)= f.email
+						td
+							each fi, c in f.fields
+								.field
+									.caption= c
+									div= fi
+
+						td
+							if f.embedded
+								div
+									each emb in f.embedded
+										a(href=emb.getUri())
+											img(src=emb.info(100, 100, 1).uri)
+
+							if f.attachments
+								div
+									each at in f.attachments
+										a(href=at.getUri())= at.name
+
+						td
+							a.f-del(href="#"+f._id,data-id=f._id+'') Eliminar

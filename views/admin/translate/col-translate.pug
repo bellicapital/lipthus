@@ -1,0 +1,26 @@
+extends ../../base
+
+block body
+	#collection-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-carat-l.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/translate/"+toLang) Volver
+			.ui-btn-right
+				select#langSel(data-native-menu="false")
+					each lang, code in langs
+						if code === toLang
+							option(value=code, selected)= lang
+						else
+							option(value=code)= lang
+				
+			h1.ui-title=collectionTitle
+
+		.ui-content
+			ul#itemSel.ui-mini(data-role="listview",data-inset="true")
+				each item in items
+					li
+						a(href=path+"/"+item.id, class={"ui-disabled":!item.count})
+							span.ui-li-check!=item.done
+							span.ui-li-count=item.date
+							=item.title
+		.ui-footer(data-role="footer", data-position="fixed")
+			input#active-sel(type="checkbox",data-role="flipswitch",name="active-sel",data-on-text="Activ@s",data-off-text="Tod@s",data-wrapper-class="custom-size-flipswitch",checked=!activeAll)

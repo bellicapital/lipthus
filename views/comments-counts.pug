@@ -1,0 +1,15 @@
+extends base
+
+block body
+	#commentsCountsPage.ui-page(data-role="page",data-theme="b")
+		.ui-header.ui-bar-inherit(data-role="header")
+			a(href=reflink,data-icon="home")=LC._HOME
+			h1.ui-title=title
+		.ui-content.ui-body-c(style="text-align:center")
+			if counts
+				ul(data-role="listview",data-inset="true",style="max-width:300px;margin:42px auto")
+					each c,k in counts
+						li: a(href="/comments/"+k)=c.name
+							div.ui-li-count=c.total
+								if c.pending
+									span.pending=c.pending

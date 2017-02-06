@@ -1,0 +1,14 @@
+extends ../../base
+
+block body
+	#lang-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			if backBtn
+				a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(href=backBtn)=LC._BACK
+			h1.ui-title Site Translate
+			a.ui-btn-right.ui-link.ui-btn.ui-icon-bullets.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/translate/stats") Stats
+
+		.ui-content
+			ul#fieldSel(data-role="listview", data-inset="true")
+				each lang, code in ttlangs
+					li: a(href="/translate/" + code + rest)=lang

@@ -1,0 +1,32 @@
+extends ../../base
+
+block body
+	#stats-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-theme="b", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-home.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/translate") Menu
+			h1.ui-title Palabras traducidas
+			label.ui-btn-right Traductor:&nbsp;
+				select#user-sel(data-mini="true", data-inline="true", data-native-menu="false")
+					option(value="all") Todos
+					each uname, id in userList
+						option(value=id, selected=uid==id)=uname
+
+		.ui-content
+			table#translated-stats
+				thead
+					tr
+						th &nbsp;
+						each m in months
+							th=m.name
+
+						if months.length > 1
+							th Total
+				tbody
+					each lang, code in tLangs
+						tr
+							th=lang.name+': '
+							each m in months
+								td=m.langs[code]
+
+							if months.length > 1
+								td=lang.total

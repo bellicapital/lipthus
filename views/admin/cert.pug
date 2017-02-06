@@ -1,0 +1,30 @@
+extends ../base
+
+block body
+	#cert-page.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+
+		.ui-content
+			h3 Current certificate
+			unless cert
+				| None
+			else
+				ul
+					each d in cert.san.dns
+						li=d
+				br
+				p Created: 
+					span=cert.validity.start.toUserDateString()
+				p Expires: 
+					span=cert.validity.end.toUserDateString()
+			br
+			h3 Letsencript
+			h4 Create
+			p: code=cmd
+			h4 Renew
+			p: code=renewcmd
+			br
+			h3 Nginx
+			p: pre: code!= nginx

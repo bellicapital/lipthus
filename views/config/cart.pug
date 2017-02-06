@@ -1,0 +1,22 @@
+//- Created by jj on 14/12/16.
+
+extends ../base
+
+block body
+   .ui-page(data-role="page",data-theme="b")
+      .ui-header(data-role="header", data-position="fixed", data-tap-toggle="false")
+         a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+         h1.ui-title= sitename + ' - ' + title
+
+      .ui-content
+         style.
+            #list {
+               max-width: 700px;
+               margin: 0 auto;
+            }
+
+         ul#list(data-role="listview" data-inset="true")
+            each v,k in cart
+               li.ui-field-contain
+                  label=k
+                  input(name="k" value=JSON.stringify(v))

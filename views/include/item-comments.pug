@@ -1,0 +1,17 @@
+form.item-comment
+	textarea(name='comment', rows='5', placeholder=LC._COMMENT, required, onclick="$(this).next().show()")
+	.submit-fields
+		input(type="text", name='name', placeholder=LC._NAME, required)
+		input(type='email', name='email', placeholder=LC._EMAIL, required)
+		input(type='submit',value=LC._SUBMIT)
+
+if comments && comments.length
+	h3.comments-title= LC._COMMENTS
+
+	each comment in comments
+		.comment(id="comment-" + comment.id)
+			.comment-author= comment.name
+			.comment-date= comment.created
+			.comment-msg!= comment.text
+else
+	span.nocomments= LC._CM_NOCOMMENTS

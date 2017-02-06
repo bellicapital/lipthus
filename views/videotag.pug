@@ -1,0 +1,13 @@
+doctype html
+
+html
+	head
+		title Video tag viewer
+	body
+		textarea(spellcheck="false",onclick="this.select()",style="width:634px;height:5.4em;resize:none;font-size:.8em")="<video poster=\""+poster+"\" controls>\n <source src=\""+mp4+"\" type=\"video/mp4\"/>\n <source src=\""+webm+"\" type=\"video/webm\"/>\n</video>"
+		br
+		video(poster=poster,controls,style="width:640px")
+			source(src=mp4,type="video/mp4")
+			source(src=webm,type="video/webm")
+
+		

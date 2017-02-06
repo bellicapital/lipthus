@@ -1,0 +1,43 @@
+extends ../base
+
+block body
+	#files-page.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+			if check
+				a.ui-btn-right.ui-link.ui-btn.ui-icon-eye.ui-btn-icon-right.ui-shadow.ui-corner-all(href="/files/repair") Repair
+			else
+				a.ui-btn-right.ui-link.ui-btn.ui-icon-eye.ui-btn-icon-right.ui-shadow.ui-corner-all(href="/files/check") Check
+
+		.ui-content
+			if folders
+				ul(data-role="listview", data-inset="true", data-theme="c", data-divider-theme="b")
+					li(data-role="list-divider") By folder
+					each count,folder in folders
+						li: a(href="/files/folders/"+folder)=folder||"-"
+							span.ui-li-count= count
+				ul(data-role="listview",data-inset="true", data-theme="c", data-divider-theme="b")
+					li(data-role="list-divider") By item
+					each count,schema in schemas
+						li: a(href="/files/schemas/"+schema)=schema.replace('dynobjects.', '')||"-"
+							span.ui-li-count= count
+			else if files
+				ul#file-list(data-role="listview", data-inset="true", data-theme="c", data-divider-theme="b")
+					each f in files
+						li: a(href="/file/"+f._id)
+							if f.thumb
+								img(src="/thumbs/"+f._id+"_80_56_1.png")
+							| #{f.filename}
+							span.ui-li-count= f.length
+							p=f.item
+			else if check
+				table.file-details
+					each c,k in check
+						tr
+							td
+								if k==="unversioned"
+									a(href=k)=k
+								else
+									=k
+							td=c

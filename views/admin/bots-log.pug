@@ -1,0 +1,22 @@
+style.
+	#admin-bots table{border-collapse: collapse;font-size:1.2em}
+	#admin-bots td, #admin-bots th{padding: 1px 4px;text-align: center}
+	#admin-bots td:first-child{text-align: right}
+
+#admin-bots
+	table
+		thead: tr(style="border-bottom:1px solid gray")
+			th
+			each period in periods
+				th=period
+
+		tbody
+			each bot in bots
+				tr
+					td: a.bot-l(href="/bots/" + bot.id)=bot.title
+					each period in periods
+						td
+							if bot.counts[period]
+								span=bot.counts[period]
+							else
+								| -

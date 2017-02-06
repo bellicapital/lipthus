@@ -1,0 +1,34 @@
+doctype html
+
+html
+	head
+	body
+		h3 Hola #{X_UNAME},
+		p Te enviamos este aviso de un@ nuev@ #{X_ITEM_TYPE} en 
+			a(href=X_SITEURL)=X_clubName
+			| .
+			br
+			=X_ITEM_TITLE
+
+		if thumb
+			img(src=thumb.uri, width=thumb.width, height=thumb.height)
+
+		p Puedes ver a #{X_ITEM_TITLE} aquí:
+		a(href=X_ITEM_URL)=X_ITEM_URL
+		br
+		p -----------
+		p Se subscribió para recibir notificaciones.
+		p Si esto es un error o usted no desea recibir más notificaciones similares, por favor actualice su subscripción visitando el enlace siguiente:
+			br
+			a(href=X_UNSUBSCRIBE_URL)=X_UNSUBSCRIBE_URL
+
+		p Por favor, no respondas a este mensaje.
+		p -----------
+		img(src=X_SITELOGO.uri)
+		p=X_SITENAME
+			br
+			a(href=X_SITEURL)=X_SITEURL
+
+		p Administrador
+			br
+			a(href="mailto:"+X_ADMINMAIL)=X_ADMINMAIL

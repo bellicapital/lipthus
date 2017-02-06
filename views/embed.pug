@@ -1,0 +1,8 @@
+extends base
+
+block body
+
+	video(controls, poster= staticHost + video.thumb)
+		source(type="video/mp4", src= video.versions.mp4)
+		source(type="video/webm", src= video.versions.webm)
+		<span>Tu navegador no soporta el elemento</span>

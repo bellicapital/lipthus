@@ -1,0 +1,51 @@
+extends ../base
+
+block body
+	#gcm-page.ui-page(data-role="page")
+		.ui-header(data-role="header", data-theme="b", data-position="fixed")
+			h1.ui-title= sitename + ' GCM tester'
+
+		.ui-content
+			if !googleApiKey
+				h3= "googleApiKey no definido"
+			else
+				form(method="post")
+					ul(data-role="listview", data-inset="true", style="max-width:900px;margin: 0 auto")
+						li.ui-field-contain
+							label RegId de destino: 
+							input(name="regid", data-clear-btn="true", value=regid, required, style="font-size:.8em")
+						li.ui-field-contain
+							label Mensaje:
+							input(name="message", data-clear-btn="true", value=params.message, , required)
+						li.ui-field-contain
+							label Collapse key:
+							input(name="collapseKey", value=params.collapseKey)
+						li.ui-field-contain
+							label Time to live:
+							input(name="timeToLive", value=params.timeToLive)
+						li.ui-field-contain
+							label Content available:
+							select(name="contentAvailable", data-role="slider")
+								option(selected=params.contentAvailable) false
+								option(selected=!params.contentAvailable) true
+						li.ui-field-contain
+							label Delay when idle:
+							select(name="delayWhileIdle", data-role="slider")
+								option(selected=!params.delayWhileIdle) false
+								option(selected=params.delayWhileIdle) true
+						li.ui-field-contain
+							label Priority:
+							select(name="priority", data-role="slider")
+								option(selected=params.priority==="normal") normal
+								option(selected=params.priority==="high") high
+						li.ui-field-contain
+							label Dry run:
+							select(name="dryRun", data-role="slider")
+								option(selected=!params.dryRun) false
+								option(selected=params.dryRun) true
+						li.ui-body.ui-body-b
+							button.ui-btn.ui-corner-all.ui-btn-a(type="submit") Enviar
+							
+				pre=result
+			a(href="https://developers.google.com/cloud-messaging/http-server-ref", target="_blank") https://developers.google.com/cloud-messaging/http-server-ref
+			a(href="https://github.com/ToothlessGear/node-gcm", target="_blank") https://github.com/ToothlessGear/node-gcm

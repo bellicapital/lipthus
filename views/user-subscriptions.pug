@@ -1,0 +1,33 @@
+extends layout-mobile
+
+block content
+	#notifications-page.ui-page.ui-page-header-fixed(data-role="page", data-theme="b")
+		.ui-bar-inherit.ui-header-fixed.slidedown(data-role="header")
+			a.ui-btn-left.ui-alt-icon.ui-nodisc-icon.ui-btn.ui-icon-carat-l.ui-corner-all(data-rel="back")=LC._BACK
+			h1=sitename+" - Subscripciones"
+
+		.ui-content(data-role="main",style="text-align:center")
+			each s in subscriptions
+				div(style="display:inline-block")
+					.ui-body.ui-body-a.ui-corner-all(style="float:left;margin:12px")
+						table.subscriptions
+							tr
+								th=LC._NAME
+								td=s.title
+							each e,k in s.events
+								tr
+									th=e.caption
+									td
+										input(type="checkbox",name=k,checked=e.value)
+							tr
+								th Items
+								td
+									if !s.items || !s.items.length
+										| ---
+									else
+										ul
+											each i in s.items
+												li=i
+													a.ui-btn.ui-shadow.ui-corner-all.ui-icon-delete.ui-btn-icon-notext.ui-btn-inline(data-path=userid+"."+s.db+"."+s.colname+"."+i)=LC._DELETE
+
+				

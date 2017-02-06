@@ -1,0 +1,13 @@
+extends base
+
+block body
+	#notifications-page.ui-page.ui-page-header-fixed(data-role="page",data-theme="b")
+		.ui-bar-inherit.ui-header-fixed.slidedown(data-role="header")
+			a(data-rel="back",data-icon="back") Volver
+			h1=sitename+" - Notificaciones"
+
+		.ui-content(data-role="main")
+			ul#noti-list(data-role="listview",data-inset="true")
+				each n in notifications
+					li(data-theme=n.read?"d":"c"): a(href="?read="+n.id)=n.content
+						span.ui-li-count=n.created.toUserDatetimeString()

@@ -1,0 +1,23 @@
+extends ../../base
+
+block body
+	#item-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a#item-done.ui-btn-left.ui-link.ui-btn.ui-icon-carat-l.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/translate/"+toLang+"/"+db+"."+collection) Hecho
+			// a.ui-btn.ui-corner-all.ui-btn-inline.ui-btn-icon-right.ui-icon-check(href="#",style="right:.4em;position:absolute",onclick="$('#fieldForm').submit()") Enviar
+				
+			h1.ui-title=collectionTitle+" · "+item.title
+
+		.ui-content
+			form#fieldForm(method="post")
+				ul(data-role="listview", data-inset="true",style="max-width:960px")
+					each field, k in item.fields
+						li(data-role="list-divider")=field.caption
+							.ui-li-count=field.words
+							input.ui-li-count(name=k,type="checkbox",checked=field.translated,data-mini="true",data-role="flipswitch",data-on-text="Traducido",data-off-text="Pendiente",data-wrapper-class="custom-size-flipswitch")
+						li.ui-field-contain
+							label Texto a traducir
+							pre=field.from
+						li.ui-field-contain
+							label(for="toTranslate-"+k) Traducción
+							textarea(id="toTranslate-"+k,name=k,style="font-size:.9em",lang=toLang)=field.to

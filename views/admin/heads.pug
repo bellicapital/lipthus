@@ -1,0 +1,33 @@
+extends ../base
+
+block body
+	#cert-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed", data-tap-toggle="false")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= sitename + ' - ' + title
+			.ui-btn-right
+				select#lang-selector(data-mini="true", data-inline="true")
+					each name, code in langNames
+						option(value=code, selected=formLang == code)=name
+		.ui-content
+			style.
+				#head-list{
+					max-width:700px;
+					margin: 0 auto;
+				}
+				li>p.udesc{
+					overflow: auto;
+					white-space: normal;
+				}
+
+				h3 {text-align: center;}
+
+			h3 Cabeceras de título y descripción encontradas en las urls del&nbsp;
+				a(href="/sitemap.xml") sitemap.xml
+
+			ul#head-list(data-role="listview" data-inset="true")
+				each u in uris
+					li
+						a(href=u)=u
+					li
+						p Loading...

@@ -1,0 +1,48 @@
+doctype html
+
+html
+	head
+		title Notification preview
+		style.
+			table td {vertical-align: top}
+	body
+		form(onchange="this.submit()")
+			label Esquema: 
+				select(name="s")
+					each subscriptions,i in items
+						option(disabled=!subscriptions,selected=i==q.s)=i
+			|  &nbsp; 
+			label Item: 
+				input(name="id",value=q.id,size=26,placeholder="vacío -> último registro")
+			|  &nbsp; 
+			label Evento: 
+				select(name="type")
+					each tpl in tpls
+						option(selected=tpl===q.type)=tpl
+			|  &nbsp; 
+			label Idioma: 
+				select(name="lang")
+					each name,code in availableLangs
+						option(value=code,selected=code===lang)=name
+			|  &nbsp; 
+			label Width: 
+				input(name="w",value=q.w,size=6)
+			|  &nbsp; 
+			label Height: 
+				input(name="h",value=q.h,size=6)
+			|  &nbsp; 
+			input(type="submit",value=params?"Actualizar":"Visualizar")
+
+		if params
+			p: a(href="/notify-subscriptors?s=" + q.s + "&id=" + q.id + "&type=" + q.type + "&referer=" + q.referer) Notify subscriptors
+			div="De: "+from
+			div="A: "+to
+			div="Asunto: "+subject
+			br
+			iframe(src="data:text/html;charset=utf-8,"+html,style="width:"+q.w+"px;height:"+q.h+"px")
+
+			table(style="white-space:pre")
+				each p,k in params
+					tr
+						td=k
+						td= typeof p === 'object' ? JSON.stringify(p, null, '\t') : p

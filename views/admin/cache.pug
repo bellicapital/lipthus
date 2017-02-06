@@ -1,0 +1,49 @@
+doctype html
+html
+	head
+		style.
+			body{font-size:12px}
+			table{border-collapse:collapse;text-align:center}
+			td{vertical-align:top}
+			#a td, #a th{padding: 4px 8px;border: 1px solid}
+			#b td{text-align:left;padding: 1px 4px}
+			.truncate {
+				width: 200px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: inline-block;
+			}
+	body
+		if !langDevices
+			h3 Caché empty
+		else
+			table
+				tr
+					td
+						table#a
+							tr
+								th &nbsp;
+								each d, k in devicesCount
+									th=k
+
+							each d, k in langDevices
+								tr
+									td=k
+									each n, i in d
+										td
+											a(href="?device="+devices[i]+"&lang="+k)=n
+
+							tr
+								th Total
+								each d in devicesCount
+									th=d
+
+					if uris
+						td(style="padding-left:20px")
+							table#b
+								each uri in uris
+									tr
+										td=uri.created.toUserDatetimeString()
+										td
+											a(href=uri.uri,target="cached")=uri.uri

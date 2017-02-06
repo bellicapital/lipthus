@@ -1,0 +1,45 @@
+extends base
+
+block body
+	.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= title
+			a.ui-btn-right.ui-link.ui-btn.ui-icon-power.ui-btn-icon-left.ui-shadow.ui-corner-all(href="/logout")=LC._LOGOUT
+		.ui-content
+			table#user
+				tr
+					td
+						img.profile-img(src=item.getImage(100,100)||'/cms/img/silhouette.gif')
+					td
+						table#user-fields
+							tr
+								td.caption=LC._US_REALNAME
+								td=item.name
+							tr
+								td.caption Alias
+								td=item.alias || item.uname
+							tr
+								td(colspan=2): a(href="mailto:"+item.email)=item.email
+							if item.url
+								tr
+									td(colspan=2)
+										a(href=item.url, target="_blank")=item.url
+							if item.phone && item.phone.length
+								tr
+									td.caption=LC._PHONE
+									td=item.phone
+							if user.isAdmin()
+								tr
+									td.caption Nivel
+									td=item.level
+							tr
+								td.caption=LC._US_LASTLOGIN
+								td=item.last_login && item.last_login.toUserDatetimeString(lang)
+							tr
+								td.caption=LC._LANGUAGE
+								td=langs[item.language] || item.language
+							if item.addres
+								tr
+									td.caption=LC._ADDRESS
+									td=item.address

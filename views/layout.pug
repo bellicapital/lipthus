@@ -1,0 +1,11 @@
+extends base
+
+block body
+	#header.ui-widget.ui-widget-content
+		a(href='/')
+			if logo
+				img#sitelogo(src=logo.uri, width=logo.width, height=logo.height, alt!=sitename)
+		unless page=="login"
+			.usernav
+	#content
+		block content

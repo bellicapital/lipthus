@@ -1,0 +1,156 @@
+form, .iForm{
+	text-align: left;
+	padding: 6px 10px;
+
+	label{
+		margin-right: 4px;
+		display: inline-block;
+		font-size: 1em;
+	}
+}
+.iForm h4{
+	margin: 0;
+}
+form td, .iForm td{
+	padding: 2px;
+}
+
+textarea {
+	resize: both;
+	width: 380px;
+	height: 50px;
+}
+
+input[type=checkbox]{margin: 1px; vertical-align: middle;}
+
+optgroup{
+	font-family: inherit;
+	margin: 3px 0 1px;
+}
+
+.formbuttons {
+	padding: 8px;
+	border-top: 1px solid #CCCCCC;
+	clear: both; 
+	text-align: right;
+}
+.formcaption {
+	text-align: right;
+	padding-right: 4px;
+	max-width: 300px;
+}
+.formdesc{
+	font-style: italic;
+	font-weight: normal;
+	font-size: 0.8em;
+	text-align: right;
+	margin-right: 10px;
+	margin-left: auto;
+	max-width: 150px;
+}
+.formcaption:after {
+	content: ':';
+}
+.formcaption.required:after {
+	content: ':*';
+}
+.formfield {
+	display: inline-block;
+	text-align: left;
+	position: relative;
+}
+.fileField {
+	color: #000;
+	width: 352px;
+	float: left;
+	padding: 0 4px 4px;
+	position: relative;
+}
+.formfield .action-icons{
+	margin-left: -20px;
+	float:right;
+	position:relative;
+}
+.formfield .action-icons > a{
+	float: left;
+}
+.formfield .done-btn{
+	max-width:380px;
+	display: inline-flex;
+}
+.formfield form{
+	padding: 0;
+}
+.form-iText{
+	min-width: 100px;
+	max-width: 380px;
+}
+.formFooterLegend{
+	font-size: 0.9em;
+	float: left;
+	margin-right: 20px;
+	text-align: right;
+}
+.formFooterLegend tr td:first-child{
+	width: 10px;
+}
+.formFooterLegend tr td:last-child{
+	text-align: left;
+	padding-left: 8px; 
+}
+
+[type="radio"]{margin: 2px 6px;}
+
+.ui-datepicker-trigger{
+	margin-left: 12px;
+	cursor: pointer;
+	vertical-align: top;
+}
+.ui-datepicker{
+	display: none;
+}
+
+.langSelector {
+	padding: 2px;
+	text-align: left;
+	font-size: 0.8em;
+}
+.langSelector label{
+	display: block;
+	padding: 0;
+}
+.langSelector input{
+	margin: 0 3px;
+	vertical-align: middle;
+}
+.thumb-container{
+	display: inline-block;
+	position: relative;
+	margin: 4px 14px 4px 0;
+	padding: 15px;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+	border-radius: 1em;
+	text-align: center;
+	vertical-align: middle;
+
+	.dimensions{
+		bottom: 0;
+		width: 100%;
+		position: absolute;
+		left: 0;
+		font-size: .7em;
+	}
+	.form-thumb-delete{
+		position: absolute;
+		margin: 0;
+		top: -14px;
+		right: -14px;
+		z-index: 1;
+		background-color: #933;
+	}
+	video, img {
+		vertical-align: middle;
+	}
+}

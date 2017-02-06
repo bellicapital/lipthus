@@ -1,0 +1,31 @@
+extends base
+
+block body
+	h1=title
+	form#dsr(action="dsresponse",method="post")
+		input(type="hidden",name="test",value="1")
+
+		table.form
+			each v,n in json.post
+				tr
+					td.formcaption=n
+					td
+						input(name=n,value=v)
+					
+			tr
+				td &nbsp;
+				td  
+			tr
+				td  
+				td
+					input(type="submit")
+		
+		pre!=params
+		
+	p Target action: 
+		input#action(onchange="action()")
+	
+	script.
+		function action(){
+			$('#dsr').attr('action', $('#action').val());
+		}

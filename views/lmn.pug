@@ -1,0 +1,13 @@
+extends base
+
+block body
+	.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= title
+		.ui-content
+			ul#lmns(data-role="listview", data-inset="true")
+				each k in itemValues
+					li.ui-field-contain
+						label=k.caption
+						div!=k.value

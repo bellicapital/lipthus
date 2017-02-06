@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    title Page unavailable
+    style.
+      body {
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+      }
+  body
+    if settings.env !== "production" || (user && user.level > 1)
+      h2=error.message
+      pre=error.stack
+    else
+      h1 Page unavailable
+      p Sorry, but the requested page is unavailable due to a server hiccup.
+      p Our engineers have been notified, so check back later.

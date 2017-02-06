@@ -1,0 +1,14 @@
+.paginator
+	div(data-role="controlgroup",data-type="horizontal",style="margin:0")
+		a.ui-btn(disabled=paginator.page===1,href=paginator.page===1?null:paginator.url+"1",class={"ui-btn-active":paginator.page===1}) 1
+		- var n = paginator.first
+		if n===2
+			a.ui-btn(href=paginator.url+paginator.first,class={"ui-btn-active":paginator.page===2})=n
+		else if n>2
+			a.ui-btn(href=paginator.url+paginator.first,class={"ui-btn-active":n===paginator.page}) ... #{n}
+		while ++n< paginator.last
+			a.ui-btn(href=paginator.url+n,class={"ui-btn-active":n===paginator.page})=n
+				if n===paginator.last-1 && paginator.last < paginator.numPages
+					|  ...
+		if paginator.last<=paginator.numPages
+			a.ui-btn(disabled=paginator.last===paginator.page,href=paginator.last===paginator.page?null:paginator.url+paginator.numPages)=paginator.numPages

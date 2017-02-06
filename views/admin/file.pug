@@ -1,0 +1,74 @@
+extends ../base
+
+block body
+	#file-page.ui-page(data-role="page", data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(data-rel="back")=LC._BACK
+			h1.ui-title= file.filename
+			div(data-role="controlgroup", data-type="horizontal").ui-btn-right
+				a(href=link).ui-btn.ui-btn-inline.ui-icon-navigation.ui-btn-icon-notext Go
+				a(href=link + "?dl=1").ui-btn.ui-btn-inline.ui-icon-arrow-d.ui-btn-icon-notext Download
+				a#file-delete.ui-link.ui-btn.ui-icon-delete.ui-btn-icon-right.ui-shadow.ui-corner-all(data-id=file._id+'')=LC._DELETE
+
+		.ui-content
+			- var link = "/fs/" + file._id + "/" + file.filename
+
+			if file.contentType.indexOf('audio') === 0
+				audio.ui-body.ui-body-c.ui-corner-all(controls)
+					source(src=link, type=file.metadata && file.metadata.contentType || file.contentType)
+
+			if file.error
+				p.ui-bar.ui-bar-b=file.error
+
+			if file.thumb
+				img.file-thumb(src='/bdf/fs/'+file._id+'/thumb/300x300/'+file.thumb.name)
+
+			table.file-details.ui-corner-all
+				if file.folder
+					tr
+						td Folder
+						td: a(href="/files/folders/"+file.folder)=file.folder
+
+				if file.parent
+					tr
+						td Origin
+						td: a(href="/file/"+file.parent)
+						td: a(href="/file/"+file.parent)
+				if file.mtime
+					tr
+						td=LC._DATE
+						td=file.mtime.toUserDatetimeString()
+				tr
+					td Uploaded
+					td=file.uploadDate.toUserDateString()
+				tr
+					td=LC._SIZE
+					td=file.length.size()
+				if file.items && file.items.length
+					tr
+						td Items
+						td: ul(style="list-style:none;margin:0;padding: 0")
+							each item in file.items
+								li
+									a(href="/files/schemas/" + item.schema)=item.schema
+									| &nbsp;&#8594;&nbsp;
+									a(href="/lmns/"+item.schema+"/"+item._id)=item.title
+				tr
+					td ContentType
+					td=file.contentType
+
+			if file.metadata
+				table.file-details.metadata.ui-corner-all
+					caption.ui-header.ui-bar-b Metadata
+						each m,k in file.metadata
+							tr
+								td=k
+								td=m
+
+			if file.versions
+				table.file-details.ui-corner-all
+					caption.ui-header.ui-bar-b Versions
+					each m,k in file.versions
+						tr
+							td=k
+							td: a(href="/videos/"+ m.id +"."+k)=m.label

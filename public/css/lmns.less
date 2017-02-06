@@ -1,0 +1,44 @@
+#lmns{
+    margin: 0 auto;
+    max-width: 996px;
+
+    .ui-field-contain{
+        > div {
+            font-size: 1em;
+            overflow: auto;
+            white-space: normal;
+            margin: .5em 0;
+        }
+        > label {
+            font-weight: bold;
+            text-align: right;
+        }
+        > label:after{
+            content: ':';
+        }
+    }
+
+    .thumb-container{
+        display: inline-block;
+        position: relative;
+        margin: 4px 14px 4px 0;
+        padding: 15px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        border-radius: 1em;
+        text-align: center;
+        vertical-align: middle;
+
+        .dimensions{
+            bottom: 0;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            font-size: .7em;
+        }
+        video, img {
+            vertical-align: middle;
+        }
+    }
+}

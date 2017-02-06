@@ -1,0 +1,12 @@
+table.tablesorter th {
+	text-align: center;
+	padding: 2px 4px;
+	cursor: pointer;
+}
+table.tablesorter th .ui-icon {
+	display: inline-block;
+	vertical-align: middle;
+}
+table.tablesorter td {
+	padding: 2px 4px;
+}

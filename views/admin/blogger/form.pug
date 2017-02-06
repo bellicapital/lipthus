@@ -1,0 +1,137 @@
+extends ../../base
+
+block body
+	#post-page.ui-page(data-role="page",data-theme="b")
+		.ui-header(data-role="header", data-position="fixed")
+			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(
+				href="/blogger/" + schema
+			) Hecho
+			if post._id
+				a.blog-delete.ui-btn-right.ui-link.ui-btn.ui-icon-delete.ui-btn-icon-right.ui-shadow.ui-corner-all(
+					href="#"
+				) Eliminar
+
+			h1.ui-title= post._id ? 'Modificar Post' : 'Nuevo Post'
+
+		.ui-content(data-role="content",data-theme="c")
+			form#postForm(
+				data-role="objectform",
+				data-schema= schema,
+				autocomplete="off",
+				data-itemid= post._id || "sessionform",
+				data-onsubmit-redirect="/blogger/"+schema+"/__ID__/edit"
+			)
+				ul(data-role="listview", data-inset="true")
+					li.ui-field-contain
+						label=LC._ACTIVE
+						input(name="active", type="checkbox", data-role="flipswitch", checked=!!post.active, disabled=user.level<4)
+						label(style="width:auto;margin-left:120px;margin-right:12px") Fecha publicación:
+						.ui-input-text.ui-body-inherit.ui-corner-all.ui-shadow-inset(style="width:auto")
+							input(
+								type="date",
+								name="published",
+								data-enhanced="true",
+								value=post.published.toFormDateString()
+							)
+					li.ui-field-contain
+						label URL
+						.ui-input-text.ui-body-inherit.ui-corner-all.ui-shadow-inset
+							input(
+								name="url",
+								data-enhanced="true",
+								placeholder="url en inglés, sin espacios y en minúsculas. p.ej: beware-of-taxis",
+								value=post.url||""
+							)
+					li.ui-field-contain
+						label=LC._TITLE+" (H1)"
+						.ui-input-text.ui-body-inherit.ui-corner-all.ui-shadow-inset
+							each lang, code in langs
+								input(
+									name="title."+code,
+									lang=code,
+									data-multilang="true",
+									data-enhanced="true",
+									placeholder=LC._TITLE+" ("+lang+")",
+									style="display:none",
+									value=post.title&&post.title[code]||""
+								)
+					li.ui-field-contain
+						label Meta title
+							p#metaTitle-counts
+						.ui-input-text.ui-body-inherit.ui-corner-all.ui-shadow-inset
+							each lang, code in langs
+								input(
+									name="metaTitle."+code,
+									lang=code,
+									data-multilang="true",
+									data-enhanced="true",
+									placeholder="Meta title ("+lang+")",
+									style="display:none",
+									data-maxlength="55",
+									value=post.metaTitle&&post.metaTitle[code]||""
+								)
+					li.ui-field-contain
+						label Meta description
+							p#metaDescription-counts
+						each lang, code in langs
+							textarea.ui-input-text.ui-shadow-inset.ui-body-inherit.ui-corner-all.ui-textinput-autogrow(
+								name="metaDescription."+code,
+								lang=code,
+								data-multilang="true",
+								data-enhanced="true",
+								cols="20",
+								rows="3",
+								data-maxlength="115",
+								placeholder="Description ("+lang+")"
+							)=(post.metaDescription && post.metaDescription[code] || "")
+					li.ui-field-contain
+						div Texto
+							span#desc-errors(style="display:none;float:right") Errores:&nbsp;
+								a(href="/w3cv?uri="+post.link, target="blog-w3cv")
+
+						each lang, code in langs
+							// data-editor="true",
+							textarea.ui-input-text.ui-shadow-inset.ui-body-inherit.ui-corner-all.ui-textinput-autogrow(
+								name="description."+code,
+								lang=code,
+								data-multilang="true",
+								data-enhanced="true",
+								cols="40",
+								rows="4",
+								placeholder="Texto ("+lang+")"
+							)!=(post.description && post.description[code] || "")
+
+					if post._id
+						if hasThumb
+							li.ui-field-contain
+								label Thumbnail
+									span.description Imagen a mostrar en resúmenes y listados
+								input(name="thumb", type="file",  accept="image/*", data-value=post.thumb)
+						if hasSocial
+							li.ui-field-contain
+								label Social image
+									span.description La imagen que mostrarán las redes sociales al compartir el post. Si no se selecciona ninguna, se mostrarán el thumbnail o la primera imagen
+								input(name="socialImage", type="file",  accept="image/*", data-value=post.socialImage)
+						li.ui-field-contain
+							label=LC._IMAGE
+							input(name="image", type="file",  accept="image/*", data-value=post.image, multiple)
+						li.ui-field-contain
+							label Video
+							div(style="display: inline-block;width:78%")
+								#video-gal
+								input#video-input(type="file", name="video", accept="video/*", data-value=post.video, multiple)
+					else
+						li: h3 Los archivos multimedia se podrán subir una vez el post haya sido creado. (Thumbnail, Social image, Image, Video)
+						li.ui-field-contain
+							input(type="submit", value=LC._SUBMIT)
+			if post._id
+				div= LC._CREATED + ": " + post.created
+				div= LC._MODIFIED + ": " + post.modified
+
+		.ui-footer(data-role="footer", data-position="fixed")
+			if post.link
+				a#post-link.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(href=post.link, target="blog-preview", style="margin:0") preview
+
+			h1 &nbsp;
+			.ui-btn-left(style="text-align:center;width:100%")
+				fieldset.lang-selector(data-role="controlgroup", data-type="horizontal", data-mini="true", data-theme="b")
