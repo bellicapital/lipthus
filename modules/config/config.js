@@ -114,10 +114,6 @@ class Config {
 		);
 	}
 
-	jQueryUITheme() {
-		return this.configs.jqueryui_theme && this.configs.jqueryui_theme.value || 'smoothness';
-	}
-
 	getConfigsByCat(cat) {
 		return this.groups[cat].configs;
 	}

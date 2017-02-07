@@ -1,7 +1,5 @@
 "use strict";
 
-const repair = item => item.set('created', new Date(item._id.getTimestamp())).save();
-
 module.exports = function(site){
 	const model = site.db.config;
 
@@ -18,6 +16,8 @@ module.exports = function(site){
 				{name: 'register_methods'},
 				{name: 'reg_dispdsclmr'},
 				{name: 'signature'},
+				{name: 'dsresponseUrl'},
+				{name: 'expire'},
 				{name: 'adsense'},
 				{name: 'urls'},
 				{name: 'pay'},

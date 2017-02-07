@@ -65,7 +65,7 @@ class HtmlPage{
 
 						if (this.jQueryUIcss) {
 							this.head.css.jQueryUi = true;
-							this.head.css.jQueryUiTheme = this.uitheme || config.jqueryui_theme || 'smoothness';
+							this.head.css.jQueryUiTheme = this.uitheme || 'smoothness';
 						}
 					}
 
@@ -87,10 +87,6 @@ class HtmlPage{
 
 				return this;
 			});
-	}
-
-	setJQueryUI(b) {
-		this.jQueryUI = this.head.js.jQueryUi = b;
 	}
 
 	set(opt) {
@@ -558,7 +554,6 @@ class HtmlPage{
 		if (this.view[0] === '/')
 			return this.view;
 
-		const res = this.res;
 		const vDirs = this.req.app.get('views');
 		const base = this.deviceType + '/' + this.view;
 
@@ -574,6 +569,7 @@ class HtmlPage{
 		return view || this.view;
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	/**
 	 * Asigna el path completo de view si se encuentra
 	 * Usado en cmjs-newsletter plugin
@@ -591,7 +587,6 @@ class HtmlPage{
 		if (this.view[0] === '/')
 			return this.view;
 
-		const res = this.res;
 		const vDirs = this.req.app.get('views');
 		const dirOpt = [
 			this.deviceType + '/' + this.view + '.pug',
@@ -629,39 +624,7 @@ class HtmlPage{
 		require(this.req.site.dir + '/routes/message').call(this, this.req, this.res, () => this.send());
 	}
 
-	unAuthorized() {
-		this.req.session.redirect_to = this.req.originalUrl;
-
-		if (!this.res.headersSent)
-			this.res.status(403).render(this.req.cmsDir + '/views/status/403', {
-				path: this.req.path,
-				referer: this.req.get('referer')
-			});
-	}
-
-	getRouteDir() {
-		if (this.routeDir === undefined) {
-			const path = '/routes/' + this.key;
-
-			this.routeDir = this.req.site.dir + path;
-
-			if (!fs.existsSync(this.routeDir)) {
-				this.routeDir = this.req.site.cmsDir + path;
-
-				if (!fs.existsSync(this.routeDir))
-					this.routeDir = null;
-			}
-		}
-
-		return this.routeDir;
-	}
-
-	addInlineScript(content) {
-		this.head.js.deferredInline += content + "\n";
-
-		return this;
-	}
-
+	//noinspection JSUnusedGlobalSymbols
 	formScriptsMobile() {
 		return this.head.formScriptsMobile()
 			.then(() => this);
@@ -674,7 +637,6 @@ class HtmlPage{
 	}
 
 	addJS(src, opt) {
-		this.inited;
 		this.head.addJS(src, opt);
 
 		return this;
@@ -698,6 +660,7 @@ class HtmlPage{
 		return this;
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	addMeta(meta) {
 		this.head.addMeta(meta);
 
@@ -712,17 +675,6 @@ class HtmlPage{
 	addUserNav() {
 		this.addJS('usernav');
 		this.addLogin();
-	}
-
-	jQueryUITheme() {
-		if (this.req.user) {
-			const theme = this.req.user.jQueryUiTheme;
-
-			if (theme)
-				return theme;
-		}
-
-		return this.req.site.config.jQueryUITheme();
 	}
 
 	setItem(item) {
@@ -743,6 +695,7 @@ class HtmlPage{
 		return this.addJSVars({item: {id: item.id}});
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	loadComments(item, cb) {
 		if (typeof item === 'function') {
 			cb = item;
