@@ -173,15 +173,17 @@ class Site extends events.EventEmitter{
 	}
 
 	finish() {
-		this.setRoutes();
-		this.routeNotFound();
-
-		this.app.use(errorHandler);
-
-		//para status 40x no disparamos error
-		this.app.use(notFoundMin);
-
-		return this.listen();
+		return this.setRoutes()
+		.then(() => {
+			this.routeNotFound();
+	
+			this.app.use(errorHandler);
+	
+			//para status 40x no disparamos error
+			this.app.use(notFoundMin);
+	
+			return this.listen();
+		});
 	}
 
 	lessVars() {
@@ -524,25 +526,33 @@ class Site extends events.EventEmitter{
 	setRoutes() {
 		require('../routes')(this.app);
 
-		const router = express.Router({strict: true});
-
-		require(this.dir + '/routes')(this.app);
-
-		if (this.config.startpage && this.pages[this.config.startpage]) {
-			router.all('/', (req, res, next) => {
-				this.pages[this.config.startpage].display(req, res, next);
-			});
-		}
-
-		for (let p of Object.keys(this.pages)) {
-			(function (page) {
-				router.all('/' + (page.url || page.key), function (req, res, next) {
-					page.display(req, res, next);
+		return loadLocalRoutes()
+		.then(() => {
+			const router = express.Router({strict: true});
+	
+			if (this.config.startpage && this.pages[this.config.startpage]) {
+				router.all('/', (req, res, next) => {
+					this.pages[this.config.startpage].display(req, res, next);
 				});
-			}(this.pages[p]));
-		}
-
-		this.app.use('/', router);
+			}
+	
+			for (let p of Object.keys(this.pages)) {
+				(function (page) {
+					router.all('/' + (page.url || page.key), function (req, res, next) {
+						page.display(req, res, next);
+					});
+				}(this.pages[p]));
+			}
+	
+			this.app.use('/', router);
+		});
+	}
+	
+	loadLocalRoutes(){
+		const path = this.dir + '/routes';
+		
+		return fs.exists(path)
+		.then(exists => exists && require(this.dir + '/routes')(this.app));
 	}
 
 	routeNotFound() {
