@@ -526,7 +526,7 @@ class Site extends events.EventEmitter{
 	setRoutes() {
 		require('../routes')(this.app);
 
-		return loadLocalRoutes()
+		return this.loadLocalRoutes()
 		.then(() => {
 			const router = express.Router({strict: true});
 	
