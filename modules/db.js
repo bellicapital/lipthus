@@ -204,7 +204,7 @@ class Db extends events.EventEmitter {
 				});
 
 				return Promise.all(promises);
-			}, () => debug('schemas dir ' + dir + ' does not exists'))
+			}, () => {})	// catch schemas dir does not exists'))
 			.then(() => {
 				return fs.readdir(dir + '/plugins')
 					.then(plugins => {
