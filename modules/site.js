@@ -223,9 +223,6 @@ class Site extends events.EventEmitter{
 	connect() {
 		this.dbconf = this.package.config.db || this.conf.db || {name: this};
 
-		if(!this.dbconf)
-			return Promise.reject(new Error('db not provided'));
-
 		if(typeof this.dbconf === 'string')
 			this.dbconf = {name: this.dbconf};
 
