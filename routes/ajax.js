@@ -72,10 +72,10 @@ class AjaxProcess {
 
 		const req = this.req;
 
+		// plugin
 		if(q.p)
 			return req.site[q.p][q.m](...q.a);
 
-		const res = req.res;
 		let func;
 
 		if (q.g)
