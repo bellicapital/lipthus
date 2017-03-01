@@ -494,7 +494,7 @@ class HtmlPage{
 			const fbid = req.site.config.fb_app_id;
 
 			if(fbid)
-				this.head.addMetaProperty('fb:app_id', og.app_id);
+				this.head.addMetaProperty('fb:app_id', fbid);
 		}
 
 		if(!og.title)
