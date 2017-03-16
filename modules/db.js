@@ -129,39 +129,6 @@ class Db extends events.EventEmitter {
 				this.emit('itemUpdated', item, changed, a);
 			});
 
-		const findOneAndUpdate_ = model.findOneAndUpdate;
-
-		model.findOneAndUpdate = function () {
-			// Rest Parameters is a staget feature. jj 29/2/2016
-			let args = Array.prototype.slice.call(arguments);
-			let cb;
-			let update = args[1];
-
-			if ('function' === typeof args[args.length - 1])
-				cb = args.pop();
-
-			return findOneAndUpdate_.apply(this, args)
-				.then(doc => {
-					if (update.$unset)
-						update = update.$unset;
-					else if (update.$set)
-						update = update.$set;
-
-					update = Object.keys(update);
-
-					update.forEach(function (u, i) {
-						update[i] = u.replace(/\..+$/, '');
-					});
-
-					doc && doc.emit('update', update);
-
-					if (cb)
-						cb.call(this, null, doc);
-
-					return doc;
-				}, cb);
-		};
-
 		return this.models[name] = model;
 	}
 

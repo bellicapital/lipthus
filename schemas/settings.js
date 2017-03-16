@@ -3,9 +3,9 @@
 module.exports = function settings(Schema, site) {
 	//noinspection JSUnresolvedFunction
 	/** @namespace site.app */
-	const Bdf = site.app.eucaModule('bdf');
+	const Bdf = site.app.getModule('bdf');
 	//noinspection JSUnresolvedVariable,JSUnresolvedFunction
-	const MultilangText = site.app.eucaModule('schema-types/mltext').MultilangText;
+	const MultilangText = site.app.getModule('schema-types/mltext').MultilangText;
 
 	//noinspection JSUnresolvedVariable
 	const s = new Schema({

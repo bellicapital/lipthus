@@ -385,11 +385,6 @@ class Site extends events.EventEmitter{
 			next();
 		});
 
-		/**
-		 * @deprecated
-		 * @param {string} name
-		 */
-		app.module = name => console.trace('app.module is @deprecated. Changed to app.getModule') || app.eucaModule(name);
 		app.getModule = app.eucaModule = name => require('./' + name);// to deprecate: eucaModule
 		app.nodeModule = name => require(name);
 
