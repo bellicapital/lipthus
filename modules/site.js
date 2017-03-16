@@ -441,6 +441,7 @@ class Site extends events.EventEmitter{
 
 	setupApp() {
 		const app = this.app;
+		const production = app.get('env') === 'production';
 
 		Object.defineProperties(app, {
 			db: {value: this.db},
