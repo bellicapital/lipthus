@@ -449,7 +449,11 @@ class Site extends events.EventEmitter{
 
 		Object.each(require('../configs/defaults'), (k, v) => app.set(k, v));
 
-		app.set('port', this.port);
+		if(production)
+			app.enable('socket');
+		else
+			app.set('port', this.port);
+
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);
 
