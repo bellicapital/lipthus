@@ -401,6 +401,7 @@ class Site extends events.EventEmitter{
 			limit: '1gb',
 			extended: true
 		}));
+		app.use(bodyParser.json({ type: 'application/json' }));
 		app.use(cookieParser());
 
 		if (process.env.NODE_ENV === 'development') {

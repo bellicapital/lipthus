@@ -33,7 +33,7 @@ module.exports = function createdPlugin (schema, options) {
 	schema.options.toJSON.transform = (doc, ret, options) => {
 		_transform(doc, ret, options);
 
-		if(!ret.created && doc._id)
+		if(!ret.created && doc._id && doc.isSelected('created'))
 			ret.created = doc._id.getTimestamp();
 	};
 };
