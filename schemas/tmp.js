@@ -19,22 +19,12 @@ module.exports = function tmp(Schema){
 		},
 	};
 	
+	//noinspection JSUnusedGlobalSymbols
 	s.statics = {
-		get: function(key, cb){
-			if(cb)
-				console.trace('db.tmp.get cb deprecated');
-
-			return this.findOne({key: key}, cb);
+		get: function(key){
+			return this.findOne({key: key});
 		},
-		set: function(key, value, expire, cb){
-			if(typeof expire === 'function'){
-				cb = expire;
-				expire = null;
-			}
-
-			if(typeof cb === 'function')
-				console.trace('db.tmp.set cb deprecated');
-			
+		set: function(key, value, expire){
 			const update = {
 				value: value,
 				modified: new Date()
@@ -49,9 +39,9 @@ module.exports = function tmp(Schema){
 		getSet: function(key, getter){
 			return this.get(key)
 				.then(doc => {
-					if(doc)
+					if(doc && doc.expire.getTime() > Date.now())
 						return doc;
-				
+
 					return getter()
 						.then(obj => this.set(key, obj.value, obj.expire));
 			});
