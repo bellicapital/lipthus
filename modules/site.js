@@ -9,6 +9,7 @@ const path = require('path');
 const Config = require('./config');
 const flash = require('connect-flash');
 const bodyParser = require('body-parser');
+const multipart = require('./multipart');
 const cookieParser = require('cookie-parser');
 const favicons = require('connect-favicons');
 const assert = require('assert');
@@ -402,6 +403,8 @@ class Site extends events.EventEmitter{
 			extended: true
 		}));
 		app.use(bodyParser.json({ type: 'application/json' }));
+		// asigna req.multipart()
+		app.use(multipart);
 		app.use(cookieParser());
 
 		if (process.env.NODE_ENV === 'development') {
