@@ -58,6 +58,7 @@ class Bdf extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
+			, '$exists' : handleExists
 		}
 	}
 
@@ -81,8 +82,9 @@ class Bdf extends SchemaType {
 	}
 }
 
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => this.cast(m));
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => this.cast(m));};
 
 module.exports.install = function(){
 	Schema.Types.Bdf = Bdf;

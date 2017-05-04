@@ -4,8 +4,6 @@ const BinDataFile = require('../bdf');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
-const Types = mongoose.Types;
-const mongo = mongoose.mongo;
 
 class BinDataFileList
 {
@@ -133,6 +131,7 @@ class BdfList extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
+			, '$exists' : handleExists
 		};
 	}
 
@@ -157,8 +156,9 @@ class BdfList extends SchemaType {
 
 BdfList.BinDataFileList = BinDataFileList;
 
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => this.cast(m));
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => this.cast(m));};
 
 
 module.exports.install = function(){

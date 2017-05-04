@@ -49,9 +49,8 @@ class FsList{
 		return this.keys().length;
 	}
 
-	getThumb(width, height, crop, enlarge)
+	getThumb(width, height, crop)
 	{
-		//TODO: enlarge
 		const first = this.getFirst();
 
 		if (!first) return;
@@ -69,6 +68,7 @@ class FsList{
 		};
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	toJSON()
 	{
 		const ret = {};
@@ -156,13 +156,14 @@ class Fs extends SchemaType {
 		super(key, options);
 	}
 
+	//noinspection JSUnusedLocalSymbols
 	/**
 	 * Implement casting.
 	 *
 	 * @param {*} val
 	 * @param {Object} [scope]
 	 * @param {Boolean} [init]
-	 * @return {mongo.Fs|null}
+	 * @return {mongo.Fs|FsList|null}
 	 */
 
 	cast(val, scope, init) {
@@ -191,12 +192,9 @@ class Fs extends SchemaType {
 	}
 }
 
-/*!
-* ignore
-*/
-
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => this.cast(m));
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => this.cast(m));};
 
 Fs.prototype.$conditionalHandlers = {
 	'$lt' : handleSingle
@@ -208,6 +206,7 @@ Fs.prototype.$conditionalHandlers = {
   , '$nin': handleArray
   , '$mod': handleArray
   , '$all': handleArray
+	, '$exists' : handleExists
 };
 
 /**

@@ -3,8 +3,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
-const Types = mongoose.Types;
-const mongo = mongoose.mongo;
 
 
 class MlSelector extends SchemaType {
@@ -26,10 +24,11 @@ class MlSelector extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
+			, '$exists' : handleExists
 		};
 	}
 
-	//noinspection JSMethodCanBeStatic
+	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	/**
 	 * Implement checkRequired method.
 	 *
@@ -41,6 +40,7 @@ class MlSelector extends SchemaType {
 		return null !== val;
 	}
 
+	//noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
 	/**
 	 * Implement casting.
 	 *
@@ -61,6 +61,7 @@ class MlSelector extends SchemaType {
 	}
 
 
+	//noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
 	 *
@@ -102,8 +103,10 @@ class MlSelector extends SchemaType {
 /*!
  * ignore
  */
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => typeof m === 'string' ? m : this.cast(m));
+
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => typeof m === 'string' ? m : this.cast(m));};
 
 
   /**

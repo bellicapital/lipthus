@@ -48,8 +48,9 @@ module.exports.install = function(){
   /*!
    * ignore
    */
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => this.cast(m));
+	const handleSingle = function(val){return this.cast(val);};
+	const handleExists = () => true;
+	const handleArray = function(val){return val.map(m => this.cast(m))};
 
 
 	Ref.prototype.$conditionalHandlers = {
@@ -62,6 +63,7 @@ const handleArray = val => val.map(m => this.cast(m));
 	  , '$nin': handleArray
 	  , '$mod': handleArray
 	  , '$all': handleArray
+		, '$exists' : handleExists
 	};
 
 	/**

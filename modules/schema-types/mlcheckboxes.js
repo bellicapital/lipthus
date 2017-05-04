@@ -3,8 +3,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
-const Types = mongoose.Types;
-const mongo = mongoose.mongo;
 
 
 /**
@@ -29,10 +27,11 @@ class MlCheckboxes extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
+			, '$exists' : handleExists
 		};
 	}
 
-	//noinspection JSMethodCanBeStatic
+	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	/**
 	 * Implement checkRequired method.
 	 *
@@ -49,11 +48,10 @@ class MlCheckboxes extends SchemaType {
 	 *
 	 * @param {*} val
 	 * @param {Object} [scope]
-	 * @param {Boolean} [init]
 	 * @return {mongo.Multilang|null}
 	 */
 
-	cast(val, scope, init) {
+	cast(val, scope) {
 		if (null === val || !Array.isArray(val)) return null;
 
 		if (val instanceof MlCheckboxes)
@@ -185,8 +183,9 @@ class MlCheckboxes extends SchemaType {
  * ignore
  */
 
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => typeof m === 'string' ? m : this.cast(m));
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => typeof m === 'string' ? m : this.cast(m));};
 
 
 /**

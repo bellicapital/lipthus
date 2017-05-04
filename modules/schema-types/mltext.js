@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
 const Types = mongoose.Types;
-const mongo = mongoose.mongo;
 const debug = require('debug')('site:mltext');
 const defaultLang = require('../multilang').Multilang.defaultLang;
 
@@ -27,6 +26,7 @@ class Multilang extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
+			, '$exists' : handleExists
 		};
 	}
 
@@ -78,8 +78,9 @@ class Multilang extends SchemaType {
  * ignore
  */
 
-const handleSingle = val => this.cast(val);
-const handleArray = val => val.map(m => this.cast(m));
+const handleSingle = function(val){return this.cast(val);};
+const handleExists = () => true;
+const handleArray = function(val){return val.map(m => this.cast(m))};
 
 class MultilangText {
 	constructor(obj, collection, path, _id, site) {//t(7877, obj && obj.es)
