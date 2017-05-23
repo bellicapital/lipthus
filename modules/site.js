@@ -38,7 +38,7 @@ debug.log = console.log.bind(console);
 
 process.env.GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || 120000000;
 
-class Site extends events.EventEmitter{
+class Site extends events.EventEmitter {
 	constructor(dir) {
 		super();
 
@@ -47,15 +47,15 @@ class Site extends events.EventEmitter{
 		this.package = require(dir + '/package');
 		this.cmsPackage = require('../package');
 
-		if(!this.package.config)
+		if (!this.package.config)
 			this.package.config = {};
 
-		try{
+		try {
 			this.conf = require(dir + '/custom-conf');
-		} catch(e){
+		} catch (e) {
 			try {
 				this.conf = require(dir + '/conf');
-			} catch(e){
+			} catch (e) {
 				this.conf = {};
 			}
 		}
@@ -104,17 +104,17 @@ class Site extends events.EventEmitter{
 				this.staticHost = config.static_host ? this.externalProtocol + '://' + config.static_host : '';
 				this.domainName = config.host;
 
-				if(!config.port){
+				if (!config.port) {
 					this.port = this.port || 3000;
 
 					this.db.config
 						.changeValue('port', this.port)
 						.catch(console.error.bind(console));
-				} else if(!this.port){
+				} else if (!this.port) {
 					this.port = config.port;
 				}
 
-				if(!this.domainName) {
+				if (!this.domainName) {
 					this.domainName = 'localhost:' + this.port;
 
 					this.db.config
@@ -130,7 +130,7 @@ class Site extends events.EventEmitter{
 			.then(this.hooks.bind(this, 'pre', 'setupApp'))
 			.then(this.setupApp.bind(this))
 			.then(this.hooks.bind(this, 'post', 'setupApp'))
-			.then(this.ng2init.bind(this))
+			.then(() => Ng.init(this.app))
 			.then(this.getPages.bind(this))
 			.then(this.loadPlugins.bind(this))
 			.then(() => new Subscriptor(this.app))
@@ -140,10 +140,10 @@ class Site extends events.EventEmitter{
 			.then(this.hooks.bind(this, 'post', 'finish'));
 	}
 
-	hooks(hook, method){
+	hooks(hook, method) {
 		const fn = this._hooks[hook][method];
 
-		if(!fn)
+		if (!fn)
 			return Promise.resolve();
 
 		debug('site hook ' + hook + ' ' + method + ' ' + fn.name);
@@ -151,13 +151,13 @@ class Site extends events.EventEmitter{
 		return fn(this);
 	}
 
-	loadPlugins(){
+	loadPlugins() {
 		this.plugins = {};
 
 		const plugins = this.package.config.plugins;
 		const promises = [];
 
-		if(plugins)
+		if (plugins)
 			Object.each(plugins, k => promises.push(require('cmjs-' + k)(this.app)));
 
 		return Promise.all(promises)
@@ -175,16 +175,16 @@ class Site extends events.EventEmitter{
 
 	finish() {
 		return this.setRoutes()
-		.then(() => {
-			this.routeNotFound();
-	
-			this.app.use(errorHandler);
-	
-			//para status 40x no disparamos error
-			this.app.use(notFoundMin);
-	
-			return this.listen();
-		});
+			.then(() => {
+				this.routeNotFound();
+
+				this.app.use(errorHandler);
+
+				//para status 40x no disparamos error
+				this.app.use(notFoundMin);
+
+				return this.listen();
+			});
 	}
 
 	lessVars() {
@@ -206,7 +206,7 @@ class Site extends events.EventEmitter{
 			ret.optimg = "\"" + this.staticHost + "/optimg\"";
 
 		//jj - solución temporal hasta incluirlo en htmlPage
-		if(this._lessVars)
+		if (this._lessVars)
 			Object.extend(ret, this._lessVars);
 
 		return ret;
@@ -224,17 +224,17 @@ class Site extends events.EventEmitter{
 	connect() {
 		this.dbconf = this.package.config.db || this.conf.db || {name: this};
 
-		if(typeof this.dbconf === 'string')
+		if (typeof this.dbconf === 'string')
 			this.dbconf = {name: this.dbconf};
 
 		this.dbs = {};
 
 		return this.connectDB({
-				name: this.dbconf.name,
-				user: this.dbconf.user,
-				pass: this.dbconf.pass,
-				schemasDir: this.dir + '/schemas'
-			})
+			name: this.dbconf.name,
+			user: this.dbconf.user,
+			pass: this.dbconf.pass,
+			schemasDir: this.dir + '/schemas'
+		})
 			.then(db => {
 				Object.defineProperty(this, 'db', {value: db});
 
@@ -274,7 +274,7 @@ class Site extends events.EventEmitter{
 			.then(email => {
 				this.emit('mailsent', email);
 
-				if(throwError && email.error)
+				if (throwError && email.error)
 					throw email.error;
 
 				return email;
@@ -291,7 +291,7 @@ class Site extends events.EventEmitter{
 				schemasDir: p.schemasDir
 			};
 
-			if(!params.name)
+			if (!params.name)
 				return ko('No db name provided');
 
 			new Db(params, this)
@@ -303,7 +303,7 @@ class Site extends events.EventEmitter{
 	createApp() {
 		let app = express();
 
-		Object.defineProperty(this, 'app', {value:  app});
+		Object.defineProperty(this, 'app', {value: app});
 		Object.defineProperty(app, 'site', {value: this});
 
 		app
@@ -346,10 +346,10 @@ class Site extends events.EventEmitter{
 				if (err.referer)
 					err.title += "\nReferer: " + err.referer + "\n";
 
-				 if (process.env.NODE_ENV !== 'production')
-				 	return;
+				if (process.env.NODE_ENV !== 'production')
+					return;
 
-				 this.sendMail({
+				this.sendMail({
 					from: "server ✔ <no_responder@" + req.hostname.replace(/^.*\.(\w+\.\w+)$/, '$1') + ">",
 					to: this.config.webmastermail,
 					subject: 'New error in ' + this.key, // Subject line
@@ -357,7 +357,7 @@ class Site extends events.EventEmitter{
 					+ err.title + '\n'
 					+ err.stack
 				})
-				 .catch(console.error.bind(console));
+					.catch(console.error.bind(console));
 			};
 
 			res.locals.location = {
@@ -375,7 +375,7 @@ class Site extends events.EventEmitter{
 				res.locals.location.search = req.originalUrl.replace(/^[^?]+/, '');
 
 			// first time from browser & not defined
-			if(!this.staticHost)
+			if (!this.staticHost)
 				this.staticHost = req.protocol + '://' + (this.config.static_host || req.headers.host);
 
 			res.locals.staticHost = this.staticHost;
@@ -402,7 +402,7 @@ class Site extends events.EventEmitter{
 			limit: '1gb',
 			extended: true
 		}));
-		app.use(bodyParser.json({ type: 'application/json' }));
+		app.use(bodyParser.json({type: 'application/json'}));
 		// asigna req.multipart()
 		app.use(multipart);
 		app.use(cookieParser());
@@ -416,11 +416,11 @@ class Site extends events.EventEmitter{
 			 */
 //			app.locals.pretty = true;//desactivado por distinto comportamiento del dom sin espacios
 // 			app.locals.cache = false;
-		// } else {
+			// } else {
 			// solución temporal. Pug no gestiona bien su propia caché. Pug version beta2
 			// app.locals.cache = false;
 		}
-		
+
 		const staticOpt = {
 			maxAge: 31557600000,
 			redirect: false
@@ -439,10 +439,6 @@ class Site extends events.EventEmitter{
 		app.use(security.main);
 	}
 
-	ng2init(){
-		return Ng.init(this.app);
-	}
-
 	setupApp() {
 		const app = this.app;
 		const production = app.get('env') === 'production';
@@ -454,7 +450,7 @@ class Site extends events.EventEmitter{
 
 		Object.each(require('../configs/defaults'), (k, v) => app.set(k, v));
 
-		if(production)
+		if (production)
 			app.enable('socket');
 		else
 			app.set('port', this.port);
@@ -471,7 +467,7 @@ class Site extends events.EventEmitter{
 		return multilang(app)
 			.then(() => {
 				app.use((req, res, next) => {
-					if(req.ml && req.ml.lang && req.subdomains.length) {
+					if (req.ml && req.ml.lang && req.subdomains.length) {
 						const luri = this.langUrl(req.ml.lang);
 
 						if (luri.substr(2) !== req.headers.host && req.headers.host.indexOf(this.domainName) > 0)
@@ -528,32 +524,25 @@ class Site extends events.EventEmitter{
 		require('../routes')(this.app);
 
 		return this.loadLocalRoutes()
-		.then(() => {
-			const router = express.Router({strict: true});
-	
-			if (this.config.startpage && this.pages[this.config.startpage]) {
-				router.all('/', (req, res, next) => {
-					this.pages[this.config.startpage].display(req, res, next);
-				});
-			}
-	
-			for (let p of Object.keys(this.pages)) {
-				(function (page) {
-					router.all('/' + (page.url || page.key), function (req, res, next) {
-						page.display(req, res, next);
-					});
-				}(this.pages[p]));
-			}
-	
-			this.app.use('/', router);
-		});
+			.then(() => {
+				const router = express.Router({strict: true});
+
+				if (this.config.startpage && this.pages[this.config.startpage])
+					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));
+
+				Object.values(this.pages).forEach(p =>
+					router.all('/' + (p.url || p.key), (req, res, next) => p.display(req, res, next))
+				);
+
+				this.app.use('/', router);
+			});
 	}
-	
-	loadLocalRoutes(){
+
+	loadLocalRoutes() {
 		const path = this.dir + '/routes';
-		
+
 		return fs.exists(path)
-		.then(exists => exists && require(this.dir + '/routes')(this.app));
+			.then(exists => exists && require(this.dir + '/routes')(this.app));
 	}
 
 	routeNotFound() {
@@ -563,7 +552,7 @@ class Site extends events.EventEmitter{
 				|| req.device.type === 'bot'
 				|| ['apple-touch-icon.png', 'favicon.ico'].indexOf(req.path.substr(1)) !== -1;
 
-			if(!res.locals.LC)
+			if (!res.locals.LC)
 				res.locals.LC = {};
 			if (!res.statusCode || res.statusCode === 200)
 				res.statusCode = 404;
@@ -578,7 +567,7 @@ class Site extends events.EventEmitter{
 		return new Promise(ok => {
 			listen(this.app, r => {
 				this.emit('listen', r);
-				
+
 				ok();
 			});
 		});
