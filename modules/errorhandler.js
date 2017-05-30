@@ -6,7 +6,6 @@
 
 const Logger = require('./logger');
 const fs = require('fs');
-const pmx = require('pmx');
 
 const getView = (status, req) => {
 	let ret = null;
@@ -58,19 +57,12 @@ module.exports = function(err, req, res, next) {
 	if(err.status && err.status >= 400 && err.status < 500)
 		return next();
 
-	const dev = 'development' === req.app.get('env');
-
-	if (!dev) {
-		// req.notifyError(err);
-		req.app.use(pmx.expressErrorHandler());
-	}
-
 	if(!err.status)
 		err.status = 500;
 
 	res.status(err.status);
 
-	(req.logger || new Logger(req)).logError(err).then(r => {
+	(req.logger || new Logger(req)).logError(err).then(() => {
 		console.error("Exception at " + req.originalUrl);
 		console.error(err);
 	});

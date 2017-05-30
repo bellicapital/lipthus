@@ -2,7 +2,6 @@
 
 const debug = require('debug')('site:subscriptor');
 const fs = require('fs');
-const pmx = require('pmx');
 
 
 class Subscriptor {
@@ -21,7 +20,7 @@ class Subscriptor {
 		this.subscribeDb(app.db);
 	}
 
-	subscribeDb(db, cb) {
+	subscribeDb(db) {
 		Object.each(db.schemas, (name, s) => {
 			if (s.options.subscriptions)
 				this.subscribeModel(name, db);
@@ -217,7 +216,7 @@ class Subscriptor {
 
 		this.getSubscriptors(db.name, name, 'events', 'newItem', function (err, subscribed) {
 			if (err)
-				pmx.notify(err);
+				throw err;
 
 			if (!subscribed.length) return;
 
@@ -233,7 +232,7 @@ class Subscriptor {
 
 		this.getSubscriptors(db.name, name, 'items', item._id, (err, subscribed) => {
 			if (err)
-				pmx.notify(err);
+				throw err;
 
 			if (!subscribed.length) return;
 
@@ -380,7 +379,7 @@ class Subscriptor {
 				}
 			}, function (err, users) {
 				if (err)
-					pmx.notify(err);
+					throw err;
 
 				if (!users)
 					return;

@@ -26,7 +26,6 @@ const facebook = require("./facebook");
 const csrf = require('csurf')({cookie: true});
 const security = require('./security');
 const session = require('./session');
-const pmx = require('pmx');
 const os = require('os');
 const HtmlPage = require('./htmlpage');
 const logger = require('./logger');
@@ -78,12 +77,6 @@ class Site extends events.EventEmitter {
 
 		//TODO: personalizar
 		this.secret = 'euca ' + this.conf.db;
-
-		//https://github.com/keymetrics/pmx
-		pmx.init({
-			network: true,
-			ports: true
-		});
 
 		this._hooks = {pre: {}, post: {}};
 	}
