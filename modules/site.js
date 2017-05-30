@@ -402,7 +402,7 @@ class Site extends events.EventEmitter {
 			limit: '1gb',
 			extended: true
 		}));
-		app.use(bodyParser.json({type: 'application/json'}));
+		app.use(bodyParser.json({type: 'application/json', limit: '1gb'}));
 		// asigna req.multipart()
 		app.use(multipart);
 		app.use(cookieParser());
