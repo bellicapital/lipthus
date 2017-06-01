@@ -116,7 +116,7 @@ class BinDataFile {
 		const date = new Date();
 		const obj = {
 			contentType: r[1],
-			size: string.length,
+			size: buffer.length,
 			md5: md5(buffer),
 			uploadDate: date,
 			mtime: date,

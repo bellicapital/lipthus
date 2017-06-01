@@ -1,8 +1,6 @@
 "use strict";
 
-const $ = require('../../utils');
 const fs = require('fs');
-const assert = require('assert');
 const crypto = require('crypto');
 const uglifyjs = require('uglify-js');
 const path = require('path');
@@ -64,17 +62,6 @@ class JsManager {
 		return this;
 	}
 
-	addDir(path, dir, opt) {
-		return new Promise((ok, ko) => {
-			fs.readdir(path + '/' + dir, (err, files) => {
-				if(err)
-					return ko(err);
-
-				Object.keys(files).forEach(i => this.add(dir + '/' + files[i], opt));
-			});
-		});
-	}
-
 	addVars(vars) {
 		Object.keys(vars).forEach(k => this.vars[k] = vars[k]);
 	}
@@ -114,8 +101,8 @@ class JsManager {
 			const ret = {
 					head: [],
 					body: [],
-					headInline: this.headInline ? uglifyjs.minify(this.headInline, {fromString: true}).code : '',
-					bodyInline: this.deferredInline ? uglifyjs.minify(this.deferredInline, {fromString: true}).code : ''
+					headInline: this.headInline ? uglifyjs.minify(this.headInline).code : '',
+					bodyInline: this.deferredInline ? uglifyjs.minify(this.deferredInline).code : ''
 				},
 				scripts = [],
 				scriptsArray = Object.values(this.scripts),
@@ -216,37 +203,29 @@ class JsManager {
 		});
 	}
 
-	getMinified(script, cb) {
+	getMinified(script) {
 		const cache = this.cache;
 		const hash = crypto.createHash('sha1').update(script.path + script.mtime + script.priority).digest('hex').toString() + '.js';
 
-		cache.findOne({name: hash}, function (err, cached) {
-			if (err || cached)
-				return cb(null, cached);
+		return cache.findOne({name: hash})
+			.then(cached => {
+				if (cached)
+					return cached;
 
-			let min;
+				const ugliResult = uglifyjs.minify(fs.readFileSync(script.path, {encoding: 'utf8'}));
 
-			try {
-				min = uglifyjs.minify(fs.readFileSync(script.path, {encoding: 'utf8'}), {fromString: true}).code;
-			} catch(err){
-				err.filename = script.path;
-				err.stack = '    at ' + err.filename + ':' + err.line + ':' + err.col + '\n' + err.stack;
-				return cb(err);
-			}
+				if(ugliResult.error)
+					throw ugliResult.error;
 
-			cache.create({
-				name: hash,
-				contentType: 'application/javascript',
-				mtime: new Date(script.mtime * 1000),
-				tag: "minify-js",
-				source: script.path,
-				MongoBinData: new Buffer(min)
-			}, function (err, cached) {
-				assert.ifError(err);
-
-				cb(null, cached);
+				return cache.create({
+					name: hash,
+					contentType: 'application/javascript',
+					mtime: new Date(script.mtime * 1000),
+					tag: "minify-js",
+					source: script.path,
+					MongoBinData: new Buffer(ugliResult.code)
+				});
 			});
-		});
 	}
 
 	minify(scripts, target, cb) {
@@ -267,12 +246,17 @@ class JsManager {
 				combinedHash.update(s.path + s.mtime + s.priority);
 				toCombine[src] = s;
 			} else {
-				this.getMinified(s, (err, r) => {
-					ret.push({src: this.staticHost + '/c/' + r._id + '/' + (r.source.replace(/.*\//g, ''))});
+				this.getMinified(s)
+					.then(r => {
+						ret.push({src: this.staticHost + '/c/' + r._id + '/' + (r.source.replace(/.*\//g, ''))});
 
-					if (++count === length)
-						cb(err, ret);
-				});
+						if (++count === length)
+							cb(null, ret);
+					})
+					.cacth(err => {
+						if (++count === length)
+							cb(err, ret);
+					});
 			}
 		});
 
@@ -298,37 +282,36 @@ class JsManager {
 					let count2 = 0;
 
 					Object.each(toCombine, (src, s) => {
-						this.getMinified(s, (err, cached) => {
-							if(err)
-								return cb(err);
+						this.getMinified(s)
+							.then(cached => {
+								s.strmin = '/*' + path.basename(src) + '*/\n' + cached.MongoBinData.toString('utf-8') + '\n\n';
 
-							s.strmin = '/*' + path.basename(src) + '*/\n' + cached.MongoBinData.toString('utf-8') + '\n\n';
+								++count;
 
-							++count;
+								if(++count2 === keys.length) {
+									let min = '';
 
-							if(++count2 === keys.length) {
-								let min = '';
+									Object.each(toCombine, (src, s) => min += s.strmin);
 
-								Object.each(toCombine, (src, s) => min += s.strmin);
-								
-								cache
-									.create({
-										name: hash,
-										contentType: 'application/javascript',
-										mtime: new Date(),
-										created: new Date(),
-										tag: "minify-combined-js",
-										MongoBinData: new Buffer(min)
-									})
-									.then(cached => {
-										ret.push({src: getCachedSrc(cached)});
+									cache
+										.create({
+											name: hash,
+											contentType: 'application/javascript',
+											mtime: new Date(),
+											created: new Date(),
+											tag: "minify-combined-js",
+											MongoBinData: new Buffer(min)
+										})
+										.then(cached => {
+											ret.push({src: getCachedSrc(cached)});
 
-										if (count === length)
-											cb(null, ret);
-									})
-									.catch(cb);
-							}
-						});
+											if (count === length)
+												cb(null, ret);
+										})
+										.catch(cb);
+								}
+							})
+							.catch(cb);
 					});
 				})
 				.catch(cb);
