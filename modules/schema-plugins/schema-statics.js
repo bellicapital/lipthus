@@ -14,10 +14,9 @@ module.exports = function(schema){
 
 		return this.findById(id, projection).then(obj => {
 			if(obj){
-				let ns = fieldName.split('.');
 				let str = 'obj = obj';
 
-				ns.forEach((v,i) => {
+				ns.forEach((v) => {
 					str += '[';
 
 					if(/^\d+$/.test(v))
@@ -175,6 +174,7 @@ module.exports = function(schema){
 			default:
 		}
 
+		//noinspection FallThroughInSwitchStatementJS
 		switch(o.origType){
 			case 'textarea':
 				ret.rows = o.rows;

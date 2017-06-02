@@ -20,12 +20,6 @@ global.l = function(){
 	console.log('called at %s, line %d', stack[1].getFileName(), stack[1].getLineNumber());
 };
 
-Object.values = function(obj){
-	return Object.keys(obj).map(function (key) {
-		return obj[key];
-	});
-};
-
 Object.each = function(o, fn){
 	if(!o)
 		return;

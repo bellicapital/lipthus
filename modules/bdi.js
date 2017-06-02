@@ -131,6 +131,7 @@ class BinDataImage extends BinDataFile {
 		return new Promise((ok, ko) => {
 			let gmi = gm(this.MongoBinData.buffer, this.contentType.replace('/', '.'))
 				.quality(70)
+				.strip()
 				.autoOrient();
 
 			if (opt.width) {
@@ -158,6 +159,7 @@ class BinDataImage extends BinDataFile {
 					gmi = gm(buffer, this.name)
 						.command('composite')
 						.gravity(opt.wm.gravity || 'Center')
+						.strip()
 						.in(opt.wm.image);
 
 					if (opt.wm.geometry)
@@ -180,7 +182,8 @@ class BinDataImage extends BinDataFile {
 	
 	postFromFile(opt){
 		return new Promise((ok, ko) => {
-			const gmi = gm(this.MongoBinData.buffer);
+			const gmi = gm(this.MongoBinData.buffer)
+				.strip();
 
 			gmi.identify((err, ft) => {
 				if (err) {

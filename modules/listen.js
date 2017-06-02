@@ -68,8 +68,9 @@ module.exports = (app, cb) => {
 
 		const wss = new WebSocketServer({server: server});
 
-		wss.on("connection", ws =>{
+		wss.on("connection", (ws, req) =>{
 			ws.created = new Date();
+			ws.upgradeReq = req;
 
 			ws.json = json => ws.send(JSON.stringify(json));
 
