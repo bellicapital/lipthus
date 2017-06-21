@@ -97,7 +97,7 @@
     "sermepa": "^1.0.5",
     "striptags": "^3.0.1",
     "ts-helpers": "^1.1.1",
-    "uglify-js": "^3.0.15",
+    "uglify-es": "^3.0.18",
     "underscore": "^1.8.3",
     "unidecode": "^0.1.8",
     "w3cjs": "^0.3.0",

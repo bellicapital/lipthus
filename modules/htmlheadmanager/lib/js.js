@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const crypto = require('crypto');
-const uglifyjs = require('uglify-js');
+const uglify = require('uglify-es');
 const path = require('path');
 
 class JsManager {
@@ -101,8 +101,8 @@ class JsManager {
 			const ret = {
 					head: [],
 					body: [],
-					headInline: this.headInline ? uglifyjs.minify(this.headInline).code : '',
-					bodyInline: this.deferredInline ? uglifyjs.minify(this.deferredInline).code : ''
+					headInline: this.headInline ? uglify.minify(this.headInline).code : '',
+					bodyInline: this.deferredInline ? uglify.minify(this.deferredInline).code : ''
 				},
 				scripts = [],
 				scriptsArray = Object.values(this.scripts),
@@ -212,7 +212,7 @@ class JsManager {
 				if (cached)
 					return cached;
 
-				const ugliResult = uglifyjs.minify(fs.readFileSync(script.path, {encoding: 'utf8'}));
+				const ugliResult = uglify.minify(fs.readFileSync(script.path, {encoding: 'utf8'}));
 
 				if(ugliResult.error)
 					throw ugliResult.error;

@@ -6,7 +6,9 @@ const path = require('path');
 
 class Mailer {
 	constructor(conf, site) {
-		if (conf && conf.sesTransport) {
+		conf = conf || {};
+
+		if (conf.sesTransport) {
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 			conf = sesTransport(conf.sesTransport);
 		}
