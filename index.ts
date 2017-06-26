@@ -5,8 +5,6 @@
 const express = require('express');
 const server = require('./lib/server');
 
-module.paths.push('/usr/local/lib/node_modules');
-
 if(!process.env.TMPDIR)
 	process.env.TMPDIR = '/tmp';
 
@@ -34,15 +32,13 @@ process.on('unhandledRejection', (reason, p) => {
 
 require ('./modules/functions');
 
-module.exports = exports = function createSite(dir, options){
+export function lipthusSite(dir:string, options?: any){
 	return server.check()
 		.then(() => {
 			return new Site(dir).init(options);
-		})
-		.catch(console.error.bind(console));
-};
+		});
+}
 
 exports.Site = Site;
 exports.dir = __dirname;
-exports.listen = listen;
-exports.express = express;
+export const dir = __dirname;
