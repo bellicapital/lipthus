@@ -23,7 +23,7 @@
     "url": "null"
   },
   "homepage": "https://github.com/eucalipthus/lipthus",
-  "main": "./lipthus.ts",
+  "main": "./lipthus",
   "dependencies": {
     "@angular/common": "^4.2.4",
     "@angular/compiler": "^4.2.4",
