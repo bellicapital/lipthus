@@ -54,7 +54,7 @@ module.exports = function(err, req, res, next) {
 		return next();
 	}
 
-	if(err.status && err.status >= 400 && err.status < 500)
+	if(err.status && err.status > 400 && err.status < 500)
 		return next();
 
 	if(!err.status)

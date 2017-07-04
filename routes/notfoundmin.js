@@ -1,5 +1,5 @@
 /* global module */
 
 module.exports = function(req, res){
-	return res.status(404).render(req.cmsDir + '/views/status/404', {host: req.headers.host});
+	res.status(404).render(req.cmsDir + '/views/status/404', {host: req.headers.host});
 };
