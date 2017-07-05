@@ -35,7 +35,7 @@
     "@angular/platform-browser-dynamic": "^4.2.4",
     "@angular/router": "^4.2.4",
     "accounting": "^0.4.1",
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.17.2",
     "cmjs-newsletter": "github:eucalipthus/cmjs-newsletter",
     "connect-favicons": "^0.1.5",
     "connect-flash": "^0.1.1",

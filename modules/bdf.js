@@ -46,6 +46,7 @@ class BinDataFile {
 		return ret;
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	toJSON() {
 		return this.info();
 	}
@@ -167,6 +168,7 @@ class BinDataFile {
 			.then(obj => /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj));
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	static fromBuffer(p, opt){
 		const obj = {
 			name: p.originalname,
@@ -181,18 +183,21 @@ class BinDataFile {
 		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj);
 	}
 
-	static fromData(img, width, height, colRef) {
+	//noinspection JSUnusedGlobalSymbols
+	static fromData(img, width, height, colRef, datetime) {
 		if (!/^data:(image\/\w+);base64,/.test(img))
 			return new Error('wrong data');
 
 		const contentType = /^data:(image\/\w+);base64,/.exec(img)[1];
 		const data = img.replace(/^data:image\/\w+;base64,/, "");
 
+		datetime = datetime || new Date();
+
 		const bdf = new BinDataImage({
 			name: "fromData_" + Date.now() + ".png",
 			contentType: contentType,
-			mtime: new Date(),
-			uploadDate: new Date(),
+			mtime: datetime,
+			uploadDate: datetime,
 			size: data.length,
 			md5: md5(data),
 			width: parseInt(width, 10),
@@ -205,6 +210,7 @@ class BinDataFile {
 		return bdf;
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	static isBdf(o) {
 		return !!o.MongoBinData;
 	}
