@@ -21,7 +21,7 @@ module.exports = function(req, res, next){
 		}
 	}
 	
-	const m = id.match(/(^[^\.]+)\.(.+)$/);
+	const m = id.match(/(^[^.]+)\.(.+)$/);
 	const dbname = m && m[1] || req.site.db.name;
 	
 	if(m)
@@ -38,8 +38,10 @@ module.exports = function(req, res, next){
 			if(!ext)
 				return res.redirect('/videos/' + (dbname !== req.site.db.name ? dbname + '.' : '') + id + '/' + file.filename);
 
+			let opt;
+
 			if(ext.indexOf('poster') === 0){
-				const opt = {
+				opt = {
 					width: file.width,
 					height: file.height,
 					crop: true
