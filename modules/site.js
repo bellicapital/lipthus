@@ -123,7 +123,7 @@ class Site extends events.EventEmitter {
 			.then(this.hooks.bind(this, 'pre', 'setupApp'))
 			.then(this.setupApp.bind(this))
 			.then(this.hooks.bind(this, 'post', 'setupApp'))
-			.then(() => Ng.init(this.app))
+			.then(() => Ng.serve(this.app))
 			.then(this.getPages.bind(this))
 			.then(this.loadPlugins.bind(this))
 			.then(() => new Subscriptor(this.app))

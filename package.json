@@ -104,7 +104,7 @@
     "unidecode": "^0.1.8",
     "w3cjs": "^0.4.0",
     "ws": "^3.0.0",
-    "zone.js": "^0.8.13"
+    "zone.js": "^0.8.14"
   },
   "devDependencies": {
     "@angular/cli": "^1.2.1",

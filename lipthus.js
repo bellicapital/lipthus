@@ -4,6 +4,7 @@
 
 const express = require('express');
 const server = require('./lib/server');
+const build = require('./modules/ng2').build;
 
 module.paths.push('/usr/local/lib/node_modules');
 
@@ -46,3 +47,4 @@ exports.Site = Site;
 exports.dir = __dirname;
 exports.listen = listen;
 exports.express = express;
+exports.build = build;
