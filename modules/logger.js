@@ -55,9 +55,7 @@ class Logger {
 		return this.log('notfound');
 	}
 
-	logUpdate(schema, id, field, value, cb) {
-		cb && console.trace('logger.logUpdate callback is deprecated. Use Promise');
-
+	logUpdate(schema, id, field, value) {
 		const obj = {
 			schema_: schema,
 			itemid: id,
@@ -68,15 +66,7 @@ class Logger {
 		if (this.req.User)
 			obj.uid = this.req.User._id;
 
-		return new Promise((ok, ko) => this.collection('updates').insertOne(obj, (err, r) => {
-			if(err){
-				ko(err);
-				cb && cb(err);
-			} else {
-				ok(r);
-				cb && cb(null, r);
-			}
-		}));
+		return this.collection('updates').insertOne(obj);
 	}
 
 	count(type, cb) {

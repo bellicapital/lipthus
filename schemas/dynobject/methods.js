@@ -1,10 +1,10 @@
 "use strict";
 
-const $ = require('../../modules/utils');
 const mongoose = require('mongoose');
 const DBRef = mongoose.mongo.DBRef;
 const debug =require('debug')('site:do');
 
+// noinspection JSUnusedGlobalSymbols
 module.exports = {
 	// para el video, es necesario haber ejecutado antes .loadFiles()
 	getThumb: function(width, height, crop, enlarge){
@@ -76,11 +76,6 @@ module.exports = {
 
 		//TODO
 		return Promise.resolve();
-	},
-	childrenCount: function(filters, query){
-
-		//TODO
-		return Promise.resolve(0);
 	},
 	getChildren: function(filters, query, fields, options, cb) {
 		if (typeof filters === 'function') {
@@ -287,7 +282,7 @@ module.exports = {
 
 				let count = 0;
 
-				return new Promise((ok, ko) => {
+				return new Promise(ok => {
 					Object.values(r).forEach(rc => {
 						let count2 = 0;
 
@@ -430,7 +425,7 @@ module.exports = {
 
 		return new Promise((ok, ko) => {
 			if (!path.multilang)
-				return ok([val]);
+				return ok(val);
 
 			if (!val || !o[val])
 				return ok(val);

@@ -277,7 +277,7 @@ class EucaForm
 		});
 	}
 
-	submit(req) {
+	submit() {
 		return new Promise((ok, ko) => {
 			this.db.tmp.findOne(this.query).then(tmp => {
 				if (!tmp)
@@ -327,7 +327,7 @@ class EucaForm
 								return doc.jsonInfoIncFiles().then(ok, ko);
 
 							//solucion temporal para los mlcheckboxes y mlselectors
-							model.updateNative({_id: doc._id}, {$set: update}, err => {
+							model.updateNative({_id: doc._id}, {$set: update}, () => {
 								//end solucion temporal para los mlcheckboxes y mlselectors
 								doc.set(update);
 
@@ -352,13 +352,13 @@ class EucaForm
 		});
 	}
 
-	logUpdate (name, value, cb) {
+	logUpdate (name, value) {
 		const logUpdates = this.schema.options.logUpdates;
 
 		if (!this.isTmp && logUpdates && (logUpdates === true || logUpdates.indexOf(name.replace(/\..+$/, '')) !== -1))
-			this.req.logger.logUpdate(this.schemaName, this.query._id, name, value, cb);
-		else if (cb)
-			cb();
+			return this.req.logger.logUpdate(this.schemaName, this.query._id, name, value);
+		else
+			return Promise.resolve();
 	}
 }
 

@@ -8,13 +8,13 @@ debug.log = console.log.bind(console);
  * @returns {undefined}
  */
 const methods = {
-	checkVersions: function(site){
+	checkVersions: site => {
 		return Promise.all([
 			methods.checkCmsVersion(site),
 			methods.checkAppVersion(site)
 		]);
 	},
-	checkCmsVersion: function(site){
+	checkCmsVersion: site => {
 		debug('cmjs:' + site.config.version);
 
 		if(site.cmsPackage.version === site.config.version)
@@ -27,7 +27,7 @@ const methods = {
 			site
 		);
 	},
-	checkAppVersion: function(site){
+	checkAppVersion: site => {
 		debug(site.config.siteversion);
 		
 		if(site.package.version === site.config.siteversion)
@@ -40,7 +40,7 @@ const methods = {
 			site
 		);
 	},
-	checkRequireScript: function(src, varname, value, site){
+	checkRequireScript: (src, varname, value, site) => {
 		console.info('upgrading ' + varname + ' to ' + value);
 
 		/**
