@@ -4,6 +4,7 @@ const Image = require('./image');
 const gm = require('gm').subClass({ imageMagick: true });//jj 23-9-15 con imageMagick es más estable
 const BinDataFile = require('./bdf');
 const path = require('path');
+const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
 const debug = require('debug')('site:bdi');
 
@@ -196,6 +197,8 @@ class BinDataImage extends BinDataFile {
 				this.width = ft.size.width;
 				this.height = ft.size.height;
 
+				opt = opt || {};
+
 				if (opt.noResize || this.contentType.match(/(gif|svg)/i))
 					return ok(this);
 
@@ -227,6 +230,47 @@ class BinDataImage extends BinDataFile {
 			});
 		});
 	}
+
+
+	// noinspection JSUnusedGlobalSymbols
+	/**
+	 *
+	 * @param params {{
+	 *      data: string (raw image data),
+	 *      name: string,
+	 *      [lastModified]: Date,
+	 *      [size]: number,
+	 *      [contentType]: string
+	 * }}
+	 * @param colRef
+	 * @returns {Promise.<BinDataImage>}
+	 */
+	static fromFrontEnd (params, colRef) {
+		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
+
+		if (!r)
+			return;
+
+		const ext = r[1].split('/')[1];
+		const buffer = new Buffer(r[3], r[2]);
+		const obj = {
+			contentType: r[1],
+			size: buffer.length,
+			md5: md5(buffer),
+			uploadDate: new Date(),
+			mtime: params.lastModified || new Date(),
+			name: params.name || 'str-' + date.getTime() + '.' + ext,
+			MongoBinData: new Binary(buffer)
+		};
+
+		if(params.size && params.size !== obj.size)
+			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
+
+		if(params.contentType && params.contentType !== obj.contentType)
+			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
+
+		return new BinDataImage(obj, colRef).postFromFile();
+	}
 }
 
 class DbfInfo{
@@ -240,6 +284,7 @@ class DbfImageInfo extends DbfInfo{
 		super(values);
 	}
 
+	// noinspection JSUnusedLocalSymbols
 	getThumb(width, height, crop, nwm, enlarge, ext = '.jpg') {
 		let ret = {
 			uri: this.path,

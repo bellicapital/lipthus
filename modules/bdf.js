@@ -26,15 +26,14 @@ class BinDataFile {
 	}
 
 	setColRef(colRef) {
-		Object.defineProperty(this, 'colRef', {
-			get: () => colRef
-		});
+		colRef && Object.defineProperty(this, 'colRef', {value: colRef});
 	}
 
 	info() {
 		const ret = new DbfInfo({
 			name: this.name,
 			contentType: this.contentType,
+			uploadDate: this.uploadDate,
 			path: this.getPath(),
 			weight: this.weight,
 			mtime: this.mtime,
@@ -106,7 +105,7 @@ class BinDataFile {
 			: new BinDataFile(mongo, colRef);
 	}
 
-	static fromString(string, colRef) {
+	static fromString(string, colRef, datetime) {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(string);
 
 		if (!r)
@@ -114,7 +113,7 @@ class BinDataFile {
 
 		const ext = r[1].split('/')[1];
 		const buffer = new Buffer(r[3], r[2]);
-		const date = new Date();
+		const date = datetime || new Date();
 		const obj = {
 			contentType: r[1],
 			size: buffer.length,
@@ -183,6 +182,7 @@ class BinDataFile {
 		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj);
 	}
 
+	// useless. To deprecate
 	//noinspection JSUnusedGlobalSymbols
 	static fromData(img, width, height, colRef, datetime) {
 		if (!/^data:(image\/\w+);base64,/.test(img))
@@ -205,7 +205,7 @@ class BinDataFile {
 			MongoBinData: new Binary(new Buffer(data, 'base64'))
 		});
 
-		colRef && Object.defineProperty(bdf, 'colRef', {value: colRef});
+		bdf.setColRef(colRef);
 
 		return bdf;
 	}
