@@ -5,88 +5,15 @@ const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
 
 
-/**
-* MlCheckboxes constructor
-*
-* @inherits SchemaType
-* @param {String} key
-* @param {Object} [options]
-*/
+class MlCheckbox {
 
-class MlCheckboxes extends SchemaType {
-	constructor(key, options) {
-		super(key, options, 'MlCheckboxes');
+	constructor(val, path, options, schema){
+		this.val = val;
+		this.path = path;
+		this.options = options;
 
-		this.$conditionalHandlers = {
-			'$lt': handleSingle
-			, '$lte': handleSingle
-			, '$gt': handleSingle
-			, '$gte': handleSingle
-			, '$ne': handleSingle
-			, '$in': handleArray
-			, '$nin': handleArray
-			, '$mod': handleArray
-			, '$all': handleArray
-			, '$exists' : handleExists
-		};
-	}
-
-	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
-	/**
-	 * Implement checkRequired method.
-	 *
-	 * @param {*} val
-	 * @return {Boolean}
-	 */
-
-	checkRequired(val) {
-		return null !== val;
-	}
-
-	/**
-	 * Implement casting.
-	 *
-	 * @param {*} val
-	 * @param {Object} [scope]
-	 * @return {mongo.Multilang|null}
-	 */
-
-	cast(val, scope) {
-		if (null === val || !Array.isArray(val)) return null;
-
-		if (val instanceof MlCheckboxes)
-			return val;
-
-		const ret = new MlCheckboxes(this.path, this.options);
-
-		ret.val = val;
-
-		if (scope.constructor.name === 'model')
-			Object.defineProperty(ret, 'model', {value: scope.schema});
-
-		return ret;
-	}
-
-	/**
-	 * Implement query casting, for mongoose 3.0
-	 *
-	 * @param {String} $conditional
-	 * @param {*} [value]
-	 */
-
-	castForQuery($conditional, value) {
-		if (2 === arguments.length) {
-			let handler = this.$conditionalHandlers[$conditional];
-			if (!handler)
-				throw new Error("Can't use " + $conditional + " with MlCheckboxes.");
-
-			return handler.call(this, value);
-		} else {
-			if ('string' === typeof $conditional)
-				return $conditional;
-			else if ($conditional instanceof MlCheckboxes)
-				return $conditional.val;
-		}
+		if(schema)
+			Object.defineProperty(this, 'model', {value: schema});
 	}
 
 	getVal(req, db, cb) {
@@ -105,7 +32,7 @@ class MlCheckboxes extends SchemaType {
 			.then(o => {
 				const ret = [];
 
-				if(this.val)
+				if (this.val)
 					this.val.forEach(val => ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
 
 				return ret;
@@ -158,8 +85,8 @@ class MlCheckboxes extends SchemaType {
 				db.dynobject.update(query, update)
 					.then(() => ok(o))
 					.catch(ko);
-				});
 			});
+		});
 	}
 
 	toString() {
@@ -179,20 +106,108 @@ class MlCheckboxes extends SchemaType {
 }
 
 
+/**
+ * MlCheckboxes constructor
+ *
+ * @inherits SchemaType
+ * @param {String} key
+ * @param {Object} [options]
+ */
+class MlCheckboxes extends SchemaType {
+	constructor(path, options) {
+		super(path, options, 'MlCheckboxesType');
+
+		Object.defineProperty(this, '$conditionalHandlers', {
+			value: {
+				'$lt': handleSingle
+				, '$lte': handleSingle
+				, '$gt': handleSingle
+				, '$gte': handleSingle
+				, '$ne': handleSingle
+				, '$in': handleArray
+				, '$nin': handleArray
+				, '$mod': handleArray
+				, '$all': handleArray
+				, '$exists': handleExists
+			}
+		});
+	}
+
+	// default(val) {
+	// 	return new MlCheckboxes(val);
+	// }
+
+	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
+	/**
+	 * Implement checkRequired method.
+	 *
+	 * @param {*} val
+	 * @return {Boolean}
+	 */
+
+	checkRequired(val) {
+		return !!(val && val.length);
+	}
+
+	/**
+	 * Implement casting.
+	 *
+	 * @param {*} val
+	 * @param {Object} [scope]
+	 * @return {mongo.Multilang|null}
+	 */
+
+	cast(val, scope) {
+		if (val instanceof MlCheckbox)
+			return val;
+
+		if (null === val || !Array.isArray(val)) return null;
+
+		return new MlCheckbox(val, this.path, this.options, scope && scope.constructor.name === 'model' && scope.schema);
+	}
+
+	/**
+	 * Implement query casting, for mongoose 3.0
+	 *
+	 * @param {String} $conditional
+	 * @param {*} [value]
+	 */
+
+	castForQuery($conditional, value) {
+		if (2 === arguments.length) {
+			let handler = this.$conditionalHandlers[$conditional];
+			if (!handler)
+				throw new Error("Can't use " + $conditional + " with MlCheckboxes.");
+
+			return handler.call(this, value);
+		} else {
+			if ('string' === typeof $conditional)
+				return $conditional;
+			else if ($conditional instanceof MlCheckboxes)
+				return $conditional.val;
+		}
+	}
+}
+
+
 /*!
  * ignore
  */
 
-const handleSingle = function(val){return this.cast(val);};
+const handleSingle = function (val) {
+	return this.cast(val);
+};
 const handleExists = () => true;
-const handleArray = function(val){return val.map(m => typeof m === 'string' ? m : this.cast(m));};
+const handleArray = function (val) {
+	return val.map(m => typeof m === 'string' ? m : this.cast(m));
+};
 
 
 /**
-* Expose
-*/
+ * Expose
+ */
 
 module.exports.install = function () {
-  Schema.Types.MlCheckboxes = MlCheckboxes;
-  return MlCheckboxes;
+	Schema.Types.MlCheckboxes = MlCheckboxes;
+	return MlCheckboxes;
 };

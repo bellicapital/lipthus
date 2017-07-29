@@ -14,18 +14,20 @@ class MlSelector extends SchemaType {
 	constructor(key, options) {
 		super(key, options, 'MlSelector');
 
-		this.$conditionalHandlers = {
-			  '$lt': handleSingle
-			, '$lte': handleSingle
-			, '$gt': handleSingle
-			, '$gte': handleSingle
-			, '$ne': handleSingle
-			, '$in': handleArray
-			, '$nin': handleArray
-			, '$mod': handleArray
-			, '$all': handleArray
-			, '$exists' : handleExists
-		};
+		Object.defineProperty(this, '$conditionalHandlers', {
+			value: {
+				'$lt': handleSingle
+				, '$lte': handleSingle
+				, '$gt': handleSingle
+				, '$gte': handleSingle
+				, '$ne': handleSingle
+				, '$in': handleArray
+				, '$nin': handleArray
+				, '$mod': handleArray
+				, '$all': handleArray
+				, '$exists': handleExists
+			}
+		});
 	}
 
 	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
@@ -104,16 +106,20 @@ class MlSelector extends SchemaType {
  * ignore
  */
 
-const handleSingle = function(val){return this.cast(val);};
+const handleSingle = function (val) {
+	return this.cast(val);
+};
 const handleExists = () => true;
-const handleArray = function(val){return val.map(m => typeof m === 'string' ? m : this.cast(m));};
+const handleArray = function (val) {
+	return val.map(m => typeof m === 'string' ? m : this.cast(m));
+};
 
 
-  /**
-   * Expose
-   */
+/**
+ * Expose
+ */
 
 module.exports.install = function () {
-  Schema.Types.MlSelector = MlSelector;
-  return MlSelector;
+	Schema.Types.MlSelector = MlSelector;
+	return MlSelector;
 };

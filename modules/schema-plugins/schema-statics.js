@@ -52,7 +52,7 @@ module.exports = function(schema){
 		const col = this.db.collection(this.schema.options.collection);
 		const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
 
-		['modified', 'modifier'].forEach(function(k){
+		['modified', 'modifier'].forEach(k => {
 			const mod = keys.indexOf(k);
 
 			if(mod > -1)
