@@ -47,7 +47,7 @@ module.exports = function page(Schema){
 
 			this.check(req)
 				.then(() => res.htmlPage.init(this.toObject()))
-				.then(p => {
+				.then(() => {
 					if (this.html)
 						return this._display(res).catch(next);
 
@@ -63,10 +63,10 @@ module.exports = function page(Schema){
 							});
 
 							if (result instanceof Promise)
-								result.then(this._display.bind(this, res), next)
+								return result.then(this._display.bind(this, res), next)
 						}
 						// file does not exists -> display default
-						, () => this._display(res).catch(next))
+						, () => this._display(res))
 				})
 				.catch(next);
 		},
@@ -86,21 +86,21 @@ module.exports = function page(Schema){
 		}
 	};
 
-	s.statics = {
-		getAll: function(cb){
-			this.find().sort({weight: 1}).exec(function(err, pages){
-				if(err) return cb(err);
-
-				const ret = {};
-
-				pages.forEach(function(p){
-					ret[p.key] = p.jsonInfo();
-				});
-
-				cb(err, ret);
-			});
-		}
-	};
+	// s.statics = {
+	// 	getAll: function(cb){
+	// 		this.find().sort({weight: 1}).exec(function(err, pages){
+	// 			if(err) return cb(err);
+	//
+	// 			const ret = {};
+	//
+	// 			pages.forEach(function(p){
+	// 				ret[p.key] = p.jsonInfo();
+	// 			});
+	//
+	// 			cb(err, ret);
+	// 		});
+	// 	}
+	// };
 
 	return s;
 };
