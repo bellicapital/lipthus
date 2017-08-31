@@ -12,6 +12,7 @@ module.exports = {
 		const dir = app.get('dir');
 		const customRoutes = dir + '/ng-routes';
 		const serve = ng2.serve;
+		const conf = app.site.package.config.ngRoutes || {};
 
 		return Login(app, serve)
 			.then(() => Setup(app, serve))
@@ -19,7 +20,7 @@ module.exports = {
 			.then(exists => exists && serve(app, dir, '/home'))
 			.then(() => fs.exists(customRoutes))
 			.then(exists => exists && fs.readdir(customRoutes)
-				.then(r => Promise.all(r.map(d => serve(app, customRoutes + '/' + d, '/' + d))))
+				.then(r => Promise.all(r.map(d => serve(app, customRoutes + '/' + d, '/' + d, conf[d] && conf[d].userlevel))))
 			);
 	},
 

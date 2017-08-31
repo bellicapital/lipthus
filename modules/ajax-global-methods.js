@@ -4,12 +4,18 @@ const methods =
 module.exports = {
 	main(){
 		const req = this.req;
+		const config = req.site.config;
 
 		return req.ml.langUserNames()
 			.then(ln => ({
 				sitename: req.site + '',
 				languages: ln,
-				user: req.user && req.user.baseInfo() || undefined
+				user: req.user && req.user.baseInfo() || undefined,
+				registerMethods: {
+					site: config.allow_register,
+					google: config.allow_register && config.googleApiKey && !!config.googleSecret,
+					facebook: config.allow_register && !!config.fb_app_id
+				}
 			}));
 	},
 

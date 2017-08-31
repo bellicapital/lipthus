@@ -14,7 +14,6 @@ module.exports = function user(Schema){
 		email_verified: Boolean,
         url: {type: String, formtype: 'url'},
 		picture: String, // auth0 picture
-		picture_large: String, // auth0 picture_large
         image: {type: String, formtype: 'image'},
         location: {type: {}, formtype: 'location'},
         actkey: String,
@@ -37,7 +36,8 @@ module.exports = function user(Schema){
 		jQueryUiTheme: String,
 		data: {},
 		cart: {type: ShoppingCart.schema, default: null},
-		auth0_data: {},
+		oauth_user_id: String,
+		oauth_data: {},
 		facebook: {}, // @deprecated
 		devices: [{
 			regId: String,
@@ -128,37 +128,33 @@ module.exports = function user(Schema){
 		htmlLink: function(){
 			return  '<a href="' + this.getLink() + '">' + this.uname + '</a>';
 		},
-		fromAuth0: function(p){
+		fromOAuth2: function(p){
 			const obj = {
-				uname: p.nickname,
-				name: p.name,
-				given_name: p.given_name,
-				family_name: p.family_name,
-				email: p.email,
-				email_verified: p.email_verified,
-				picture: p.picture,
-				auth0_user_id: p.user_id,
-				locale: p.locale,
+				name: p.displayName,
+				given_name: p.name.givenName,
+				family_name: p.name.familyName,
+				picture: p.image.url,
+				oauth_user_id: p.id,
+				language: p.language,
 				gender: p.gender,
-				url: p.link,
-				auth0_data: {}
+				url: p.url,
+				last_login: new Date(),
+				mailok: true,
+				oauth_data: {}
 			};
 
 			const data = Object.extend({}, p);
 
-			delete data.nickname;
+			delete data.displayName;
 			delete data.name;
-			delete data.given_name;
-			delete data.family_name;
 			delete data.email;
-			delete data.email_verified;
-			delete data.picture;
-			delete data.user_id;
-			delete data.locale;
+			delete data.image;
+			delete data.id;
+			delete data.language;
 			delete data.gender;
-			delete data.link;
+			delete data.url;
 
-			obj.auth0_data[p.user_id] = data;
+			obj.oauth_data = data;
 
 			return this.set(obj).save();
 		}
@@ -173,7 +169,7 @@ module.exports = function user(Schema){
 			return this
 				.find(query, fields, options)
 				.then(result =>
-					new Promise((ok, ko) => {
+					new Promise(ok => {
 						let values = [];
 						let count = 0;
 
@@ -190,6 +186,19 @@ module.exports = function user(Schema){
 					})
 				);
 		};
+
+	s.statics.fromOAuth2 = function(params){
+		return this.findOne({email: params.email})
+			.then(u => {
+				if(!u)
+					u = new this({
+						email: params.email,
+						level: 1
+					});
+
+				return u.fromOAuth2(params);
+			});
+	};
 
 	return s;
 };

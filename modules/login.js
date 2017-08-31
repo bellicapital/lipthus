@@ -2,13 +2,6 @@
 
 
 module.exports = exports = {
-	facebook(){
-		return Promise.resolve('guapo');
-	},
-
-	google(){
-		return Promise.resolve('guapo');
-	},
 
 	db(params){
 		const req = this.req;
@@ -53,7 +46,6 @@ module.exports = exports = {
 							const pFields = req.body.fields;
 							const data = req.body.data;
 							const sid = req.body.sid;
-							let i;
 
 							if (pFields)
 								Object.keys(pFields).forEach(i => fields[i] = user[pFields[i]]);

@@ -3,6 +3,7 @@
 const Passport = require('passport').Passport;
 const md5 = require('md5');
 const debug = require('debug')('site:auth');
+const mongoose = require('mongoose');
 
 const registerSiteStrategies = site => {
 	const app = site.app;
@@ -70,6 +71,7 @@ const registerSiteStrategies = site => {
 					const data = profile._json;
 
 					data.token = {value: accessToken};
+
 					done(null, data);
 				}
 			));
@@ -82,7 +84,7 @@ const registerSiteStrategies = site => {
 			if (!config.googleSecret)
 				return debug('Google auth failed. No secret key provided.');
 
-			const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+			const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
 			//   Strategies in Passport require a `verify` function, which accept
 			//   credentials (in this case, an accessToken, refreshToken, and Google
@@ -96,7 +98,11 @@ const registerSiteStrategies = site => {
 					const data = profile._json;
 
 					data.token = {value: accessToken};
-					done(null, data);
+					data.email = profile.email;
+
+					site.db.user.fromOAuth2(data)
+						.then(user => done(null, user))
+						.catch(done);
 				}
 			));
 
@@ -106,7 +112,10 @@ const registerSiteStrategies = site => {
 			//   redirecting the user to google.com.  After authorization, Google
 			//   will redirect the user back to this application at /auth/google/callback
 			app.get('/auth/google',
-				passport.authenticate('google', {scope: ['https://www.googleapis.com/auth/plus.login']}));
+				passport.authenticate('google', {scope: [
+					'https://www.googleapis.com/auth/plus.login',
+					'https://www.googleapis.com/auth/plus.profile.emails.read'
+				]}));
 
 			// GET /auth/google/callback
 			//   Use passport.authenticate() as route middleware to authenticate the
@@ -114,8 +123,10 @@ const registerSiteStrategies = site => {
 			//   login page.  Otherwise, the primary route function function will be called,
 			//   which, in this example, will redirect the user to the home page.
 			app.get('/oauth2cb',
-				passport.authenticate('google', {failureRedirect: '/login'}),
-				(req, res) => res.redirect('/')
+				passport.authenticate('google', {
+					failureRedirect: '/login',
+					successRedirect: '/'
+				})
 			);
 		}
 	};
@@ -127,9 +138,14 @@ const getUser = req => {
 	if(!req.user || req.user.constructor.name === 'model')
 		return Promise.resolve(req.user);
 
-	return req.site.db.user
-		.findById(req.user)
-		.then(user => req.user = user);
+	if(mongoose.Types.ObjectId.isValid(req.user))
+		return req.site.db.user
+			.findById(req.user)
+			.then(user => req.user = user);
+
+	console.warn('Unknown user id format:', req.user);
+
+	return Promise.resolve();
 };
 
 module.exports = site => {
