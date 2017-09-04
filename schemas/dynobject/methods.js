@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 const DBRef = mongoose.mongo.DBRef;
-const debug =require('debug')('site:do');
 
 // noinspection JSUnusedGlobalSymbols
 module.exports = {
@@ -252,28 +251,20 @@ module.exports = {
 		console.log(arguments);
 		cb(new Error('TODO changeParent'));
 	},
-	getNodeData: function(req, state, level, filter){
-		if(!state)
-			state = 'closed';
-
+	getNodeData: function(req, level, filter){
 		const lang = req.ml.lang;
 
 		let ret = {
-			data: {title: this.title && this.title[lang] || this.title, attr: {id: this.id}},
-			attr: {
-				rel: this.schema.get('collection').replace('dynobjects.', ''),
-				class: []
-			}
+			title: this.title && this.title[lang] || this.title,
+			id: this.id,
+			colname: this.schema.get('collection').replace('dynobjects.', '')
 		};
 
-		if(!level--){
-			return this.hasChildren().then(has => {
-				if(has)
-					ret.state = 'closed';//ha de estar cerrado para que jstree no pida todos recursivamente
-
+		if(!level--)
+			return this.hasChildren().then(() => {//temp dummy
+				ret.hasChildren = true;
 				return ret;
 			});
-		}
 
 		return this.getChildren(filter)
 			.then(r => {
@@ -290,13 +281,11 @@ module.exports = {
 							if (++count === Object.keys(r).length)
 								ok(ret);
 						} else {
-							if (!ret.children) {
+							if (!ret.children)
 								ret.children = [];
-								ret.state = state;
-							}
 
 							rc.forEach(obj => {
-								obj.getNodeData(req, state, level, filter).then(nd => {
+								obj.getNodeData(req, level, filter).then(nd => {
 									ret.children.push(nd);
 
 									if (++count2 === rc.length && ++count === Object.keys(r).length)

@@ -116,10 +116,10 @@ class HtmlPage{
 					if (user.level && this.userType && user.type === this.userType)
 						return this;
 
-					this.error = new Error('Forbidden');
+					this.error = new Error('Not allowed');
 					this.error.status = 403;
 				} else {
-					this.error = new Error('Not allowed');
+					this.error = new Error('Forbidden');
 					this.error.status = 401;
 				}
 

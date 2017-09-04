@@ -98,6 +98,9 @@ module.exports = function user(Schema){
 			if(this.facebook && this.facebook.username)
 				return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
 
+			if(this.picture)
+				return this.picture;
+
 			return this.image ? this.image + q : undefined;
 		},
 		subscribe2Item: function(ref){

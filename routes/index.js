@@ -12,13 +12,25 @@ const video = require('./video');
 const videos = require('./videos');
 const embed = require('./embed');
 const ajax = require('./ajax');
+const setup = require('./setup');
 const upload = require('./upload');
 const form = require('./form');
 const multipart = multer({ dest: os.tmpdir() }).any();
 
+const uLevelMiddleware = level => (req, res, next) => {
+	req.getUser()
+		.then(u => {
+			if(!u || u.level < level)
+				return next(403);
+
+			next();
+		});
+};
+
 module.exports = function(app){
 	const router = Router({strict: true});
 
+	router.post('/ngsetup/:method', uLevelMiddleware(2), setup);
 	router.get('/bdf/:col/:id/:field/:p/:name', bdf);
 	router.get('/bdf/:col/:id/:field/:name', bdf);
 	router.get('/bdf/:col/:id/:field', bdf);

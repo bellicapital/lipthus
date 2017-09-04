@@ -12,7 +12,6 @@ const bodyParser = require('body-parser');
 const multipart = require('./multipart');
 const cookieParser = require('cookie-parser');
 const favicons = require('connect-favicons');
-const assert = require('assert');
 const errorHandler = require('./errorhandler');
 const device = require('express-device');
 const Subscriptor = require('./subscriptor');
@@ -123,6 +122,7 @@ class Site extends events.EventEmitter {
 			.then(this.hooks.bind(this, 'pre', 'setupApp'))
 			.then(this.setupApp.bind(this))
 			.then(this.hooks.bind(this, 'post', 'setupApp'))
+			.then(() => Ng.build(this.dir))
 			.then(() => Ng.serve(this.app))
 			.then(this.getPages.bind(this))
 			.then(this.loadPlugins.bind(this))

@@ -1,6 +1,5 @@
 "use strict";
 
-const $ = require('../../modules/utils');
 const DoSchema = require('./do');
 const _ = require('underscore');
 
@@ -62,21 +61,17 @@ module.exports = function dynobject(Schema){
 			return ret;
 		},
 		getItemsArray: function(req){
-			const ret = {handlers: {}, menus: {}};
+			const ret = {};
 
 			return this.find()
-				.then(obj => obj.forEach(o => ret.handlers[o.colname] = o.getDynValues(req)))
+				.then(obj => ret.handlers = obj.map(o => o.getDynValues(req)))
 				.then(() => req.site.db.dynobjectsmenu.find())
 				.then(m => {
-					ret.menus = {};
-
-					m.forEach(menu => {
+					ret.menus = m.map(menu => {
 						const json = menu.jsonInfo();
-
-						ret.menus[json._id] = json;
-
-                        delete json._id;
                         delete json.__v;
+
+                        return json;
 					});
 
 					return ret;
@@ -97,9 +92,6 @@ module.exports = function dynobject(Schema){
 					});
 				});
 			});
-		},
-		createLMN: function(key, tpl){
-			return Promise.resolve('to do')
 		}
 	};
 	
@@ -115,11 +107,9 @@ module.exports = function dynobject(Schema){
 
 			return ret;
 		},
-		getNodeTree: function(req, format, filter, levels, state, incOrphans){
-			format = format || 'jstree';
+		getNodeTree: function(req, filter, levels, incOrphans){
 			filter = filter || [];
 			levels = levels || 1;
-			state = state || 'closed';
 			incOrphans = incOrphans === undefined ? true : incOrphans;
 
 			if(!filter)
@@ -151,10 +141,8 @@ module.exports = function dynobject(Schema){
 				}
 			};
 
-			let done = 0;
-
-			return new Promise((ok, ko) => {
-				models.forEach(colname => {
+			return Promise.all(
+				models.map(colname => {
 					let opt = {sort: {}};
 
 					if (!req.db.schemas[colname].tree.title.multilang)
@@ -162,28 +150,11 @@ module.exports = function dynobject(Schema){
 					else
 						opt.sort['title.' + req.ml.lang] = 1;
 
-					req.db[colname].find(query, '', opt, (err, r) => {
-						if (err) return ko(err);
-
-						switch (format) {
-							case 'jstree':
-								if (!r.length && ++done === models.length)
-									ok(ret);
-
-								let count = 0;
-
-								r.forEach(obj => {
-									obj.getNodeData(req, state, levels, filter).then(nData => {
-										ret.push(nData);
-										//								l(count, r.length , done , models.length)
-										if (++count === r.length && ++done === models.length)
-											ok(ret);
-									}).catch(ko);
-								});
-						}
-					});
-				});
-			});
+					return req.db[colname].find(query, '', opt)
+						.then(r => Promise.all(r.map(obj => obj.getNodeData(req, levels, filter).then(nData => ret.push(nData)))))
+						.then(() => ret);
+				})
+			);
 		}
 	};
 	

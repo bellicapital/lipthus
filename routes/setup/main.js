@@ -2,13 +2,28 @@
 
 const DeviceParser = require('express-device').Parser;
 
+// noinspection JSUnusedGlobalSymbols
 const Admin = {
-	start (req){
-		const ret = {};
+	main (req){
+		const config = req.site.config;
+		const ret = {
+			sitename: req.site + '',
+			language: config.language,
+			user: req.user && req.user.baseInfo() || undefined,
+			registerMethods: {
+				site: config.allow_register,
+				google: config.allow_register && config.googleApiKey && !!config.googleSecret,
+				facebook: config.allow_register && !!config.fb_app_id
+			}
+		};
 
-		return req.site.db.dynobject
-			.getItemsArray(req)
-			.then(items => ret.handlers = items)
+		return req.ml.langUserNames()
+			.then(ln => ret.languages = ln)
+			.then(() => req.site.db.dynobject.getItemsArray(req))
+			.then(items => {
+				ret.handlers = items.handlers;
+				ret.menus = items.menus;
+			})
 			.then(() => req.ml.timeZoneList())
 			.then(tzl => ret.timeZ = tzl)
 			.then(() => req.ml.load('ecms-config'))
@@ -18,8 +33,8 @@ const Admin = {
 			.then(misc => ret.misc = misc)
 			.then(() => Admin.getCustom(req))
 			.then(custom => ret.custom = custom)
-            .then(() => Admin.getThemes(req))
-            .then(themes => ret.themes = themes)
+			.then(() => Admin.getThemes(req))
+			.then(themes => ret.themes = themes)
 			.then(() => ret);
 	},
 	configGroupList(req){
@@ -52,7 +67,7 @@ const Admin = {
 
 		if(!conf || !conf.length)
 			return;
-		
+
 		const ret = [];
 		const lang = req.ml.lang;
 		const configLang = req.ml.configLang;
@@ -65,7 +80,7 @@ const Admin = {
 					url: r.url
 				});
 		});
-		
+
 		return ret;
 	},
 	getThemes(){
@@ -92,7 +107,7 @@ const Admin = {
 				configs: ret
 			}));
 	},
-	wss (req, res, cb){
+	wss (req){
 		const wss = req.app.wss;
 		const paths = {};
 
@@ -110,11 +125,21 @@ const Admin = {
 				device: parser.get_type()
 			});
 		});
-		
-		cb(null, paths);
+
+		return paths;
 	},
 	filterLang: (req, res, code, st, cb) => cb(new Error('TODO!')),
-	errors: (req, res, p, cb) => req.logger.list('error', {}, p, cb)
+	errors: (req, res, p, cb) => req.logger.list('error', {}, p, cb),
+	doList: req => {
+		return req.db[req.body.colname].find()
+			.sort({'title.es': 1, title: 1})
+			.select('title active')
+			.then(r => r);
+	},
+	getItem: req => {
+		return req.db[req.body.colname].findById(req.body.id)
+			.then(item => item);
+	}
 };
 
 module.exports = Admin;
