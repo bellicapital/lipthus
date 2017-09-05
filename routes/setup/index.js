@@ -1,8 +1,10 @@
 "use strict";
 
-const main_ = require('./main');
-const item_ = require('./item');
-const methods = Object.assign({}, main_, item_);
+const methods = Object.assign({},
+	require('./main'),
+	require('./item'),
+	require('./config')
+);
 
 module.exports = (req, res, next) => {
 	const method = methods[req.params.method];

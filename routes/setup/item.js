@@ -2,7 +2,7 @@
 
 const Bdi = require('../../modules/bdi');
 
-const methods = module.exports = {
+module.exports = {
 	updateItem(req) {
 		const ObjectId = req.db.mongoose.Types.ObjectId;
 		let {colname, id, key, value} = req.body;//l(colname, id, key, value)
@@ -15,43 +15,14 @@ const methods = module.exports = {
 
 		switch(model.schema.getTypename(field)){
 			case 'BdfList':
-				return methods.setImage(model, id, key, value);
+				return setImage(model, id, key, value);
 				break;
 			case 'MlCheckboxes':
 			case 'MlSelector':
 				native = true;
 		}
 
-		return methods._doUpdate(model, id, {$set: params}, native);
-	},
-
-	setImage(model, id, key, img){
-		return Bdi.fromFrontEnd(img, {
-			collection: "dynobjects.escorts",
-			id: id,
-			field: key
-		})
-			.then(bdi => {
-				const update = {};
-				update[key] = bdi;
-
-				return methods._doUpdate(model, id, {$set: update}, key);
-			});
-	},
-
-	_doUpdate(model, id, params, native){
-		// solución temporal. Evita un bug en lipthus para los MlCheckboxes y MlSelector con update
-		const func = native	? 'updateNative' : 'update';
-
-		return model[func]({_id: id}, params)
-			.then(r => {
-				r = r.result || r;
-
-				if (r.nModified !== 1)
-					return false;
-
-				return {ok: true};
-			});
+		return doUpdate(model, id, {$set: params}, native);
 	},
 
 	removeItemField(req){
@@ -59,6 +30,52 @@ const methods = module.exports = {
 		const unset = {};
 		unset[key] = 1;
 
-		return methods._doUpdate(req.db[colname], id, {$unset: unset});
+		return doUpdate(req.db[colname], id, {$unset: unset});
+	},
+
+	sortItemFiles(req){
+		const ObjectId = req.db.mongoose.Types.ObjectId;
+		let {colname, id, key, weights} = req.body;// l(colname, id, key, weights)
+		id = ObjectId(id);
+
+		const update = {};
+		let i = 0;
+
+		weights.forEach(w => update[key + '.' + w + '.weight'] = i++);
+
+		return doUpdate(req.db[colname], id, {$set: update}, true);
+	},
+	getItem: req => {
+		return req.db[req.body.colname].findById(req.body.id)
+			.then(item => item);
 	}
+};
+
+const setImage = (model, id, key, img) => {
+	return Bdi.fromFrontEnd(img, {
+		collection: "dynobjects.escorts",
+		id: id,
+		field: key
+	})
+		.then(bdi => {
+			const update = {};
+			update[key] = bdi;
+
+			return doUpdate(model, id, {$set: update}, key);
+		});
+};
+
+const doUpdate = (model, id, params, native) => {l(id, params, native)
+	// solución temporal. Evita un bug en lipthus para los MlCheckboxes y MlSelector con update
+	const func = native	? 'updateNative' : 'update';
+
+	return model[func]({_id: id}, params)
+		.then(r => {
+			r = r.result || r;
+
+			if (r.nModified !== 1)
+				return false;
+
+			return {ok: true};
+		});
 };

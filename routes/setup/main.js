@@ -86,27 +86,6 @@ const Admin = {
 	getThemes(){
 		return [];//fs.getDirListAsArray('themes')
 	},
-	getGroupConfigs4Edit (groupName){
-		const ret = {};
-		const req = this.req;
-
-		return req.ml
-			.load(['ecms-config', 'ecms-comment', 'ecms-user', 'ecms-misc', 'ecms-shopping'])
-			.then(() => req.site.config.getConfigsByCat(groupName))
-			.then(configs =>
-				Object.keys(configs).reduce((p, name) =>
-					p.then(() => configs[name].get4Edit(req)
-						.then(r => {
-							ret[name] = r;
-							delete r.name;
-						})
-					), Promise.resolve())
-			)
-			.then(() => ({
-				group_name: groupName,
-				configs: ret
-			}));
-	},
 	wss (req){
 		const wss = req.app.wss;
 		const paths = {};
@@ -129,14 +108,17 @@ const Admin = {
 		return paths;
 	},
 	doList: req => {
+		const model = req.db[req.body.colname];
+		let identifier = model.schema.options.identifier;
+		const multilang = !!model.schema.tree[identifier].multilang;
+
+		if(multilang)
+			identifier += '.' + req.ml.lang;
+
 		return req.db[req.body.colname].find()
-			.sort({'title.es': 1, title: 1})
-			.select('title active')
+			.sort(identifier)
+			.select(identifier + ' active')
 			.then(r => r);
-	},
-	getItem: req => {
-		return req.db[req.body.colname].findById(req.body.id)
-			.then(item => item);
 	}
 };
 
