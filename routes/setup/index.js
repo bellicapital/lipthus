@@ -1,9 +1,11 @@
 "use strict";
 
-const main = require('./main');
+const main_ = require('./main');
+const item_ = require('./item');
+const methods = Object.assign({}, main_, item_);
 
 module.exports = (req, res, next) => {
-	const method = main[req.params.method];
+	const method = methods[req.params.method];
 
 	if(!method)
 		return next(404);

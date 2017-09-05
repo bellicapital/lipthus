@@ -128,8 +128,6 @@ const Admin = {
 
 		return paths;
 	},
-	filterLang: (req, res, code, st, cb) => cb(new Error('TODO!')),
-	errors: (req, res, p, cb) => req.logger.list('error', {}, p, cb),
 	doList: req => {
 		return req.db[req.body.colname].find()
 			.sort({'title.es': 1, title: 1})

@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const multimedia = require('multimedia-helper');
 const debug = require('debug')('site:upload');
 
-module.exports = function(req, res, next){
+module.exports = function(req, res){
 	new ReqFile(req)
 		.process()
 		.then(r => res.send(r))
