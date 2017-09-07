@@ -22,10 +22,10 @@ class Security {
 let spamReferersLoaded = false;
 
 module.exports = {
-	main: function (req, res, next) {
+	main (req, res, next) {
 		let bi = req.app.get('blockedIps');
 
-		function throwMsg(msg, block) {
+		const throwMsg = (msg, block) => {
 			if (!bi) {
 				bi = [];
 				req.app.set('blockedIps', bi);
@@ -39,7 +39,7 @@ module.exports = {
 			err.type = 'security';
 
 			return next(err);
-		}
+		};
 
 		if (bi && bi.indexOf(req.ip) > -1)
 			return next(new Error('blocked ip ' + req.ip));
@@ -79,7 +79,7 @@ module.exports = {
 
 		next();
 	},
-	spamBlocker: function (req, res, next) {
+	spamBlocker: (req, res, next) => {
 		//Ejecutamos la lista actual sin entorpecer el flujo
 		SpamBlocker.send404(req, res, next);
 

@@ -35,11 +35,9 @@ process.on('unhandledRejection', (reason, p) => {
 
 require ('./modules/functions');
 
-module.exports = exports = function createSite(dir, options){
+module.exports = exports = (dir, options) => {
 	return server.check()
-		.then(() => {
-			return new Site(dir).init(options);
-		})
+		.then(() => new Site(dir).init(options))
 		.catch(console.error.bind(console));
 };
 

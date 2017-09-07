@@ -302,6 +302,7 @@ class Site extends events.EventEmitter {
 		app
 			.set('name', this.package.name)
 			.set('dir', this.dir)
+			.set('lipthusDir', this.cmsDir)
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
 			.set('csrf', csrf)

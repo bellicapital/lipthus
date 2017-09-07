@@ -1,24 +1,17 @@
-#!/usr/bin/env node
-
 "use strict";
 
-const express = require('express');
 const server = require('./lib/server');
+const env = process.env as any;
 
-if(!process.env.TMPDIR)
-	process.env.TMPDIR = '/tmp';
+env.TMPDIR = env.TMPDIR || '/tmp';
 
 const Site = require('./modules/site');
-const listen = require('./modules/listen');
 
-if(!process.env.NODE_ENV)
-	process.env.NODE_ENV = 'development';
+if(!env.NODE_ENV)
+	env.NODE_ENV = 'development';
 
-if(!process.env.TMPDIR)
-	process.env.TMPDIR = '/tmp/';
-
-if(process.env.TMPDIR.substr(-1) !== '/')
-	process.env.TMPDIR += '/';
+if(env.TMPDIR.substr(-1) !== '/')
+	env.TMPDIR += '/';
 
 process.on('warning', (warning) => {
 	console.warn(warning.name);
@@ -32,11 +25,10 @@ process.on('unhandledRejection', (reason, p) => {
 
 require ('./modules/functions');
 
+// noinspection JSUnusedGlobalSymbols
 export function lipthusSite(dir:string, options?: any){
 	return server.check()
-		.then(() => {
-			return new Site(dir).init(options);
-		});
+		.then(() => new Site(dir).init(options));
 }
 
 exports.Site = Site;
