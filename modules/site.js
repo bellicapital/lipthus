@@ -392,14 +392,6 @@ class Site extends events.EventEmitter {
 		app.use(require('./logger-req'));
 		app.use(require('../lib/canonicalhost'));
 		app.use(favicons(this.dir + '/public/img/icons'));
-		app.use(bodyParser.urlencoded({
-			limit: '1gb',
-			extended: true
-		}));
-		app.use(bodyParser.json({type: 'application/json', limit: '1gb'}));
-		// asigna req.multipart()
-		app.use(multipart);
-		app.use(cookieParser());
 
 		if (process.env.NODE_ENV === 'development') {
 			app.locals.development = true;
@@ -429,6 +421,15 @@ class Site extends events.EventEmitter {
 
 		app.use(device.capture());
 		device.enableDeviceHelpers(app);
+
+		app.use(bodyParser.urlencoded({
+			limit: '1gb',
+			extended: true
+		}));
+		app.use(bodyParser.json({type: 'application/json', limit: '1gb'}));
+		// asigna req.multipart()
+		app.use(multipart);
+		app.use(cookieParser());
 
 		app.use(security.main);
 	}

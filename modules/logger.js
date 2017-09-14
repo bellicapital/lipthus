@@ -87,7 +87,7 @@ class Logger {
 			method: req.method,
 			agent: req.get('user-agent'),
 			referer: req.get('referer'),
-			device: req.device.type,
+			device: req.device ? req.device.type : 'unknown',
 			ipLocation: req.ipLocation,
 			created: new Date()
 		};
