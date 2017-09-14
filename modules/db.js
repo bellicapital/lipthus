@@ -94,7 +94,7 @@ class Db extends events.EventEmitter {
 		return this.site.dbs[dbname];
 	}
 
-	get dynobject (){
+	get dynobject() {
 		return this.model('dynobject');
 	}
 
@@ -107,20 +107,20 @@ class Db extends events.EventEmitter {
 			return;
 		}
 
-		const model = this._conn.model(name, this.schemas[name]);
+		this.models[name] = this._conn.model(name, this.schemas[name]);
 
-	//force models with schema references
+		//force models with schema references
 		this.schemas[name].eachPath((k, path) => {
 			if (!path.options.ref || path.options.ref === name)
 				return;
 
-			if(this.schemas[path.options.ref])
+			if (this.schemas[path.options.ref])
 				this.model(path.options.ref);
 			else // if the referenced schema is not defined yet, lets queue it
 				this.once('schemaDefined', n => n === path.options.ref && this.model(path.options.ref))
 		});
 
-		model
+		this.models[name]
 			.on('error', console.error.bind(console))
 			.on('itemCreated', (item, a) => {
 				this.emit('itemCreated', item, a);
@@ -129,7 +129,7 @@ class Db extends events.EventEmitter {
 				this.emit('itemUpdated', item, changed, a);
 			});
 
-		return this.models[name] = model;
+		return this.models[name];
 	}
 
 	schema(name, schema) {
@@ -171,7 +171,8 @@ class Db extends events.EventEmitter {
 				});
 
 				return Promise.all(promises);
-			}, () => {})	// catch schemas dir does not exists'))
+			}, () => {
+			})	// catch schemas dir does not exists'))
 			.then(() => {
 				return fs.readdir(dir + '/plugins')
 					.then(plugins => {
@@ -183,13 +184,14 @@ class Db extends events.EventEmitter {
 									this.schemas[name].plugin(require(dir + '/plugins/' + name), this);
 							});
 						}
-					}, () => {});// catch plugin directory doesn't exists
+					}, () => {
+					});// catch plugin directory doesn't exists
 			});
 	}
 
 	collection(name, options, cb) {
 		let n;
-		
+
 		try {
 			n = this.schemas[name].options.collection;
 		} catch (e) {
@@ -197,36 +199,6 @@ class Db extends events.EventEmitter {
 		}
 
 		return this._conn.db.collection(n, options, cb);
-	}
-
-	/**
-	 *
-	 * @deprecated
-	 * @param {DBRef} ref
-	 * @param {object|function} fields ({title: 1, active: -1})
-	 * @param {function} cb
-	 * @returns {undefined}
-	 */
-	dereference(ref, fields, cb) {
-		console.warn('db.dereference() is deprecated. Use db.deReference() instead');
-
-		if (typeof fields === 'function') {
-			cb = fields;
-			fields = null;
-		}
-
-		const modelname = ref.namespace.replace('dynobjects.', '');
-
-		const dbname = ref.db || this.name;
-		const db = this.site.dbs[dbname];
-
-		if (!db)
-			return cb(new Error('db ' + dbname + ' not found or not defined in this site'));
-
-		if (!db[modelname])
-			return cb(new Error('model ' + modelname + ' not found in db ' + this));
-
-		db[modelname].findById(ref.oid, fields, null, cb);
 	}
 
 	/**
@@ -250,8 +222,5 @@ class Db extends events.EventEmitter {
 		return db[modelname].findById(ref.oid, fields);
 	}
 }
-
-//old compat
-Db.prototype.getCollection = Db.prototype.collection;
 
 module.exports = Db;
