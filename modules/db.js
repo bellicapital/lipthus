@@ -111,13 +111,15 @@ class Db extends events.EventEmitter {
 
 		//force models with schema references
 		this.schemas[name].eachPath((k, path) => {
-			if (!path.options.ref || path.options.ref === name)
+			const ref = path.constructor.name === 'SchemaArray' ? path.caster.options.ref : path.options.ref;
+
+			if (!ref || ref === name)
 				return;
 
-			if (this.schemas[path.options.ref])
-				this.model(path.options.ref);
+			if (this.schemas[ref])
+				this.model(ref);
 			else // if the referenced schema is not defined yet, lets queue it
-				this.once('schemaDefined', n => n === path.options.ref && this.model(path.options.ref))
+				this.once('schemaDefined', n => n === ref && this.model(ref))
 		});
 
 		this.models[name]
