@@ -1,13 +1,15 @@
 "use strict";
 
 const debug = require('debug')('site:lipthus');
+
+debug('Loading modules. Please wait...');
+
 const express = require('express');
 const server = require('./lib/server');
 const build = require('./modules/ng2').build;
 
 // module.paths.push('/usr/local/lib/node_modules');
 
-debug('Initializing');
 
 if(!process.env.TMPDIR)
 	process.env.TMPDIR = '/tmp';

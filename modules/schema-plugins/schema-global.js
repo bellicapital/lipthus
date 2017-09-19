@@ -5,7 +5,7 @@ const Types = mongoose.Schema.Types;
 const BinDataFile = require('../bdf');
 const DBRef = require('../../lib/dbref');
 const Location = require('../geo').location;
-const debug = require('debug')('site:schema-global');
+// const debug = require('debug')('site:schema-global');
 
 class DocValues{
 	constructor(values) {
@@ -28,7 +28,7 @@ module.exports = function(schema){
 		const fileFields = this.schema.fileFields();
 		let files = [];
 
-		const promises = fileFields.map((field, i) => {
+		const promises = fileFields.map(field => {
 			if (!this[field])
 				return;
 
@@ -104,6 +104,7 @@ module.exports = function(schema){
 		const site = this.db.eucaDb.site;
 		let info = null;
 
+		// noinspection FallThroughInSwitchStatementJS
 		switch (schema.getTypename(k)) {
 			case 'Multilang':
 				if (!val)
@@ -227,16 +228,8 @@ module.exports = function(schema){
 		return ret;
 	};
 
-	schema.methods.jsonInfoIncFiles = function(cb){
-		return this.loadFiles().then(() => {
-			const ret = this.jsonInfo();
-
-			// old compat
-			if(cb)
-				cb(null, ret);
-
-			return ret;
-		});
+	schema.methods.jsonInfoIncFiles = function(){
+		return this.loadFiles().then(() => this.jsonInfo());
 	};
 
 	schema.methods.processedFilesInfo = function(cb){
@@ -322,7 +315,7 @@ module.exports = function(schema){
 		const ret = {};
 		const toGet = {};
 
-		this.schema.eachPath((k, v) => {
+		this.schema.eachPath((k) => {
 			ret[k] = schema.tree[k].caption;
 
 			if(!ret[k])
@@ -463,7 +456,7 @@ module.exports = function(schema){
 
 	if(!schema.options.toObject) schema.options.toObject = {};
 
-	schema.options.toObject.transform = (doc, ret, options) => {
+	schema.options.toObject.transform = (doc, ret) => {
 		schema.eachPath((k, path) => {
 			if(!doc.isSelected(k))
 				return;
