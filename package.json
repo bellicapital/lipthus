@@ -1,6 +1,6 @@
 {
   "name": "lipthus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
     "start": "node app",
@@ -41,7 +41,7 @@
     "@types/node": "^8.0.27",
     "accounting": "^0.4.1",
     "body-parser": "^1.17.2",
-    "cmjs-newsletter": "github:eucalipthus/cmjs-newsletter",
+    "cmjs-newsletter": "git+ssh://git@github.com/eucalipthus/cmjs-newsletter.git",
     "codelyzer": "^3.1.2",
     "connect-favicons": "^0.1.5",
     "connect-flash": "^0.1.1",

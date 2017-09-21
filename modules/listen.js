@@ -64,7 +64,7 @@ module.exports = (app, cb) => {
 			(secure ? 'https:' : 'http:') + app.site.langUrl()
 		);
 
-		useSocket && fs.chmodSync(dest, '777');
+		useSocket && fs.existsSync(dest) && fs.chmodSync(dest, '777');
 
 		const wss = new WebSocketServer({server: server});
 
