@@ -192,8 +192,8 @@ class EucaForm
 				if (this.schema.options.lastMod)
 					update.modified = new Date;
 
-				if (this.schema.options.modifier && this.req.User)
-					update.modifier = this.req.User._id;
+				if (this.schema.options.modifier && this.req.user)
+					update.modifier = this.req.user._id;
 			}
 
 			update = {$set: update};
@@ -295,8 +295,8 @@ class EucaForm
 
 				const doc = new model().setCasted(tmp.value);
 
-				if (this.schema.options.modifier && this.req.User)
-					doc.submitter = this.req.User._id;
+				if (this.schema.options.modifier && this.req.user)
+					doc.submitter = this.req.user._id;
 
 				//solucion temporal para los mlcheckboxes y mlselectors
 				let Types = mongoose.Schema.Types;

@@ -148,9 +148,9 @@ class ReqFile {
 
 	processNonImage(){
 		const fileOptions = {
-			submitter: this.req.User ? {
-				uid: this.req.User._id,
-				uname: this.req.User.uname
+			submitter: this.req.user ? {
+				uid: this.req.user._id,
+				uname: this.req.user.uname
 			} : null,
 			items: [{
 				$ref: this.collection,

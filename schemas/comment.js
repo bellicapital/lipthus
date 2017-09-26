@@ -1,9 +1,7 @@
 "use strict";
 
-const noti = require('../modules/notifier');
 const mongoose = require('mongoose');
 const DBRef = mongoose.mongo.DBRef;
-const merge = require('merge-descriptors');
 const ipLocation = require('../modules/geo').ipLocation;
 const md5 = require('md5');
 
@@ -83,10 +81,10 @@ module.exports = function comment(Schema){
 		approve: function(req, val, cb){
 			if(!req.user)
 				return cb(new Error('no user'));
-			if(!req.User.isAdmin())
+			if(!req.user.isAdmin())
 				return cb(new Error('you are nat an admin user'));
 
-			this.set({active: val, modifier: req.User._id}).save(cb);
+			this.set({active: val, modifier: req.user._id}).save(cb);
 		},
 		values4Edit: function(){
 			const ret = this.jsonInfo();
@@ -137,7 +135,7 @@ module.exports = function comment(Schema){
 					if (!config.com_rule || (!config.com_anonpost && !req.user))
 						return {error: LC._CM_APPROVE_ERROR};
 
-					let active = config.com_rule === 1 || (req.user && (req.User.isAdmin() || config.com_rule < 3));
+					let active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
 
 					const db = dbname ? req.site.dbs[dbname] : req.db;
 
@@ -155,7 +153,7 @@ module.exports = function comment(Schema){
 						})
 						.then(comment => {
 							if (req.user)
-								req.User.subscribe2Item(comment.get('ref'));
+								req.user.subscribe2Item(comment.get('ref'));
 
 							db.comment.emit('submit', comment, req);
 
@@ -172,7 +170,7 @@ module.exports = function comment(Schema){
 					emit(this.ref.$id, 1);
 				},
 				reduce: function(k, v){
-					var sum = 0;
+					let sum = 0;
 
 					Object.keys(v).forEach(function (key) {
 						sum += v[key];

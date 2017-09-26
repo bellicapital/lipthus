@@ -63,8 +63,8 @@ class Logger {
 			value: value
 		};
 
-		if (this.req.User)
-			obj.uid = this.req.User._id;
+		if (this.req.user)
+			obj.uid = this.req.user._id;
 
 		return this.collection('updates').insertOne(obj);
 	}

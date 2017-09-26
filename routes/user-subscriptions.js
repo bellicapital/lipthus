@@ -23,8 +23,8 @@ module.exports = (req, res, next) => {
 			view: 'user-subscriptions'
 		})
 		.then(() => {
-			if(req.params.uid === req.User.id || req.params.uid == req.User.uname)
-				return req.User;
+			if(req.params.uid === req.user.id || req.params.uid === req.user.uname)
+				return req.user;
 
 			const query = ObjectId.isValid(req.params.uid) ? {_id: ObjectId(req.params.uid)} : {uname: req.params.uid};
 

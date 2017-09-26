@@ -13,7 +13,7 @@ module.exports = function (req, res, next){
 
 			comment.answers.push({
 				active: true,
-				name: req.user ? req.User.getName() : null,
+				name: req.user ? req.user.getName() : null,
 				created: new Date(),
 				submitter: req.user,
 				text: req.body.answer,

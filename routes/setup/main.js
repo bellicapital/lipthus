@@ -71,7 +71,7 @@ const Admin = {
 		const ret = [];
 		const lang = req.ml.lang;
 		const configLang = req.ml.configLang;
-		const uLevel = req.user && req.User.level || 0;
+		const uLevel = req.user && req.user.level || 0;
 
 		req.site.conf.adminMenus.forEach(r => {
 			if(r.userLevel <= uLevel)
