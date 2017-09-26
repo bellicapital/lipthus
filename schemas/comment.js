@@ -218,50 +218,47 @@ module.exports = function comment(Schema){
 				});
 			});
 		},
-		colCountIncPending: function(cb){
-			this.distinct('ref.$ref', (err, d) => {
-				if(err)
-					return cb(err);
+		colCountIncPending: function(){
+			const ret = {};
+			const query = {'ref.$ref': null};
 
-				let count = 0;
-				const ret = {};
-
-				d.forEach(r => {
+			return this.distinct('ref.$ref')
+				.then(d => Promise.all(d.map(r => {
 					if(!r)
 						return;
-					
-					/* global query */
-					let query = {'ref.$ref': r};
+
+					query['ref.$ref'] = r;
+
 					const itemSchema = r.replace('dynobjects.', '');
 
-					this.count(query, (err, c) => {
-						query.active = {$ne: true};
-						query.refused = {$ne: true};
+					return this.count(query)
+						.then(c => {
+							query.active = {$ne: true};
+							query.refused = {$ne: true};
 
-						this.count(query, (err, c2) => {
-							ret[itemSchema] = {total: c, pending: c2};
-
-							if(++count === d.length){
-								query = {'ref.$ref': null};//también muestra los vacios. jj 7/7/15
-
-								this.count(query, (err, c) => {
-									if(!c)
-										return cb(err, ret);
-									
-									query.active = false;
-									query.refused = {$ne: true};
-
-									this.count(query, (err, c2) => {
-										ret._ = {total: c, pending: c2};
-
-										cb(err, ret);
-									});
-								});
-							}
+							return this.count(query)
+								.then(c2 => ret[itemSchema] = {total: c, pending: c2});
 						});
-					});
-				});
-			});
+					}))
+				)
+				.then(() => {
+					query['ref.$ref'] = null;//también muestra los vacios. jj 7/7/15
+
+					return this.count(query)
+						.then(c => {
+							if(!c)
+								return;
+
+							query.active = false;
+							query.refused = {$ne: true};
+
+							return this.count(query)
+								.then(c2 => {
+									ret._ = {total: c, pending: c2};
+								});
+						});
+				})
+				.then(() => ret);
 		},
 		// mapReduce falla jj 4/2015
 //		colcount: function(cb){

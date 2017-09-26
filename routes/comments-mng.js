@@ -2,10 +2,10 @@
 
 const Paginator = require('../modules/paginator');
 
-module.exports = function comments(req, res, next){
+module.exports = (req, res) => {
 	let comments = {};
 
-	res.htmlPage
+	return res.htmlPage
 		.init({
 			jQueryMobile: true,
 			layout: 'moderator',
@@ -15,40 +15,27 @@ module.exports = function comments(req, res, next){
 		})
 		.then(htmlPage => {
 			if (!req.params.col) {
-				let k;
-				let j;
 				const counts = {};
-				let count = 0;
 
 				if (req.query.reflink)
 					req.session.commentsreflink = req.query.reflink;
 
 				res.locals.reflink = req.session.commentsreflink || "/";
 
-				Object.each(req.site.dbs, (k, db) => {
-					(function (k, db) {
-						db.model('comment').colCountIncPending((err, r) => {
+				return Promise.all(Object.keys(req.site.dbs).map(k =>
+					req.site.dbs[k].model('comment').colCountIncPending()
+						.then(r => {
 							if (r) {
 								Object.each(r, (j, rr) => {
 									rr.name = j;
 									counts[k + '.' + j] = rr;
 								});
 							}
-
-							if (++count === Object.keys(req.site.dbs).length) {
-								if (err)
-									return next(err);
-
-								htmlPage
-									.addCSS('comments-counts')
-									.send('comments-counts', {counts: counts})
-									.catch(next);
-							}
-						});
-					})(k, db);
-				});
-
-				return;
+						})
+				))
+					.then(() => htmlPage
+						.addCSS('comments-counts')
+						.send('comments-counts', {counts: counts}));
 			}
 
 			let page = parseInt(req.query.page) || 1;
@@ -102,6 +89,5 @@ module.exports = function comments(req, res, next){
 					.addJS('comments-mng.js')
 					.send('comments-mng', vars);
 			});
-		})
-		.catch(next);
+		});
 };

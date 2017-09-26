@@ -216,6 +216,7 @@ $.prompt = function(options, complete){
 		cancelName: $.lang('_CANCEL'),
 		submitName: 'OK',
 		message: '',
+		description: '',
 		value: '',
 		title: euca.sitename,
 		fieldType: 'input',
@@ -231,7 +232,7 @@ $.prompt = function(options, complete){
 	if($.mobile){
 		$dg = $('<div id="promptDialog" data-history="false" data-overlay-theme="b" data-transition="none" class="ui-popup ui-body-a ui-overlay-shadow ui-corner-all ui-body-b" style="min-width:400px;text-align:center">' +
 			'<div class="ui-header ui-bar-b">\
-				<h3 class="ui-title">' + (o.message) +'</h3>\
+				<h3 class="ui-title">' + o.message +'</h3>\
 			</div><form><p>' + o.description + '</p>'
 			+ field + '<div class="ui-input-btn ui-btn ui-corner-all ui-shadow">' + $.lang('_SUBMIT') + '<input type="submit"></div></form>\
 		</div>');
