@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require('debug')('site:version');
+const debug = require('debug')('site:updater');
 debug.log = console.log.bind(console);
 
 /**
@@ -15,7 +15,7 @@ const methods = {
 		]);
 	},
 	checkCmsVersion: site => {
-		debug('cmjs:' + site.config.version);
+		debug('lipthus:' + site.config.version);
 
 		if(site.cmsPackage.version === site.config.version)
 			return Promise.resolve();

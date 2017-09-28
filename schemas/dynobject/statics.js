@@ -19,18 +19,19 @@ module.exports = {
 		return this
 			.find(query, fields, options)
 			.values(req)
-			.then(r => {
-				if(!r)
-					return;
-
-				const ids = [];
-
-				r.forEach(item => ids.push(item._id));
-
-				return Comment.countById({'ref.$id': {$in: ids}, active: true})
-					.then(comments => r.forEach(item => item.comments = comments[item._id] || 0))
-					.then(() => r);
-			});
+        // esto dió problemas en el servidor 26/9/17
+			// .then(r => {
+			// 	if(!r)
+			// 		return;
+            //
+			// 	const ids = [];
+            //
+			// 	r.forEach(item => ids.push(item._id));
+            //
+			// 	return Comment.countById({'ref.$id': {$in: ids}, active: true})
+			// 		.then(comments => r.forEach(item => item.comments = comments[item._id] || 0))
+			// 		.then(() => r);
+			// });
 	},
 	//cb retorna err, values, docs
 	// @deprecated. Use find().values(req)
