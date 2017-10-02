@@ -65,7 +65,7 @@ const setImage = (model, id, key, img) => {
 		});
 };
 
-const doUpdate = (model, id, params, native) => {l(id, params, native)
+const doUpdate = (model, id, params, native) => {
 	// solución temporal. Evita un bug en lipthus para los MlCheckboxes y MlSelector con update
 	const func = native	? 'updateNative' : 'update';
 

@@ -29,9 +29,7 @@ class BinDataFileList
 		const ret = [];
 		const keys = Object.keys(this);
 
-		keys.forEach(key => ret.push(this[key].info(width, height, crop, enlarge)));
-
-		return ret;
+		return keys.map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
 	}
 
 	toObject()

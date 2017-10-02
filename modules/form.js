@@ -76,7 +76,7 @@ class EucaForm
 					return r || {};
 
 				if (!this.isTmp)
-					return rjsonInfoIncFiles();
+					return r.jsonInfoIncFiles();
 
 				let v = r.value;
 
