@@ -35,7 +35,7 @@ module.exports = {
 
 	sortItemFiles(req){
 		const ObjectId = req.db.mongoose.Types.ObjectId;
-		let {colname, id, key, weights} = req.body;// l(colname, id, key, weights)
+		let {colname, id, key, weights} = req.body;
 		id = ObjectId(id);
 
 		const update = {};

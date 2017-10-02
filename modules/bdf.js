@@ -37,7 +37,8 @@ class BinDataFile {
 			path: this.getPath(),
 			weight: this.weight,
 			mtime: this.mtime,
-			size: this.size
+			size: this.size,
+			key: this.getKey()
 		});
 
 		ret.uri = ret.path + this.uriName();
