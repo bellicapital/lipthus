@@ -12,12 +12,12 @@ module.exports = site => {
 			maxAge: 60000*60*24*5//cinco dias
 		},
 		store: site.store,
-		name:"express.sid",
+		name: site.key + ".sid",
 		resave: false,
 		saveUninitialized: false,
 		unset: 'destroy'
 	};
-   
+ 
 	const sessionMW = session(params);
 
 	return (req, res, next) => {

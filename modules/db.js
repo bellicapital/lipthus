@@ -124,12 +124,9 @@ class Db extends events.EventEmitter {
 
 		this.models[name]
 			.on('error', console.error.bind(console))
-			.on('itemCreated', (item, a) => {
-				this.emit('itemCreated', item, a);
-			})
-			.on('itemUpdated', (item, changed, a) => {
-				this.emit('itemUpdated', item, changed, a);
-			});
+			.on('index', err => err && console.error(this.name + '.' + name, err.message))
+			.on('itemCreated', (item, a) => this.emit('itemCreated', item, a))
+			.on('itemUpdated', (item, changed, a) => this.emit('itemUpdated', item, changed, a));
 
 		return this.models[name];
 	}
@@ -173,8 +170,7 @@ class Db extends events.EventEmitter {
 				});
 
 				return Promise.all(promises);
-			}, () => {
-			})	// catch schemas dir does not exists'))
+			}, err => debug(err))	// catch schemas dir does not exists'))
 			.then(() => {
 				return fs.readdir(dir + '/plugins')
 					.then(plugins => {
