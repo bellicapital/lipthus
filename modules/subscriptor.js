@@ -267,7 +267,9 @@ class Subscriptor {
 								user.subscriptions = Object.extend(user.subscriptions, subscriptions);
 
 							user.subscriptionUrl = pending.url;
-
+							
+							user.markModified('subscriptions');
+							
 							return user.save();
 						}
 
