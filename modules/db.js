@@ -167,7 +167,7 @@ class Db extends events.EventEmitter {
 						if (typeof s === 'function') {
 							const name = s.name || path.basename(file, '.js');
 
-							this.schema(name, s(Schema, this.site));
+							return this.schema(name, s(Schema, this.site));
 						}
 					}));
 				});
