@@ -47,6 +47,7 @@ module.exports = function comment(Schema){
 		created: true
 	});
 
+	// noinspection JSUnusedGlobalSymbols
 	s.methods ={
 		values4show: function(){
 			const d = this.created || this._id.getTimestamp();
@@ -105,6 +106,7 @@ module.exports = function comment(Schema){
 		}
 	};
 
+	// noinspection JSUnusedGlobalSymbols
 	s.statics = {
 		find4show: function(query, limit){
 			if(typeof query === 'string')
@@ -224,12 +226,9 @@ module.exports = function comment(Schema){
 
 			return this.distinct('ref.$ref')
 				.then(d => Promise.all(d.map(r => {
-					if(!r)
-						return;
+					query['ref.$ref'] = r || null; //también muestra los vacios. jj 7/7/15
 
-					query['ref.$ref'] = r;
-
-					const itemSchema = r.replace('dynobjects.', '');
+					const itemSchema = r ? r.replace('dynobjects.', '') : '_';
 
 					return this.count(query)
 						.then(c => {
@@ -241,23 +240,6 @@ module.exports = function comment(Schema){
 						});
 					}))
 				)
-				.then(() => {
-					query['ref.$ref'] = null;//también muestra los vacios. jj 7/7/15
-
-					return this.count(query)
-						.then(c => {
-							if(!c)
-								return;
-
-							query.active = false;
-							query.refused = {$ne: true};
-
-							return this.count(query)
-								.then(c2 => {
-									ret._ = {total: c, pending: c2};
-								});
-						});
-				})
 				.then(() => ret);
 		},
 		// mapReduce falla jj 4/2015
