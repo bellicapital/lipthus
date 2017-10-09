@@ -2,7 +2,7 @@
 
 module.exports = function subscription(Schema){
 	const s = new Schema({
-		email: {type: String, index: 1},
+		email: {type: String, unique: true},
 		lang: String,
 		subscriptions: {},
 		subscriptionUrl: String
