@@ -2,7 +2,7 @@
 
 const Paginator = require('../modules/paginator');
 
-module.exports = (req, res) => {
+module.exports = (req, res, next) => {
 	let comments = {};
 
 	return res.htmlPage
@@ -75,7 +75,7 @@ module.exports = (req, res) => {
 					break;
 			}
 
-			comments.byColnameIncItemTitle(col, query, opt, function (err, comments, total) {
+			comments.byColnameIncItemTitle(col, query, opt, (err, comments, total) => {
 				if (err)
 					return next(err);
 
@@ -89,5 +89,6 @@ module.exports = (req, res) => {
 					.addJS('comments-mng.js')
 					.send('comments-mng', vars);
 			});
-		});
+		})
+		.catch(next);
 };

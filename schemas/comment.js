@@ -222,21 +222,19 @@ module.exports = function comment(Schema) {
 		},
 		colCountIncPending: function () {
 			const ret = {};
-			const query = {};
-			const query2 = {
-				active: {$ne: true},
-				refused: {$ne: true}
-			};
 			
 			return this.distinct('ref.$ref')
 				.then(d => Promise.all(d.map(r => {
-						query['ref.$ref'] = query2['ref.$ref'] = r || null; //también muestra los vacios. jj 7/7/15
-						
 						const itemSchema = r ? r.replace('dynobjects.', '') : '_';
-						
-						return this.count(query)
-							.then(c => this.count(query2)
-								.then(c2 => ret[itemSchema] = {total: c, pending: c2})
+						const ref = r || null; // null hace que también se muestren los vacios. jj 7/7/15
+					
+						return this.count({'ref.$ref': ref})
+							.then(c => this.count({
+									'ref.$ref': ref,
+									active: {$ne: true},
+									refused: {$ne: true}
+								})
+									.then(c2 => ret[itemSchema] = {total: c, pending: c2})
 							);
 					}))
 				)
