@@ -6,7 +6,7 @@ const ipLocation = require('../modules/geo').ipLocation;
 const md5 = require('md5');
 
 
-module.exports = function comment(Schema){
+module.exports = function comment(Schema) {
 	const s = new Schema({
 		active: {type: Boolean, index: true},
 		refused: {type: Boolean, index: true},
@@ -46,12 +46,12 @@ module.exports = function comment(Schema){
 		modifier: true,
 		created: true
 	});
-
+	
 	// noinspection JSUnusedGlobalSymbols
-	s.methods ={
-		values4show: function(){
+	s.methods = {
+		values4show: function () {
 			const d = this.created || this._id.getTimestamp();
-
+			
 			return {
 				id: this.id,
 				created: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(),
@@ -61,86 +61,86 @@ module.exports = function comment(Schema){
 				answers: this.answers
 			};
 		},
-		getHash: function(){
+		getHash: function () {
 			return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
 		},
-		getItem: function(fields){
-			if(!this.ref || !this.ref.namespace)
+		getItem: function (fields) {
+			if (!this.ref || !this.ref.namespace)
 				return Promise.resolve();
 			
 			const dbs = this.db.eucaDb.site.dbs;
 			const ref = this.ref.toObject();
-		
-			if(!ref.db)
+			
+			if (!ref.db)
 				ref.db = this.db.eucaDb.site.db.name;
-
-			if(!dbs[ref.db])
+			
+			if (!dbs[ref.db])
 				return Promise.reject(new Error('db ' + ref.db + ' not found'));
 			
 			return dbs[ref.db].deReference(ref.toObject ? ref.toObject() : ref, fields);
 		},
-		approve: function(req, val, cb){
-			if(!req.user)
+		approve: function (req, val, cb) {
+			if (!req.user)
 				return cb(new Error('no user'));
-			if(!req.user.isAdmin())
+			if (!req.user.isAdmin())
 				return cb(new Error('you are nat an admin user'));
-
+			
 			this.set({active: val, modifier: req.user._id}).save(cb);
 		},
-		values4Edit: function(){
+		values4Edit: function () {
 			const ret = this.jsonInfo();
-
+			
 			ret.created = this.created.toUserDatetimeString();
 			ret.location = '';
-
-			if(ret.iplocation){
-				if(ret.iplocation.city)
+			
+			if (ret.iplocation) {
+				if (ret.iplocation.city)
 					ret.location = ret.iplocation.city + ', ';
-
+				
 				ret.location += ret.iplocation.ip;
 			}
-
+			
 			delete ret.iplocation;
-
+			
 			return ret;
 		}
 	};
-
+	
 	// noinspection JSUnusedGlobalSymbols
 	s.statics = {
-		find4show: function(query, limit){
-			if(typeof query === 'string')
+		find4show: function (query, limit) {
+			if (typeof query === 'string')
 				query = mongoose.Types.ObjectId(query);
-
-			if(query instanceof mongoose.Types.ObjectId)
-				query = {active: true, 'ref.$id' : query};
-
+			
+			if (query instanceof mongoose.Types.ObjectId)
+				query = {active: true, 'ref.$id': query};
+			
 			const q = this
 				.find(query)
 				.sort({created: -1});
-
-			if(limit)
+			
+			if (limit)
 				q.limit(limit);
-
+			
 			return q.then(comments => {
 				comments.forEach((c, i) => comments[i] = c.values4show());
-
+				
 				return comments;
 			});
 		},
-		submit: function(req, dbname, colname, itemid, uname, email, text){
+		submit: function (req, dbname, colname, itemid, uname, email, text) {
 			return req.ml
 				.load('ecms-comment')
 				.then(LC => {
 					const config = req.site.config;
-
+					
 					if (!config.com_rule || (!config.com_anonpost && !req.user))
 						return {error: LC._CM_APPROVE_ERROR};
-
+					
 					let active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
-
+					
 					const db = dbname ? req.site.dbs[dbname] : req.db;
-
+					
 					return db.comment
 						.create({
 							ref: new DBRef(colname, itemid, db.name).toObject(),
@@ -156,63 +156,63 @@ module.exports = function comment(Schema){
 						.then(comment => {
 							if (req.user)
 								req.user.subscribe2Item(comment.get('ref'));
-
+							
 							db.comment.emit('submit', comment, req);
-
+							
 							return comment.values4show();
 						});
 				});
 		},
-		countById: function(query){
+		countById: function (query) {
 			// no usar ES6 en mongo.mapReduce hasta mongo 3.2
 			// comprobar javascriptEngine field in the output of db.serverBuildInfo() que sea SpiderMonkey y no V8.
 			// de momento no usamos ES6. jj - 21/6/16
 			const o = {
-				map: function(){
+				map: function () {
 					emit(this.ref.$id, 1);
 				},
-				reduce: function(k, v){
+				reduce: function (k, v) {
 					let sum = 0;
-
+					
 					Object.keys(v).forEach(function (key) {
 						sum += v[key];
 					});
-
+					
 					return sum;
 				},
 				query: query
 			};
-
+			
 			return this.mapReduce(o)
 				.then(c => {
 					const counts = {};
-
+					
 					Object.values(c).forEach(cc => counts[cc._id] = cc.value);
-
+					
 					return counts;
 				});
-
+			
 		},
-		colcount: function(cb){
+		colcount: function (cb) {
 			this.distinct('ref.$ref', (err, d) => {
-				if(err)
+				if (err)
 					return cb(err);
-
+				
 				let count = 0;
-		
+				
 				/*global ret*/
 				const ret = {};
-
+				
 				d.forEach(r => {
 					this.count({'ref.$ref': r}, (err, c) => {
-						if(c)
+						if (c)
 							ret[r.replace('dynobjects.', '')] = c;
-
-						if(++count === d.length){
+						
+						if (++count === d.length) {
 							this.count({'ref.$ref': {$exists: false}}, (err, c) => {
-								if(c)
+								if (c)
 									ret._ = c;
-
+								
 								cb(err, ret);
 							});
 						}
@@ -220,24 +220,24 @@ module.exports = function comment(Schema){
 				});
 			});
 		},
-		colCountIncPending: function(){
+		colCountIncPending: function () {
 			const ret = {};
-			const query = {'ref.$ref': null};
-
+			const query = {};
+			const query2 = {
+				active: {$ne: true},
+				refused: {$ne: true}
+			};
+			
 			return this.distinct('ref.$ref')
 				.then(d => Promise.all(d.map(r => {
-					query['ref.$ref'] = r || null; //también muestra los vacios. jj 7/7/15
-
-					const itemSchema = r ? r.replace('dynobjects.', '') : '_';
-
-					return this.count(query)
-						.then(c => {
-							query.active = {$ne: true};
-							query.refused = {$ne: true};
-
-							return this.count(query)
-								.then(c2 => ret[itemSchema] = {total: c, pending: c2});
-						});
+						query['ref.$ref'] = query2['ref.$ref'] = r || null; //también muestra los vacios. jj 7/7/15
+						
+						const itemSchema = r ? r.replace('dynobjects.', '') : '_';
+						
+						return this.count(query)
+							.then(c => this.count(query2)
+								.then(c2 => ret[itemSchema] = {total: c, pending: c2})
+							);
 					}))
 				)
 				.then(() => ret);
@@ -261,7 +261,7 @@ module.exports = function comment(Schema){
 //				cb(err, ret);
 //			});
 //		},
-		googleVisualizationList: function(req, colname, limit, skip){
+		googleVisualizationList: function (req, colname, limit, skip) {
 			return req.ml.load('ecms-comment').then(lc => {
 				const ret = {
 					cols: [
@@ -274,7 +274,7 @@ module.exports = function comment(Schema){
 					],
 					rows: []
 				};
-
+				
 				return new Promise((ok, ko) => {
 					this.byColnameIncItemTitle(colname, {}, {
 						sort: {_id: -1},
@@ -283,7 +283,7 @@ module.exports = function comment(Schema){
 					}, (err, comments) => {
 						if (err)
 							return ko(err);
-
+						
 						comments.forEach(comment => {
 							ret.rows.push({
 								p: {id: comment.id},
@@ -297,14 +297,14 @@ module.exports = function comment(Schema){
 								]
 							});
 						});
-
+						
 						ok(ret);
 					});
 				});
 			});
 		},
-		byColname: function(colname, query, options, cb){
-			if(typeof(options) === 'function'){
+		byColname: function (colname, query, options, cb) {
+			if (typeof(options) === 'function') {
 				cb = options;
 				options = {};
 			}
@@ -312,14 +312,14 @@ module.exports = function comment(Schema){
 			query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
 			
 			this.count(query, (err, count) => {
-				if(err)
+				if (err)
 					return cb(err);
 				
-				if(!count)
+				if (!count)
 					return cb(null, [], 0);
 				
 				const q = this.find(query);
-
+				
 				Object.each(options, (o, v) => {
 					q[o](v);
 				});
@@ -329,34 +329,34 @@ module.exports = function comment(Schema){
 				});
 			});
 		},
-		byColnameIncItemTitle: function(colname, query, options, cb){
+		byColnameIncItemTitle: function (colname, query, options, cb) {
 			this.byColname(colname, query, options, (err, comments, total) => {
-				if(err || !comments.length)
+				if (err || !comments.length)
 					return cb(err, comments, total);
-					
-				const promises = comments.map((comment,idx) => {
+				
+				const promises = comments.map((comment, idx) => {
 					return comment.getItem({title: 1})
 						.then(item => {
 							const obj = comment.toObject();
 							obj.id = obj._id.toString();
-
+							
 							obj.item = item ? {
 								id: item.id,
 								title: item.title,
 								schema: item.schema,
 								link: item.getLink()
 							} : {}; // no mandamos undefined para evitar errores con items eliminados
-
+							
 							obj.iplocation = ipLocation(obj.iplocation);
-
+							
 							comments[idx] = obj;
 						});
 				});
-
+				
 				Promise.all(promises).then(r => cb(null, comments, total), cb);
 			});
 		}
 	};
-
+	
 	return s;
 };
