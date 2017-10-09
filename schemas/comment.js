@@ -108,7 +108,7 @@ module.exports = function comment(Schema) {
 	
 	// noinspection JSUnusedGlobalSymbols
 	s.statics = {
-		find4show: function (query, limit) {
+		find4show (query, limit) {
 			if (typeof query === 'string')
 				query = mongoose.Types.ObjectId(query);
 			
@@ -128,7 +128,7 @@ module.exports = function comment(Schema) {
 				return comments;
 			});
 		},
-		submit: function (req, dbname, colname, itemid, uname, email, text) {
+		submit (req, dbname, colname, itemid, uname, email, text) {
 			return req.ml
 				.load('ecms-comment')
 				.then(LC => {
@@ -163,7 +163,7 @@ module.exports = function comment(Schema) {
 						});
 				});
 		},
-		countById: function (query) {
+		countById (query) {
 			// no usar ES6 en mongo.mapReduce hasta mongo 3.2
 			// comprobar javascriptEngine field in the output of db.serverBuildInfo() que sea SpiderMonkey y no V8.
 			// de momento no usamos ES6. jj - 21/6/16
@@ -193,7 +193,7 @@ module.exports = function comment(Schema) {
 				});
 			
 		},
-		colcount: function (cb) {
+		colcount (cb) {
 			this.distinct('ref.$ref', (err, d) => {
 				if (err)
 					return cb(err);
@@ -220,7 +220,7 @@ module.exports = function comment(Schema) {
 				});
 			});
 		},
-		colCountIncPending: function () {
+		colCountIncPending () {
 			const ret = {};
 			
 			return this.distinct('ref.$ref')
@@ -273,15 +273,12 @@ module.exports = function comment(Schema) {
 					rows: []
 				};
 				
-				return new Promise((ok, ko) => {
-					this.byColnameIncItemTitle(colname, {}, {
-						sort: {_id: -1},
-						limit: limit,
-						skip: skip
-					}, (err, comments) => {
-						if (err)
-							return ko(err);
-						
+				return this.byColnameIncItemTitle(colname, {}, {
+					sort: {_id: -1},
+					limit: limit,
+					skip: skip
+				})
+					.then(comments => {
 						comments.forEach(comment => {
 							ret.rows.push({
 								p: {id: comment.id},
@@ -296,63 +293,62 @@ module.exports = function comment(Schema) {
 							});
 						});
 						
-						ok(ret);
-					});
+						return ret;
 				});
 			});
 		},
-		byColname: function (colname, query, options, cb) {
-			if (typeof(options) === 'function') {
-				cb = options;
-				options = {};
-			}
+		byColname (colname, query, options) {
+			const ret = {
+				comments: [],
+				total: 0
+			};
 			
 			query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
 			
-			this.count(query, (err, count) => {
-				if (err)
-					return cb(err);
-				
-				if (!count)
-					return cb(null, [], 0);
-				
-				const q = this.find(query);
-				
-				Object.each(options, (o, v) => {
-					q[o](v);
-				});
-				
-				q.populate('modifier', 'uname').exec((err, comments) => {
-					return cb(err, comments, count);
-				});
-			});
+			return this.count(query)
+				.then(count => {
+					if (!count)
+						return;
+					
+					ret.total = count;
+					
+					const q = this.find(query);
+					
+					if(options)
+						Object.each(options, (o, v) => q[o](v));
+					
+					return q.populate('modifier', 'uname')
+						.then(comments => ret.comments = comments);
+				})
+				.then(() => ret);
 		},
-		byColnameIncItemTitle: function (colname, query, options, cb) {
-			this.byColname(colname, query, options, (err, comments, total) => {
-				if (err || !comments.length)
-					return cb(err, comments, total);
-				
-				const promises = comments.map((comment, idx) => {
-					return comment.getItem({title: 1})
-						.then(item => {
-							const obj = comment.toObject();
-							obj.id = obj._id.toString();
-							
-							obj.item = item ? {
-								id: item.id,
-								title: item.title,
-								schema: item.schema,
-								link: item.getLink()
-							} : {}; // no mandamos undefined para evitar errores con items eliminados
-							
-							obj.iplocation = ipLocation(obj.iplocation);
-							
-							comments[idx] = obj;
-						});
+		byColnameIncItemTitle (colname, query, options) {
+			return this.byColname(colname, query, options)
+				.then(r => {
+					if (!r.comments.length)
+						return r;
+					
+					const promises = r.comments.map((comment, idx) =>
+						comment.getItem({title: 1})
+							.then(item => {
+								const obj = comment.toObject();
+								obj.id = obj._id.toString();
+								
+								obj.item = item ? {
+									id: item.id,
+									title: item.title,
+									schema: item.schema,
+									link: item.getLink()
+								} : {}; // no mandamos undefined para evitar errores con items eliminados
+								
+								obj.iplocation = ipLocation(obj.iplocation);
+								
+								r.comments[idx] = obj;
+							})
+					);
+					
+					return Promise.all(promises).then(() => r);
 				});
-				
-				Promise.all(promises).then(r => cb(null, comments, total), cb);
-			});
 		}
 	};
 	

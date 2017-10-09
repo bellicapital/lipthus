@@ -1,9 +1,6 @@
 "use strict";
 
-const Paginator = require('../modules/paginator');
-
 module.exports = (req, res, next) => {
-	let comments = {};
 
 	return res.htmlPage
 		.init({
@@ -48,14 +45,16 @@ module.exports = (req, res, next) => {
 				limit: 50,
 				skip: (page - 1) * 50
 			};
-
+			
+			let Comments = {};
+			
 			if (req.params.col === '_') {
-				comments = req.db.comment;
+				Comments = req.db.comment;
 			} else {
 				const ns = req.params.col.split('.');
 				col = ns[1];
 				vars.db = ns[0];
-				comments = req.site.dbs[vars.db].comment;
+				Comments = req.site.dbs[vars.db].comment;
 			}
 
 			switch (filter) {
@@ -75,20 +74,20 @@ module.exports = (req, res, next) => {
 					break;
 			}
 
-			comments.byColnameIncItemTitle(col, query, opt, (err, comments, total) => {
-				if (err)
-					return next(err);
-
-				vars.comments = comments;
-
-				if (total > 50)
-					vars.paginator = new Paginator(page, total, '?f=' + filter);
-
-				res.htmlPage
-					.addCSS('comments-mng')
-					.addJS('comments-mng.js')
-					.send('comments-mng', vars);
-			});
+			return Comments.byColnameIncItemTitle(col, query, opt)
+				.then(r => {
+					vars.comments = r.comments;
+	
+					if (r.total > 50) {
+						const Paginator = require('../modules/paginator');
+						vars.paginator = new Paginator(page, r.total, '?f=' + filter);
+					}
+					
+					res.htmlPage
+						.addCSS('comments-mng')
+						.addJS('comments-mng.js')
+						.send('comments-mng', vars);
+				});
 		})
 		.catch(next);
 };
