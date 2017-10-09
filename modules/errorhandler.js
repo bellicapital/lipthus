@@ -33,9 +33,8 @@ module.exports = function(err, req, res, next) {
 
 	if(err.status === 401){
 		if (!res.headersSent) {
-			req.session.redirect_to = req.originalUrl;
 
-			return res.redirect('/login');
+			return res.redirect('/login?referrer=' + encodeURIComponent(req.originalUrl));
 		}
 
 		return next();
@@ -43,8 +42,6 @@ module.exports = function(err, req, res, next) {
 
 	if(err.status === 403){
 		if (!res.headersSent) {
-			req.session.redirect_to = req.originalUrl;
-
 			return res.status(err.status).render(req.cmsDir + '/views/status/403', {
 				path: req.path,
 				referer: req.get('referer')
