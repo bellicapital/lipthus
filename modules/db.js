@@ -56,7 +56,7 @@ class Db extends events.EventEmitter {
 	}
 
 	onConnOpen() {
-		debug(this.name + ' connection established!');
+		debug('Connected to db ' + this.name);
 
 		// native db
 		let ndb = this._conn.db;
