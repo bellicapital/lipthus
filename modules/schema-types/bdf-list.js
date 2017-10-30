@@ -14,7 +14,11 @@ class BinDataFileList
 	getFirst()
 	{
 		const keys = Object.keys(this);
-		return keys[0] && this[keys[0]];
+		
+		if(!keys.length)
+			return;
+		
+		return Object.keys(this).map(key => this[key]).sort((a, b) => a.weight - b.weight)[0];
 	}
 
 	getThumb(width, height, crop, enlarge)
@@ -26,10 +30,7 @@ class BinDataFileList
 
 	info(width, height, crop, enlarge)
 	{
-		const ret = [];
-		const keys = Object.keys(this);
-
-		return keys.map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
+		return Object.keys(this).map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
 	}
 
 	toObject()
@@ -61,12 +62,13 @@ class BdfList extends SchemaType {
 	constructor(key, options) {
 		super(key, options);
 	}
-
-	//noinspection JSMethodCanBeStatic
+	
+	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	checkRequired(val) {
 		return null !== val;
 	}
 
+	// noinspection JSUnusedLocalSymbols
 	/**
 	 * Implement casting.
 	 *
@@ -133,6 +135,7 @@ class BdfList extends SchemaType {
 		};
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
 	 *
