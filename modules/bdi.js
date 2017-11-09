@@ -241,6 +241,7 @@ class BinDataImage extends BinDataFile {
 	 *      [lastModified]: Date,
 	 *      [size]: number,
 	 *      [contentType]: string
+	 *      weight?: number
 	 * }}
 	 * @param colRef
 	 * @returns {Promise.<BinDataImage>}
@@ -260,7 +261,8 @@ class BinDataImage extends BinDataFile {
 			uploadDate: new Date(),
 			mtime: params.lastModified || new Date(),
 			name: params.name || 'str-' + date.getTime() + '.' + ext,
-			MongoBinData: new Binary(buffer)
+			MongoBinData: new Binary(buffer),
+			weight: params.weight
 		};
 
 		if(params.size && params.size !== obj.size)
