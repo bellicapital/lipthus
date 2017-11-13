@@ -55,7 +55,7 @@ module.exports = function nationalities(Schema){
 		
 		return this.updateNative({code: code}, update, {upsert: true})
 			.then(r => {
-				if (!r.result || !r.result.nModified)
+				if (!r.result || !(r.result.nModified || r.result.upserted))
 					return false;
 				
 				cache = {};
