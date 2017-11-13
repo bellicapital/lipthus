@@ -1,6 +1,6 @@
 "use strict";
 
-const cache = {};
+let cache = {};
 
 module.exports = function nationalities(Schema){
 	const s = new Schema({
@@ -10,23 +10,25 @@ module.exports = function nationalities(Schema){
 		collection: 'nationalities'
 	});
 
-	s.statics.getList = function(req){
-		const lang = req.ml.lang;
+	s.statics.getList = function(req, lang){
+		if (!lang)
+			lang = req.ml.lang;
 
-		if(cache[lang] && !req.nationalities)
-			req.nationalities = cache[lang];
-
-		if(req.nationalities)
-			return Promise.resolve(req.nationalities);
-
-		return this.getLangList(req.ml.lang)
+		const end = () => {
+			if(lang === req.ml.lang && !req.nationalities)
+				Object.defineProperty(req, 'nationalities', {value: cache[lang]});
+			
+			return cache[lang];
+		};
+		
+		if(cache[lang])
+			return Promise.resolve(end());
+		
+		return this.getLangList(lang)
 			.then(list => {
-				if(!req.nationalities) {
-					Object.defineProperty(req, 'nationalities', {value: list});
-					cache[req.ml.lang] = list;
-				}
+				cache[lang] = list;
 
-				return list;
+				return end();
 			});
 	};
 
@@ -56,8 +58,7 @@ module.exports = function nationalities(Schema){
 				if (!r.result || !r.result.nModified)
 					return false;
 				
-				if(cache[lang])
-					cache[lang][code] = value;
+				cache = {};
 				
 				return true;
 			});
