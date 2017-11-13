@@ -45,6 +45,23 @@ module.exports = function nationalities(Schema){
 			.then(p => Promise.all(p))
 			.then(() => list);
 	};
+	
+	s.statics.setVal = function(code, lang, value) {
+		const update = {$set: {}};
+		
+		update.$set["title." + lang] = value;
+		
+		return this.updateNative({code: code}, update, {upsert: true})
+			.then(r => {
+				if (!r.result || !r.result.nModified)
+					return false;
+				
+				if(cache[lang])
+					cache[lang][code] = value;
+				
+				return true;
+			});
+	};
 
 	return s;
 };
