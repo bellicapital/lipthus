@@ -3,7 +3,7 @@
 const truncate = require('html-truncate');
 const striptags = require('striptags');
 
-Error.stackTraceLimit = Infinity;
+// Error.stackTraceLimit = Infinity;
 
 global.t = console.trace;
 

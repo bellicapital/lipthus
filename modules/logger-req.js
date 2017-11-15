@@ -1,7 +1,5 @@
-
 "use strict";
 
-const onHeaders = require('on-headers');
 const morgan = require('morgan');
 
 module.exports = function(req, res, next){
@@ -35,11 +33,6 @@ module.exports = function(req, res, next){
 	};
 	
 	if(process.env.NODE_ENV !== 'development'){
-		/*
-		onHeaders(res, function(){
-			this.set('X-Server-Response-Timers', res.timer);
-		});
-		*/
 		next();
 	} else {
 		morgan.token('timers', () =>  timers.render ? res.timer : ' ');
