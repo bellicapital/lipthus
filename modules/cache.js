@@ -52,7 +52,7 @@ class Cache {
 		if(ct)
 			res.cached.contentType = ct;
 
-		res.cached.save().catch(console.error.bind(console));
+		res.cached.save().catch(console.log.bind(console));
 	}
 }
 
