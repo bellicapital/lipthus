@@ -44,15 +44,28 @@ class Db extends events.EventEmitter {
 		});
 
 		this._conn = mongoose.createConnection(uri, options.options);
-
+		
+		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
-
-		this._conn.once('open', this.onConnOpen.bind(this));
+		this._conn.on('disconnected', this.onDisconnected.bind(this));
+		this._conn.on('reconnected', this.onReconnected.bind(this));
 	}
 
 	onConnError(e) {
-		this.emit('error', e);
 		console.error('Database ' + this.name + ' error!', e);
+		this.emit('error', e);
+	}
+	
+	onDisconnected() {
+		console.error('Database ' + this.name + ' disconnected!');
+		this.emit('error', new Error('disconnected'));
+		
+		// si se rompe la conexión salimos del proceso con error para que en producción pm2 intente reiniciar
+		process.exit(1);
+	}
+	
+	onReconnected() {
+		console.error('Database ' + this.name + ' reconnected!');
 	}
 
 	onConnOpen() {
@@ -71,9 +84,7 @@ class Db extends events.EventEmitter {
 
 		Object.defineProperty(ndb, 'eucaDb', {value: this});
 
-		ndb.on('videoProcessed', item => {
-			this.emit('videoProcessed', item);
-		});
+		ndb.on('videoProcessed', item => this.emit('videoProcessed', item));
 
 		const s = require('../schemas/dynobject');
 		this.schema(s.name, s(Schema));
@@ -84,6 +95,14 @@ class Db extends events.EventEmitter {
 			.then(() => this.schemasDir && this.addSchemasDir(this.schemasDir))
 			.then(() => this.emit('ready', this))
 			.catch(err => console.error(err.stack));
+		
+		// process.on('SIGINT', () => {
+		// 	this._conn.close(() => {
+		// 		console.log("Mongoose connection to " + this.name + " is disconnected due to application termination");
+		//
+		// 		setTimeout(() => process.exit(0), 300);
+		// 	});
+		// });
 	}
 
 	toString() {

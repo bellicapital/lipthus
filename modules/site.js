@@ -280,7 +280,12 @@ class Site extends events.EventEmitter {
 				user: p.user || '',
 				pass: p.pass || '',
 				host: this.dbconf.host || 'localhost',
-				schemasDir: p.schemasDir
+				schemasDir: p.schemasDir//,
+			//	estas opciones no funcionan en replicaSet
+				// options: {
+				// 	reconnectTries: Number.MAX_VALUE,
+				// 	reconnectInterval: 2000
+				// }
 			};
 
 			if (!params.name)

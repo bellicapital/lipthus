@@ -50,7 +50,7 @@ module.exports = {
 		if (req.path.indexOf("/wp-") !== -1)
 			return throwMsg('attack');
 
-		if (/^\/(index|default)/.test(req.path))
+		if (/^\/(\.php|default)/.test(req.path))
 			return throwMsg('attack');
 
 		const referer = req.get('referer');
