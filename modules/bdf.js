@@ -4,9 +4,7 @@ const fs = require('mz/fs');
 const path = require('path');
 const Mime = require('mime');
 const md5 = require('md5');
-const gm = require('gm').subClass({ imageMagick: true });//jj 23-9-15 con imageMagick es más estable
 const Binary = require('mongoose').Types.Buffer.Binary;
-const debug = require('debug')('site:bdf');
 
 
 class BinDataFile {
@@ -141,7 +139,7 @@ class BinDataFile {
 			p = {path: p};
 
 		if(!p.mimetype)
-			p.mimetype = p.type || Mime.lookup(p.name || p.path);
+			p.mimetype = p.type || Mime.getType(p.name || p.path);
 
 		return fs
 			.readFile(p.path)

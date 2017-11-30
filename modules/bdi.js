@@ -254,12 +254,13 @@ class BinDataImage extends BinDataFile {
 
 		const ext = r[1].split('/')[1];
 		const buffer = new Buffer(r[3], r[2]);
+		const date = params.lastModified || new Date();
 		const obj = {
 			contentType: r[1],
 			size: buffer.length,
 			md5: md5(buffer),
 			uploadDate: new Date(),
-			mtime: params.lastModified || new Date(),
+			mtime: date,
 			name: params.name || 'str-' + date.getTime() + '.' + ext,
 			MongoBinData: new Binary(buffer),
 			weight: params.weight
