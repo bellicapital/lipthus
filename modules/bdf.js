@@ -134,6 +134,13 @@ class BinDataFile {
 		return ret;
 	}
 
+    /**
+	 *
+     * @param p
+     * @param opt
+	 *
+	 * @return Promise<BinDataFile>
+     */
 	static fromFile(p, opt = {}) {
 		if (typeof p === 'string')
 			p = {path: p};

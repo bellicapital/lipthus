@@ -75,7 +75,7 @@ module.exports = function settings(Schema, site) {
             if (type)
                 update.type = type;
 
-            return this.findOneAndUpdate({name: name}, update, {upsert: true});
+            return this.update({name: name}, update, {upsert: true});
         }
     };
 

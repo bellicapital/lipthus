@@ -231,6 +231,10 @@ class BinDataImage extends BinDataFile {
 		});
 	}
 
+    static fromFile(p, opt = {}) {
+        return BinDataFile.fromFile(p, opt)
+            .then(bdi => bdi.postFromFile());
+    }
 
 	// noinspection JSUnusedGlobalSymbols
 	/**
