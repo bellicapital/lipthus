@@ -35,7 +35,7 @@ class Ng2helper {
 		this.checkUserLevel(req)
 			.then(ok => {
 				if(!ok)
-					return res.redirect('/login?referrer=' + encodeURIComponent(this.route/* + req.url*/));
+					return res.redirect('/login?referrer=' + encodeURIComponent(this.route/* + req.url*/) + '&msg=No tienes permiso para acceder aquí');
 				
 				if (req.path === '/' || this.routes.indexOf(req.path) !== -1 || this.notffound.indexOf(req.path) !== -1)
 					return res.send(this.indexFile);
