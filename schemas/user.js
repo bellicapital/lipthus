@@ -69,8 +69,8 @@ module.exports = function user(Schema){
 	});
 
 	s.methods = {
-		baseInfo: function(){
-			return {
+		baseInfo: function(includeEmail = false){
+			const ret = {
 				'id': this.id,
 				'uname': this.getName(),
 				'name': this.getName(true),
@@ -80,10 +80,19 @@ module.exports = function user(Schema){
 				'picture': this.getImage('square'),
 				'fbid': this.facebook && this.facebook.id
 			};
+
+			if (includeEmail)
+				ret.email = this.email;
+
+			return ret;
 		},
 		getName: function(usereal){
 			return usereal ? this.name || this.uname : this.uname;
 		},
+        /**
+		 * @deprecated
+         * @returns {boolean}
+         */
 		isAdmin: function(){
 			return this.level > 1;
 		},
