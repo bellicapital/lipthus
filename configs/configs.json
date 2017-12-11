@@ -1,145 +1,150 @@
 {
-    "general": {
-        "title": "_MD_AM_GENERAL",
-        "configs": {
-            "version": [
-                "string",
-                "_CF_CMS_VERSION",
-                null,
-                "",
-                "label"
-            ],
-            "siteversion": [
-                "string",
-                "_CF_SITE_VERSION",
-                "0.0.1",
-                "",
-                "label"
-            ],
-            "sitename": [
-                "string",
-                "_MD_AM_SITENAME",
-                "EUCA Site",
-                "_MD_AM_SITENAMEDSC"
-            ],
-            "slogan": [
-                "multilang",
-                "_MD_AM_SLOGAN",
-                {"es": "2.0 CMS"},
-                "_MD_AM_SLOGANDSC"
-            ],
-            "sitelogo": [
-                "bdf",
-                "Logo",
-                null,
-                "",
-                "bdi"
-            ],
-            "adminmail": [
-                "string",
-                "_MD_AM_ADMINML"
-            ],
-            "webmastermail": [
-                "string",
-                "_CF_WEBMASTER_MAIL"
-            ],
-            "startpage": [
-                "page",
-                "_MD_AM_STARTPAGE",
-                "home",
-                "_MD_AM_STARTPAGEDSC"
-            ],
-            "theme_set": [
-                "themeset",
-                "_MD_AM_DTHEME",
-                "default",
-                "_MD_AM_DTHEMEDSC"
-            ],
-            "mobile_theme": [
-                "string",
-                "jquery-mobile-theme"
-            ],
-            "closesite": [
-                "bool",
-                "_MD_AM_CLOSESITE",
-                false,
-                "_MD_AM_CLOSESITEDSC"
-            ],
-            "closesite_text": [
-                "multilang",
-                "_MD_AM_CLOSESITETXT",
-                null,
-                "_MD_AM_CLOSESITETXTDSC",
-                "textarea"
-            ],
-            "chat": [
-                "bool",
-                "Chat"
-            ],
-            "location": [
-                "object",
-                "Location",
-                null,
-                "",
-                "location"
-            ]
-        }
-    },
-    "language": {
+	"general": {
+		"title": "_MD_AM_GENERAL",
+		"configs": {
+			"version": [
+				"string",
+				"_CF_CMS_VERSION",
+				null,
+				"",
+				"label"
+			],
+			"siteversion": [
+				"string",
+				"_CF_SITE_VERSION",
+				"0.0.1",
+				"",
+				"label"
+			],
+			"sitename": [
+				"string",
+				"_MD_AM_SITENAME",
+				"EUCA Site",
+				"_MD_AM_SITENAMEDSC"
+			],
+			"slogan": [
+				"multilang",
+				"_MD_AM_SLOGAN",
+				{
+					"es": "2.0 CMS"
+				},
+				"_MD_AM_SLOGANDSC"
+			],
+			"sitelogo": [
+				"bdf",
+				"Logo",
+				null,
+				"",
+				"bdi"
+			],
+			"adminmail": [
+				"string",
+				"_MD_AM_ADMINML"
+			],
+			"webmastermail": [
+				"string",
+				"_CF_WEBMASTER_MAIL"
+			],
+			"startpage": [
+				"page",
+				"_MD_AM_STARTPAGE",
+				"home",
+				"_MD_AM_STARTPAGEDSC"
+			],
+			"theme_set": [
+				"themeset",
+				"_MD_AM_DTHEME",
+				"default",
+				"_MD_AM_DTHEMEDSC"
+			],
+			"mobile_theme": [
+				"string",
+				"jquery-mobile-theme"
+			],
+			"closesite": [
+				"bool",
+				"_MD_AM_CLOSESITE",
+				false,
+				"_MD_AM_CLOSESITEDSC"
+			],
+			"closesite_text": [
+				"multilang",
+				"_MD_AM_CLOSESITETXT",
+				null,
+				"_MD_AM_CLOSESITETXTDSC",
+				"textarea"
+			],
+			"chat": [
+				"bool",
+				"Chat"
+			],
+			"location": [
+				"object",
+				"Location",
+				null,
+				"",
+				"location"
+			]
+		}
+	},
+	"language": {
 		"title": "_LANGUAGE",
-        "configs": {
-            "language": [
-                "lang",
-                "_MD_AM_LANGUAGE",
-                "es",
-                "_MD_AM_LANGUAGEDSC"
-            ],
-            "languages": [
-                "lang",
-                "_MD_AM_LANGUAGES",
-                [],
-                "_MD_AM_LANGUAGES_DESC"
-            ],
-            "lang_subdomains": [
-                "bool",
-                "Lang subdomains",
-                true
-            ],
-            "index_all_lang_subdomains": [
-                "bool",
-                "Indexar todos los idiomas disponibles",
-                false
-            ],
-            "lang_main_subdomain": [
-                "string",
-                "_CF_DEFLANG_SUBDOMAIN",
+		"configs": {
+			"language": [
+				"lang",
+				"_MD_AM_LANGUAGE",
+				"es",
+				"_MD_AM_LANGUAGEDSC"
+			],
+			"languages": [
+				"lang",
+				"_MD_AM_LANGUAGES",
+				[],
+				"_MD_AM_LANGUAGES_DESC"
+			],
+			"lang_subdomains": [
+				"bool",
+				"Lang subdomains",
+				true
+			],
+			"index_all_lang_subdomains": [
+				"bool",
+				"Indexar todos los idiomas disponibles",
+				false
+			],
+			"lang_main_subdomain": [
+				"string",
+				"_CF_DEFLANG_SUBDOMAIN",
 				""
-            ],
-            "auto_translate": [
-                "bool",
-                "Auto translate",
-                false
-            ],
-            "translate_service": [
-                "selector",
-                "Translate Service",
-                "azure",
+			],
+			"auto_translate": [
+				"bool",
+				"Auto translate",
+				false
+			],
+			"translate_service": [
+				"selector",
+				"Translate Service",
+				"azure",
 				"",
 				"radio",
-				{"azure": "Azure", "google": "Google"}
-            ],
-            "azure_client_id": [
-                "string",
-                "Azure client id"
-            ],
-            "azure_client_secret": [
-                "string",
-                "Azure client secret"
-            ],
-            "google_translate_element": [
-                "bool",
-                "Google Translate"
-            ],
+				{
+					"azure": "Azure",
+					"google": "Google"
+				}
+			],
+			"azure_client_id": [
+				"string",
+				"Azure client id"
+			],
+			"azure_client_secret": [
+				"string",
+				"Azure client secret"
+			],
+			"google_translate_element": [
+				"bool",
+				"Google Translate"
+			],
 			"currency": [
 				"float",
 				"Currency",
@@ -151,417 +156,436 @@
 				"Money format",
 				"%v%s"
 			]
-        }
-    },
-    "user": {
-        "title": "_MD_AM_USERSETTINGS",
-        "configs": {
-            "anonymous": [
-                "multilang",
-                "_MD_AM_ANONNAME",
-                {"es": "_CF_ANONYMOUS"},
-                "_MD_AM_ANONNAMEDSC"
-            ],
-            "allow_register": [
-                "bool",
-                "_MD_AM_ALLOWREG",
-                true,
-                "_MD_AM_ALLOWREGDSC"
-            ],
-            "minpass": [
-                "int",
-                "_MD_AM_MINPASS",
-                5,
-                "_MD_AM_MINPASSDSC"
-            ],
-            "minuname": [
-                "int",
-                "_MD_AM_MINUNAME",
-                3,
-                "_MD_AM_MINUNAMEDSC"
-            ],
-            "maxuname": [
-                "int",
-                "_MD_AM_MAXUNAME",
-                10,
-                "_MD_AM_MAXUNAMEDSC"
-            ],
-            "allow_chgmail": [
-                "bool",
-                "_MD_AM_ALLWCHGMAIL",
-                false,
-                "_MD_AM_ALLWCHGMAILDSC"
-            ],
-            "activation_type": [
-                "selector",
-                "_MD_AM_ACTVTYPE",
-                0,
-                "_MD_AM_ACTVTYPEDSC",
-                "selector",
-                [
-                    "_MD_AM_USERACTV",
-                    "_MD_AM_AUTOACTV",
-                    "_MD_AM_ADMINACTV"
-                ]
-            ],
-            "uname_test_level": [
-                "selector",
-                "_MD_AM_UNAMELVL",
-                0,
-                "_MD_AM_UNAMELVLDSC",
-                "selector",
-                [
-                    "_MD_AM_STRICT",
-                    "_MD_AM_MEDIUM",
-                    "_MD_AM_LIGHT"
-                ]
-            ],
-            "self_delete": [
-                "bool",
-                "_MD_AM_SELFDELETE",
-                false,
-                "_MD_AM_SELFDELETEDSC"
-            ],
-            "com_rule": [
-                "selector",
-                "_CM_COMRULES",
-                2,
-                "",
-                "selector",
-                [
-                    "_CM_COMNOCOM",
-                    "_CM_COMAPPROVEALL",
-                    "_CM_COMAPPROVEUSER",
-                    "_CM_COMAPPROVEADMIN"
-                ]
-            ],
-            "com_anonpost": [
-                "bool",
-                "_CM_COMANONPOST",
-                true
-            ],
-            "anonvote": [
-                "bool",
-                "_MD_ANONVOTE"
-            ]
-        }
-    },
-    "metafooter": {
+		}
+	},
+	"user": {
+		"title": "_MD_AM_USERSETTINGS",
+		"configs": {
+			"anonymous": [
+				"multilang",
+				"_MD_AM_ANONNAME",
+				{
+					"es": "_CF_ANONYMOUS"
+				},
+				"_MD_AM_ANONNAMEDSC"
+			],
+			"allow_register": [
+				"bool",
+				"_MD_AM_ALLOWREG",
+				true,
+				"_MD_AM_ALLOWREGDSC"
+			],
+			"site_credentials": [
+				"bool",
+				"Site credentials",
+				true,
+				"Acceder con usuario y contraseña"
+			],
+			"minpass": [
+				"int",
+				"_MD_AM_MINPASS",
+				5,
+				"_MD_AM_MINPASSDSC"
+			],
+			"minuname": [
+				"int",
+				"_MD_AM_MINUNAME",
+				3,
+				"_MD_AM_MINUNAMEDSC"
+			],
+			"maxuname": [
+				"int",
+				"_MD_AM_MAXUNAME",
+				10,
+				"_MD_AM_MAXUNAMEDSC"
+			],
+			"allow_chgmail": [
+				"bool",
+				"_MD_AM_ALLWCHGMAIL",
+				false,
+				"_MD_AM_ALLWCHGMAILDSC"
+			],
+			"activation_type": [
+				"selector",
+				"_MD_AM_ACTVTYPE",
+				0,
+				"_MD_AM_ACTVTYPEDSC",
+				"selector",
+				[
+					"_MD_AM_USERACTV",
+					"_MD_AM_AUTOACTV",
+					"_MD_AM_ADMINACTV"
+				]
+			],
+			"uname_test_level": [
+				"selector",
+				"_MD_AM_UNAMELVL",
+				0,
+				"_MD_AM_UNAMELVLDSC",
+				"selector",
+				[
+					"_MD_AM_STRICT",
+					"_MD_AM_MEDIUM",
+					"_MD_AM_LIGHT"
+				]
+			],
+			"self_delete": [
+				"bool",
+				"_MD_AM_SELFDELETE",
+				false,
+				"_MD_AM_SELFDELETEDSC"
+			],
+			"com_rule": [
+				"selector",
+				"_CM_COMRULES",
+				2,
+				"",
+				"selector",
+				[
+					"_CM_COMNOCOM",
+					"_CM_COMAPPROVEALL",
+					"_CM_COMAPPROVEUSER",
+					"_CM_COMAPPROVEADMIN"
+				]
+			],
+			"com_anonpost": [
+				"bool",
+				"_CM_COMANONPOST",
+				true
+			],
+			"anonvote": [
+				"bool",
+				"_MD_ANONVOTE"
+			]
+		}
+	},
+	"metafooter": {
 		"title": "_MD_AM_METAFOOTER",
-        "configs": {
-            "meta_keywords": [
-                "multilang",
-                "_MD_AM_METAKEY",
-                null,
-                "_MD_AM_METAKEYDSC",
-                "textarea"
-            ],
-            "meta_description": [
-                "multilang",
-                "_MD_AM_METADESC",
-                {"es": "Sitio web progresivo Lipthus", "en": "Lipthus progressive application site"},
-                "_MD_AM_METADESCDSC",
-                "textarea"
-            ],
-            "meta_robots": [
-                "int",
-                "_MD_AM_METAROBOTS",
-                0,
-                "_MD_AM_METAROBOTSDSC",
-                "selector",
-                [
-                    "index,follow",
-                    "noindex,follow",
-                    "index,nofollow",
-                    "noindex,nofollow"
-                ]
-            ],
-            "footer": [
-                "multilang",
-                "_MD_AM_FOOTER",
-                "",
-                "_MD_AM_FOOTERDSC",
-                "textarea"
-            ]
-        }
-    },
-    "images": {
+		"configs": {
+			"meta_keywords": [
+				"multilang",
+				"_MD_AM_METAKEY",
+				null,
+				"_MD_AM_METAKEYDSC",
+				"textarea"
+			],
+			"meta_description": [
+				"multilang",
+				"_MD_AM_METADESC",
+				{
+					"es": "Sitio web progresivo Lipthus",
+					"en": "Lipthus progressive application site"
+				},
+				"_MD_AM_METADESCDSC",
+				"textarea"
+			],
+			"meta_robots": [
+				"int",
+				"_MD_AM_METAROBOTS",
+				0,
+				"_MD_AM_METAROBOTSDSC",
+				"selector",
+				[
+					"index,follow",
+					"noindex,follow",
+					"index,nofollow",
+					"noindex,nofollow"
+				]
+			],
+			"footer": [
+				"multilang",
+				"_MD_AM_FOOTER",
+				"",
+				"_MD_AM_FOOTERDSC",
+				"textarea"
+			]
+		}
+	},
+	"images": {
 		"title": "_IMAGES",
-        "configs": {
-			"imgmaxwidth": ["int", "_IMGMAXWIDTH", 960],
-			"imgmaxheight": ["int", "_IMGMAXHEIGHT", 960],
-            "wm_minsize": [
-                "string",
-                "_IMG_WM_MINSIZE",
-                "200x200"
-            ],
-            "watermark": [
-                "watermark",
-                "_WATERMARK"
-            ]
-        }
-    },
-    "videos": {
+		"configs": {
+			"imgmaxwidth": [
+				"int",
+				"_IMGMAXWIDTH",
+				960
+			],
+			"imgmaxheight": [
+				"int",
+				"_IMGMAXHEIGHT",
+				960
+			],
+			"wm_minsize": [
+				"string",
+				"_IMG_WM_MINSIZE",
+				"200x200"
+			],
+			"watermark": [
+				"watermark",
+				"_WATERMARK"
+			]
+		}
+	},
+	"videos": {
 		"title": "_VIDEOS",
-        "configs": {
-            "video_watermark": [
-                "watermark",
-                "_WATERMARK"
-            ]
-        }
-    },
-    "facebook": {
-        "title": "Facebook",
-        "configs": {
-            "fb_app_id": [
-                "int",
-                "App Id"
-            ],
+		"configs": {
+			"video_watermark": [
+				"watermark",
+				"_WATERMARK"
+			]
+		}
+	},
+	"facebook": {
+		"title": "Facebook",
+		"configs": {
+			"fb_app_id": [
+				"int",
+				"App Id"
+			],
 			"fb_app_secret": [
-                "string",
-                "App Secret"
-            ]
-        }
-    },
-    "other": {
+				"string",
+				"App Secret"
+			]
+		}
+	},
+	"other": {
 		"title": "_MD_AM_OTHER",
-        "configs": {
-            "gal_code": [
-                "string",
-                "_MD_AM_GAL_CODE",
-                "",
-                "_MD_AM_GAL_CODE_DESC"
-            ],
-            "sitemap": [
-                "bool",
-                "Sitemap",
-                true
-            ],
-            "rss": [
-                "bool",
-                "RSS",
-                true
-            ],
-            "rssVideo": [
-                "bool",
-                "RSS Video",
-                true
-            ]
-        }
-    },
-    "pay": {
-        "title": "Pay system",
-        "configs": {
-            "pay_test": [
-                "bool",
-                "_PAY_TESTMODE",
-                true
-            ],
-            "paypal_primary_email": [
-                "string",
-                "_PAY_PAL_PRIMARY_EMAIL"
-            ],
-            "paypal_primary_email_sandbox": [
-                "string",
-                "_PAY_PAL_PRIMARY_EMAIL_SANDBOX"
-            ],
-            "url_tpvv": [
-                "string",
-                "_PAY_URL"
-            ],
-            "url_tpvv_test": [
-                "string",
-                "_PAY_TESTURL"
-            ],
-            "merchantCode": [
-                "string",
-                "_PAY_IDCOMERCIO"
-            ],
-            "merchantTitular": [
-                "string",
-                "_PAY_TITULAR"
-            ],
-            "merchantSignature": [
-                "string",
-                "_SIGNATURE"
-            ],
-            "merchantSignatureTest": [
-                "string",
-                "_SIGNATURE_TEST"
-            ],
-            "merchantName": [
-                "string",
-                "_PAY_MERCHANTNAME"
-            ],
-            "baseUrlOK": [
-                "string",
-                "baseUrlOK"
-            ],
-            "baseUrlKO": [
-                "string",
-                "baseUrlKO"
-            ],
-            "dsResponseUrl": [
-                "string",
-                "dsResponseUrl"
-            ]
-        }
-    },
-    "cart": {
-        "title": "Shopping cart",
-        "configs": {
-            "deliveryMinAmount": [
-                "float",
-                "Cantidad mínima por envío",
-                0
-            ],
-            "deliveryMinAmountNoCharge": [
-                "float",
-                "Cantidad mínima sin gastos de envío",
-                0
-            ],
-            "deliveryCharge": [
-                "float",
-                "Gastos de envío",
-                0
-            ],
-            "deliveryAddressComponents": [
-                "object",
-                "Componentes para la dirección de entrega",
-                null,
-                "Consultar la api de gMaps. p.e.: {locality: 'Barcelona', country: 'ES'}"
-            ],
-            "deliveryAddressRestrictions": [
-                "object",
-                "Filtros para la dirección de entrega",
-                null,
-                "Consultar la api de gMaps. p.e.: {country: 'ES', postal_code: ['08006', '08008', ...]}"
-            ]
-        }
-    },
-    "advanced": {
+		"configs": {
+			"gal_code": [
+				"string",
+				"_MD_AM_GAL_CODE",
+				"",
+				"_MD_AM_GAL_CODE_DESC"
+			],
+			"sitemap": [
+				"bool",
+				"Sitemap",
+				true
+			],
+			"rss": [
+				"bool",
+				"RSS",
+				true
+			],
+			"rssVideo": [
+				"bool",
+				"RSS Video",
+				true
+			]
+		}
+	},
+	"pay": {
+		"title": "Pay system",
+		"configs": {
+			"pay_test": [
+				"bool",
+				"_PAY_TESTMODE",
+				true
+			],
+			"paypal_primary_email": [
+				"string",
+				"_PAY_PAL_PRIMARY_EMAIL"
+			],
+			"paypal_primary_email_sandbox": [
+				"string",
+				"_PAY_PAL_PRIMARY_EMAIL_SANDBOX"
+			],
+			"url_tpvv": [
+				"string",
+				"_PAY_URL"
+			],
+			"url_tpvv_test": [
+				"string",
+				"_PAY_TESTURL"
+			],
+			"merchantCode": [
+				"string",
+				"_PAY_IDCOMERCIO"
+			],
+			"merchantTitular": [
+				"string",
+				"_PAY_TITULAR"
+			],
+			"merchantSignature": [
+				"string",
+				"_SIGNATURE"
+			],
+			"merchantSignatureTest": [
+				"string",
+				"_SIGNATURE_TEST"
+			],
+			"merchantName": [
+				"string",
+				"_PAY_MERCHANTNAME"
+			],
+			"baseUrlOK": [
+				"string",
+				"baseUrlOK"
+			],
+			"baseUrlKO": [
+				"string",
+				"baseUrlKO"
+			],
+			"dsResponseUrl": [
+				"string",
+				"dsResponseUrl"
+			]
+		}
+	},
+	"cart": {
+		"title": "Shopping cart",
+		"configs": {
+			"deliveryMinAmount": [
+				"float",
+				"Cantidad mínima por envío",
+				0
+			],
+			"deliveryMinAmountNoCharge": [
+				"float",
+				"Cantidad mínima sin gastos de envío",
+				0
+			],
+			"deliveryCharge": [
+				"float",
+				"Gastos de envío",
+				0
+			],
+			"deliveryAddressComponents": [
+				"object",
+				"Componentes para la dirección de entrega",
+				null,
+				"Consultar la api de gMaps. p.e.: {locality: 'Barcelona', country: 'ES'}"
+			],
+			"deliveryAddressRestrictions": [
+				"object",
+				"Filtros para la dirección de entrega",
+				null,
+				"Consultar la api de gMaps. p.e.: {country: 'ES', postal_code: ['08006', '08008', ...]}"
+			]
+		}
+	},
+	"advanced": {
 		"title": "_CF_ADVANCED",
-        "configs": {
-            "server_TZ": [
-                "float",
-                "_MD_AM_SERVERTZ",
-                1,
-                "_MD_AM_SERVERTZDSC",
-                "timezone"
-            ],
-            "default_TZ": [
-                "float",
-                "_MD_AM_DEFAULTTZ",
-                1,
-                "_MD_AM_DEFAULTTZDSC",
-                "timezone"
-            ],
-            "protocol": [
-                "string",
-                "Protocol",
-                "http",
-                "",
-                "radio",
-                {
-                    "http": "http"
-				,	"https": "https"
-                }
-            ],
-            "external_protocol": [
-                "string",
-                "External Protocol",
-                "https",
-                "Implica trust proxy",
-                "radio",
-                {
-                    "http": "http"
-                ,	"https": "https"
-                }
-            ],
-            "ssl_pages": [
-                "page",
-                "Ssl pages",
-                [],
-                "",
-                "selector",
-                {
-                    "admin": "Admin"
-                }
-            ],
-            "host": [
-                "string",
-                "Host name"
-            ],
-            "port": [
-                "int",
-                "Port number",
-                3000
-            ],
-            "static_host": [
-                "string",
-                "Static host"
-            ],
-            "log_links": [
-                "bool",
-                "Log links",
-                true
-            ],
-            "log_visits": [
-                "bool",
-                "Log visits",
-                true
-            ],
-            "multidomain": [
-                "bool",
-                "Multi Domain"
-            ],
-            "banned_ips_db": [
-                "string",
-                "Banned IPs db"
-            ],
-            "debug": [
-                "selector",
-                "Debug",
-                1,
-                "",
-                "selector",
-                [
-                    "_NO",
-                    "_YES",
-                    "Only admins"
-                ]
-            ],
-            "force_www": [
-                "bool",
-                "Force www",
-                false
-            ],
-            "responsive": [
-                "bool",
-                "Responsive"
-            ],
-            "googleApiKey": [
-                "string",
-                "Google Api key",
-                "",
+		"configs": {
+			"server_TZ": [
+				"float",
+				"_MD_AM_SERVERTZ",
+				1,
+				"_MD_AM_SERVERTZDSC",
+				"timezone"
+			],
+			"default_TZ": [
+				"float",
+				"_MD_AM_DEFAULTTZ",
+				1,
+				"_MD_AM_DEFAULTTZDSC",
+				"timezone"
+			],
+			"protocol": [
+				"string",
+				"Protocol",
+				"http",
+				"",
+				"radio",
+				{
+					"http": "http",
+					"https": "https"
+				}
+			],
+			"external_protocol": [
+				"string",
+				"External Protocol",
+				"https",
+				"Implica trust proxy",
+				"radio",
+				{
+					"http": "http",
+					"https": "https"
+				}
+			],
+			"ssl_pages": [
+				"page",
+				"Ssl pages",
+				[],
+				"",
+				"selector",
+				{
+					"admin": "Admin"
+				}
+			],
+			"host": [
+				"string",
+				"Host name"
+			],
+			"port": [
+				"int",
+				"Port number",
+				3000
+			],
+			"static_host": [
+				"string",
+				"Static host"
+			],
+			"log_links": [
+				"bool",
+				"Log links",
+				true
+			],
+			"log_visits": [
+				"bool",
+				"Log visits",
+				true
+			],
+			"multidomain": [
+				"bool",
+				"Multi Domain"
+			],
+			"banned_ips_db": [
+				"string",
+				"Banned IPs db"
+			],
+			"debug": [
+				"selector",
+				"Debug",
+				1,
+				"",
+				"selector",
+				[
+					"_NO",
+					"_YES",
+					"Only admins"
+				]
+			],
+			"force_www": [
+				"bool",
+				"Force www",
+				false
+			],
+			"responsive": [
+				"bool",
+				"Responsive"
+			],
+			"googleApiKey": [
+				"string",
+				"Google Api key",
+				"",
 				"<a href='https://code.google.com/apis/console'>Google Services Api Key</a>"
-            ],
-            "googleSecret": [
-                "string",
-                "Google Secret key",
-                "",
-                "<a href='https://console.developers.google.com/apis/credentials'>Google Apis Credentials</a>"
-            ],
-            "detect_gpsi": [
-                "bool",
-                "Detect Page Speed Insights",
-                false,
-                "Detect Google Page Speed Insights origin"
-            ]
-        }
-    },
-    "custom": {
+			],
+			"googleSecret": [
+				"string",
+				"Google Secret key",
+				"",
+				"<a href='https://console.developers.google.com/apis/credentials'>Google Apis Credentials</a>"
+			],
+			"detect_gpsi": [
+				"bool",
+				"Detect Page Speed Insights",
+				false,
+				"Detect Google Page Speed Insights origin"
+			]
+		}
+	},
+	"custom": {
 		"title": "Custom",
-        "configs": {}
-    }
+		"configs": {}
+	}
 }

@@ -11,9 +11,9 @@ const Admin = {
 			language: config.language,
 			user: req.user && req.user.baseInfo() || undefined,
 			registerMethods: {
-				site: config.allow_register,
-				google: config.allow_register && config.googleApiKey && !!config.googleSecret,
-				facebook: config.allow_register && !!config.fb_app_id
+				site: config.site_credentials,
+				google: config.googleApiKey && !!config.googleSecret,
+				facebook: !!config.fb_app_id
 			}
 		};
 
