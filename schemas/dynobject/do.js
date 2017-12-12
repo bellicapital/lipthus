@@ -58,10 +58,10 @@ class DoSchema extends EucaSchema {
 
 	static fromModel(obj) {
 		const def = {};
-		
+
 		if(!obj.name)
 			obj.name = obj.colname;
-		
+
 		if(!obj.colname)
 			obj.colname = obj.name.replace(/s?$/, 's').replace(/ys$/, 'ies');
 
@@ -221,6 +221,9 @@ const postSave = function(doc){
 			dbref.db = this.db.name;
 
 		const parentModel = this.db.models[dbref.namespace.replace('dynobjects.', '')];
+
+		if (!parentModel)
+			return;
 
 		this.db.eucaDb.deReference(dbref)
 			.then(parent => {
