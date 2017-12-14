@@ -113,7 +113,7 @@ module.exports = function(schema){
 				if(!Array.isArray(val))
 					return val.getLangOrTranslate(req.ml.lang);
 
-				return Promise.all(val.map((v, i) => v.getLangOrTranslate(req.ml.lang)));
+				return Promise.all(val.map(v => v.getLangOrTranslate(req.ml.lang)));
 
 			case 'Bdf':
 				if (!val)
@@ -347,51 +347,50 @@ module.exports = function(schema){
 
 		return this.loadFiles()
 			.then(() => this.getValues(req))
-			.then(values => {
-				return this.getCaptions(req)
-					.then(captions => {
-						const ret = {_id: null};
+			.then(values => this.getCaptions(req)
+				.then(captions => {
+					const ret = {_id: null};
 
-						Object.each(values, (k, v) => {
-							ret[k] = {
-								caption: captions[k]
-							};
+					Object.each(values, (k, v) => {
+						ret[k] = {
+							caption: captions[k]
+						};
 
-							// l(k, schema.getTypename(k))
-							switch (schema.getTypename(k)) {
-								case 'BdfList':
-								case 'Fs':
-									if(v){
-										v.forEach((bdfInfo, i) => {
-											v[i] = '<div class="thumb-container">' + bdfInfo.getThumb(opt.width || 150, opt.height || 150, false, true).toHtml() + '</div>';
-										});
+						// l(k, schema.getTypename(k))
+						switch (schema.getTypename(k)) {
+							case 'BdfList':
+							case 'Fs':
+								if(v){
+									v.forEach((bdfInfo, i) => {
+										v[i] = '<div class="thumb-container">' + bdfInfo.getThumb(opt.width || 150, opt.height || 150, false, true).toHtml() + '</div>';
+									});
 
-										v = v.join('');
-									}
-									break;
-								case 'Bdf':
-									v = v && '<div class="thumb-container">' + v.getThumb(opt.width || 150, opt.height || 150, false, true).toHtml() + '</div>';
-									break;
-								case "Boolean":
-									v = v ? '&#x2713;' : '&#x2717;';
-									break;
-								case 'MlCheckboxes':
-									v = v && v.join(', ');
-									break;
-								case 'Mixed':
-									v = JSON.stringify(v);
-									break;
-								case 'Date':
-									v = v && v.toUserDatetimeString();
-									break;
-							}
+									v = v.join('');
+								}
+								break;
+							case 'Bdf':
+								v = v && '<div class="thumb-container">' + v.getThumb(opt.width || 150, opt.height || 150, false, true).toHtml() + '</div>';
+								break;
+							case "Boolean":
+								v = v ? '&#x2713;' : '&#x2717;';
+								break;
+							case 'MlCheckboxes':
+								v = v && v.join(', ');
+								break;
+							case 'Mixed':
+								v = JSON.stringify(v);
+								break;
+							case 'Date':
+								v = v && v.toUserDatetimeString();
+								break;
+						}
 
-							ret[k].value = v;
-						});
-
-						return ret;
+						ret[k].value = v;
 					});
-			})
+
+					return ret;
+				})
+			)
 			.then(ret => {
 				// populate user fields
 				return new Promise((ok, ko) => {
