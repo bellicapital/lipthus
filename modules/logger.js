@@ -1,5 +1,6 @@
 "use strict";
 
+const mongoose = require('mongoose');
 const botRe = /^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|responsive|bot)/;
 
 class Logger {
@@ -51,28 +52,28 @@ class Logger {
 			});
 	}
 
-	logNotFound(cb) {
+	logNotFound() {
 		return this.log('notfound');
 	}
 
-	logUpdate(schema, id, field, value) {
-		const obj = {
-			schema_: schema,
-			itemid: id,
-			field: field,
-			value: value
-		};
+	logUpdate(obj, id, field, value) {
+		if (typeof obj !== 'object') {
+			obj = {
+				schema_: obj,
+				itemid: id,
+				field: field,
+				value: value
+			};
+		}
 
 		if (this.req.user)
-			obj.uid = this.req.user._id;
+			obj.uid = this.req.user._id || mongoose.Types.ObjectId(this.req.user);
 
 		return this.collection('updates').insertOne(obj);
 	}
 
-	count(type, cb) {
-		cb && console.trace('logger.count callback is deprecated. Use Promise');
-
-		return this.collection(type).count(cb);
+	count(type) {
+		return this.collection(type).count();
 	}
 
 	list(type, query, opt, cb) {
