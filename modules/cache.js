@@ -60,6 +60,10 @@ class Cache {
 			 * jj - 20/12/2017
 			 * Using callback because Promise catching doesn't work
 			 */
+
+			if (!err)
+				return;
+
 			if (err.code !== 11000)
 				console.error(err);
 			else
