@@ -43,8 +43,8 @@ class Db extends events.EventEmitter {
 			app: {value: site.app, configurable: true}
 		});
 
-		this._conn = mongoose.createConnection(uri, options.options);
-		
+		this._conn = mongoose.createConnection(uri, options.options || { promiseLibrary: global.Promise });
+
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
 		this._conn.on('disconnected', this.onDisconnected.bind(this));
@@ -55,15 +55,15 @@ class Db extends events.EventEmitter {
 		console.error('Database ' + this.name + ' error!', e);
 		this.emit('error', e);
 	}
-	
+
 	onDisconnected() {
 		console.error('Database ' + this.name + ' disconnected!');
 		this.emit('error', new Error('disconnected'));
-		
+
 		// si se rompe la conexión salimos del proceso con error para que en producción pm2 intente reiniciar
 		process.exit(1);
 	}
-	
+
 	onReconnected() {
 		console.error('Database ' + this.name + ' reconnected!');
 	}
@@ -95,7 +95,7 @@ class Db extends events.EventEmitter {
 			.then(() => this.schemasDir && this.addSchemasDir(this.schemasDir))
 			.then(() => this.emit('ready', this))
 			.catch(err => console.error(err.stack));
-		
+
 		// process.on('SIGINT', () => {
 		// 	this._conn.close(() => {
 		// 		console.log("Mongoose connection to " + this.name + " is disconnected due to application termination");

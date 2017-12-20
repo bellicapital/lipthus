@@ -3,8 +3,6 @@
 const truncate = require('html-truncate');
 const striptags = require('striptags');
 
-// Error.stackTraceLimit = Infinity;
-
 global.t = console.trace;
 
 global.l = function(){
@@ -105,7 +103,7 @@ Object.sort = ((o, fn) => {
 });
 
 /**
- * 
+ *
  * @param {type} allowedTags
  * @returns {string}
  */
@@ -118,19 +116,19 @@ String.prototype.truncate = function(length, opt) {
 		opt = {ellipsis: opt};
 	else if(!opt)
 		opt = {};
-	
+
 	let ret = truncate(this, length || 100, opt);
-	
+
 	if(opt.stripTags)
 		ret = striptags(ret, opt.allowedTags);
-	
+
 	return ret;
 };
 
 
 function leadZero(n, s){
 	s = s || 2;
-	
+
 	return ('0' + n).substr(-s, s);
 }
 
@@ -145,7 +143,7 @@ Date.prototype.toUserDateString = function(intl, sep){
 	let month = this.getMonth() + 1;
 
 	sep = sep || '/';
-	
+
 	if(intl === 'en-US')
 		ret = month + sep + date;
 	else

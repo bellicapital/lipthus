@@ -52,22 +52,34 @@ class Cache {
 		if(ct)
 			res.cached.contentType = ct;
 
-		res.cached.save().catch(console.log.bind(console));
+		res.cached.save(err => {
+			/**
+			 * Catching E11000 duplicate key error
+			 * to avoid simultaneous request processing unique index error
+			 *
+			 * jj - 20/12/2017
+			 * Using callback because Promise catching doesn't work
+			 */
+			if (err.code !== 11000)
+				console.error(err);
+			else
+				debug(err.message);
+		});
 	}
 }
 
 module.exports = function cache(cache){
 	if(!cache)
 		return;
-	
+
 	cache = new Cache(cache);
 
 	return (req, res, next) => {
 		if(req.method !== 'GET')
 			return next();
-			
+
 		if(req.query._c){
-			req.url = req.url.replace(/[\?&]_c=[^&]*/, '');
+			req.url = req.url.replace(/[?&]_c=[^&]*/, '');
 			res.htmlPage.head.addLink({rel: 'canonical', href: req.url});
 		}
 
@@ -78,21 +90,21 @@ module.exports = function cache(cache){
 
 		if(!expireMinutes)
 			return next();
-		
+
 		const query = {
 			uri: req.protocol + '://' + req.headers.host + req.url,
 			device: cache.getType(res),
 			lang: req.ml.lang
 		};
-		
+
 		if(req.user)
 			return req.db.cacheResponse.remove(query, next);
 
 		req.db.cacheResponse
 			.findOne(query)
 			.then(cached => {
-				if(req.query._c)
-					cached && cached.remove();
+				if(req.query._c && cached)
+					cached.remove();
 
 				res.cached = cached;
 
