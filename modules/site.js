@@ -240,13 +240,14 @@ class Site extends events.EventEmitter {
 	}
 
 	sendMail(opt, throwError) {
-		this.mailer.ensureFrom(opt);
-
 		return this.db.emaillog
 			.create({email: opt})
 			.then(email => {
-
 				if (process.env.NODE_ENV !== 'production') {
+					// this.mailer.checkOptions(opt);
+
+					// email.email.attachments = opt.attachments;
+
 					email.result = 'No se ha enviado este email a '
 						+ opt.to
 						+ ' por estar en modo desarrollo\n'
@@ -255,7 +256,7 @@ class Site extends events.EventEmitter {
 
 					debug(email.result);
 
-					return Promise.resolve(email);
+					return email;
 				}
 
 				return this.mailer.send(opt)

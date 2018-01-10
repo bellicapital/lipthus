@@ -188,9 +188,21 @@ class BinDataFile {
 		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj);
 	}
 
-	// useless. To deprecate
 	//noinspection JSUnusedGlobalSymbols
+	/**
+	 * Use Bdf.fromString
+	 *
+	 * @deprecated
+	 * @param img
+	 * @param width
+	 * @param height
+	 * @param colRef
+	 * @param datetime
+	 * @returns {*}
+	 */
 	static fromData(img, width, height, colRef, datetime) {
+		console.warn('@deprecated', 'Bdf.fromData');
+
 		if (!/^data:(image\/\w+);base64,/.test(img))
 			return new Error('wrong data');
 
