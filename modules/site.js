@@ -314,6 +314,12 @@ class Site extends events.EventEmitter {
 			.set('conf', this.conf);
 
 		app.use((req, res, next) => {
+			if (req.url === '/__test__')
+				return res.send('Connection: ' + this.db.connected);
+
+			if (!this.db.connected)
+				throw new Error('No db connection');
+
 			res.now = Date.now();
 
 			if (global.gc && process.memoryUsage().rss > process.env.GC_EXPOSE_MEM_LIMIT)

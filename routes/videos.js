@@ -6,30 +6,30 @@ const mongoose = require('mongoose');
 
 module.exports = function(req, res, next){
 	let id = req.params.id;
-	
+
 	if(!id)
 		return next(new Error('No id param'));
 
 	let ext = req.params.type;
-	
+
 	if(!ext && /^.+\.\w+$/.test(id)){
 		const tmp = id.split('.');
-		
+
 		if(tmp[1].length < 5){
 			id = tmp[0];
 			ext = tmp[1];
 		}
 	}
-	
+
 	const m = id.match(/(^[^.]+)\.(.+)$/);
 	const dbname = m && m[1] || req.site.db.name;
-	
+
 	if(m)
 		id = m[2];
 
 	if(!req.site.dbs[dbname] || !mongoose.Types.ObjectId.isValid(id))
 		return next();
-	
+
 	req.site.dbs[dbname].fs.get(id).load()
 		.then(file => {
 			if(!file)

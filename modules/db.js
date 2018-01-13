@@ -32,6 +32,7 @@ class Db extends events.EventEmitter {
 		this.pass = options.pass;
 		this.schemasDir = options.schemasDir;
 		this.mongoose.dbs[this.name] = this;
+		this.connected = false;
 
 		if (options.user && options.pass)
 			uri += options.user + ':' + options.pass + '@';
@@ -52,11 +53,13 @@ class Db extends events.EventEmitter {
 	}
 
 	onConnError(e) {
+		this.connected = false;
 		console.error('Database ' + this.name + ' error!', e);
 		this.emit('error', e);
 	}
 
 	onDisconnected() {
+		this.connected = false;
 		console.error('Database ' + this.name + ' disconnected!');
 		this.emit('error', new Error('disconnected'));
 
@@ -65,10 +68,12 @@ class Db extends events.EventEmitter {
 	}
 
 	onReconnected() {
+		this.connected = true;
 		console.error('Database ' + this.name + ' reconnected!');
 	}
 
 	onConnOpen() {
+		this.connected = true;
 		debug('Connected to db ' + this.name);
 
 		// native db

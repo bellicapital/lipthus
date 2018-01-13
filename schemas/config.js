@@ -30,10 +30,9 @@ module.exports = function config(Schema){
 	}, {collection: 'config'});
 
 	/**
-	 * @deprecated
 	 * @param name
 	 * @param value
-	 * @returns {Promise|Promise.<any>|*}
+	 * @returns {Promise|Promise.<{}>|*}
 	 */
 	s.statics.changeValue = function(name, value){
 		return this.update({name: name}, {$set: {value: value}})
@@ -52,6 +51,6 @@ module.exports = function config(Schema){
 
 		return this.update({name: name}, {$set: update});
 	};
-	
+
 	return s;
 };
