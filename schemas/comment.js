@@ -7,6 +7,15 @@ const md5 = require('md5');
 
 
 module.exports = function comment(Schema) {
+	const Answer = new Schema({
+		active: Boolean,
+		name: String,
+		created: {type: Date, default: Date.now},
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
+		text: String,
+		iplocation: {}
+	});
+
 	const s = new Schema({
 		active: {type: Boolean, index: true},
 		refused: {type: Boolean, index: true},
@@ -30,28 +39,28 @@ module.exports = function comment(Schema) {
 		},
 		url: String,
 		lang: String,
-		answers: [{
-			active: Boolean,
-			name: String,
-			created: {type: Date, default: Date.now},
-			submitter: {type: Schema.Types.ObjectId, ref: 'user'},
-			text: String,
-			iplocation: {}
-		}],
+		answers: [Answer],
 		extra: Schema.Types.Mixed
 	}, {
+		/*
+		usePushEach: true
+		jj - 17/01/2018
+		evita un error $pushAll en  mongoose <5.0
+		https://medium.com/@stefanledin/how-to-solve-the-unknown-modifier-pushall-error-in-mongoose-d631489f85c0
+		 */
+		usePushEach: true,
 		collection: 'comments',
 		submitter: true,
 		lastMod: true,
 		modifier: true,
 		created: true
 	});
-	
+
 	// noinspection JSUnusedGlobalSymbols
 	s.methods = {
 		values4show: function () {
 			const d = this.created || this._id.getTimestamp();
-			
+
 			return {
 				id: this.id,
 				created: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(),
@@ -67,16 +76,16 @@ module.exports = function comment(Schema) {
 		getItem: function (fields) {
 			if (!this.ref || !this.ref.namespace)
 				return Promise.resolve();
-			
+
 			const dbs = this.db.eucaDb.site.dbs;
 			const ref = this.ref.toObject();
-			
+
 			if (!ref.db)
 				ref.db = this.db.eucaDb.site.db.name;
-			
+
 			if (!dbs[ref.db])
 				return Promise.reject(new Error('db ' + ref.db + ' not found'));
-			
+
 			return dbs[ref.db].deReference(ref.toObject ? ref.toObject() : ref, fields);
 		},
 		approve: function (req, val, cb) {
@@ -84,47 +93,47 @@ module.exports = function comment(Schema) {
 				return cb(new Error('no user'));
 			if (!req.user.isAdmin())
 				return cb(new Error('you are nat an admin user'));
-			
+
 			this.set({active: val, modifier: req.user._id}).save(cb);
 		},
 		values4Edit: function () {
 			const ret = this.jsonInfo();
-			
+
 			ret.created = this.created.toUserDatetimeString();
 			ret.location = '';
-			
+
 			if (ret.iplocation) {
 				if (ret.iplocation.city)
 					ret.location = ret.iplocation.city + ', ';
-				
+
 				ret.location += ret.iplocation.ip;
 			}
-			
+
 			delete ret.iplocation;
-			
+
 			return ret;
 		}
 	};
-	
+
 	// noinspection JSUnusedGlobalSymbols
 	s.statics = {
 		find4show (query, limit) {
 			if (typeof query === 'string')
 				query = mongoose.Types.ObjectId(query);
-			
+
 			if (query instanceof mongoose.Types.ObjectId)
 				query = {active: true, 'ref.$id': query};
-			
+
 			const q = this
 				.find(query)
 				.sort({created: -1});
-			
+
 			if (limit)
 				q.limit(limit);
-			
+
 			return q.then(comments => {
 				comments.forEach((c, i) => comments[i] = c.values4show());
-				
+
 				return comments;
 			});
 		},
@@ -133,14 +142,14 @@ module.exports = function comment(Schema) {
 				.load('ecms-comment')
 				.then(LC => {
 					const config = req.site.config;
-					
+
 					if (!config.com_rule || (!config.com_anonpost && !req.user))
 						return {error: LC._CM_APPROVE_ERROR};
-					
+
 					let active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
-					
+
 					const db = dbname ? req.site.dbs[dbname] : req.db;
-					
+
 					return db.comment
 						.create({
 							ref: new DBRef(colname, itemid, db.name).toObject(),
@@ -156,9 +165,9 @@ module.exports = function comment(Schema) {
 						.then(comment => {
 							if (req.user)
 								req.user.subscribe2Item(comment.get('ref'));
-							
+
 							db.comment.emit('submit', comment, req);
-							
+
 							return comment.values4show();
 						});
 				});
@@ -173,46 +182,46 @@ module.exports = function comment(Schema) {
 				},
 				reduce: function (k, v) {
 					let sum = 0;
-					
+
 					Object.keys(v).forEach(function (key) {
 						sum += v[key];
 					});
-					
+
 					return sum;
 				},
 				query: query
 			};
-			
+
 			return this.mapReduce(o)
 				.then(c => {
 					const counts = {};
-					
+
 					Object.values(c).forEach(cc => counts[cc._id] = cc.value);
-					
+
 					return counts;
 				});
-			
+
 		},
 		colcount (cb) {
 			this.distinct('ref.$ref', (err, d) => {
 				if (err)
 					return cb(err);
-				
+
 				let count = 0;
-				
+
 				/*global ret*/
 				const ret = {};
-				
+
 				d.forEach(r => {
 					this.count({'ref.$ref': r}, (err, c) => {
 						if (c)
 							ret[r.replace('dynobjects.', '')] = c;
-						
+
 						if (++count === d.length) {
 							this.count({'ref.$ref': {$exists: false}}, (err, c) => {
 								if (c)
 									ret._ = c;
-								
+
 								cb(err, ret);
 							});
 						}
@@ -222,12 +231,12 @@ module.exports = function comment(Schema) {
 		},
 		colCountIncPending () {
 			const ret = {};
-			
+
 			return this.distinct('ref.$ref')
 				.then(d => Promise.all(d.map(r => {
 						const itemSchema = r ? r.replace('dynobjects.', '') : '_';
 						const ref = r || null; // null hace que también se muestren los vacios. jj 7/7/15
-					
+
 						return this.count({'ref.$ref': ref})
 							.then(c => this.count({
 									'ref.$ref': ref,
@@ -272,7 +281,7 @@ module.exports = function comment(Schema) {
 					],
 					rows: []
 				};
-				
+
 				return this.byColnameIncItemTitle(colname, {}, {
 					sort: {_id: -1},
 					limit: limit,
@@ -292,7 +301,7 @@ module.exports = function comment(Schema) {
 								]
 							});
 						});
-						
+
 						return ret;
 				});
 			});
@@ -302,21 +311,21 @@ module.exports = function comment(Schema) {
 				comments: [],
 				total: 0
 			};
-			
+
 			query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
-			
+
 			return this.count(query)
 				.then(count => {
 					if (!count)
 						return;
-					
+
 					ret.total = count;
-					
+
 					const q = this.find(query);
-					
+
 					if(options)
 						Object.each(options, (o, v) => q[o](v));
-					
+
 					return q.populate('modifier', 'uname')
 						.then(comments => ret.comments = comments);
 				})
@@ -327,30 +336,30 @@ module.exports = function comment(Schema) {
 				.then(r => {
 					if (!r.comments.length)
 						return r;
-					
+
 					const promises = r.comments.map((comment, idx) =>
 						comment.getItem({title: 1})
 							.then(item => {
 								const obj = comment.toObject();
 								obj.id = obj._id.toString();
-								
+
 								obj.item = item ? {
 									id: item.id,
 									title: item.title,
 									schema: item.schema,
 									link: item.getLink()
 								} : {}; // no mandamos undefined para evitar errores con items eliminados
-								
+
 								obj.iplocation = ipLocation(obj.iplocation);
-								
+
 								r.comments[idx] = obj;
 							})
 					);
-					
+
 					return Promise.all(promises).then(() => r);
 				});
 		}
 	};
-	
+
 	return s;
 };

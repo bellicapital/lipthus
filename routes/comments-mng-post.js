@@ -1,6 +1,8 @@
 "use strict";
 
 module.exports = (req, res, next) => {
+	let comment;
+
 	return req.getUser()
 		.then(() => {
 			if (!req.user)
@@ -10,7 +12,10 @@ module.exports = (req, res, next) => {
 
 			return comments.findById(req.body.id)
 		})
-		.then(comment => {
+		.then(c => {
+			comment = c;
+			comment.modifier = req.user;
+
 			if (req.body.answer) {
 				comment.active = true;
 				comment.refused = false;
@@ -24,7 +29,7 @@ module.exports = (req, res, next) => {
 					iplocation: req.ipLocation
 				});
 
-				req.ml.load('ecms-comment')
+				return req.ml.load('ecms-comment')
 					.then(() => {
 						req.site.notifier.toEmail({
 							to: comment.email,
@@ -38,9 +43,6 @@ module.exports = (req, res, next) => {
 								X_ANSWER: req.body.answer
 							}
 						});
-					})
-					.catch(err => {
-						req.notifyError(err);
 					});
 			} else {
 				if (req.body.active) {
@@ -50,16 +52,10 @@ module.exports = (req, res, next) => {
 					comment.active = false;
 					comment.refused = true;
 				} else
-					return next(new Error('Parámetros no válidos en el estado del comentario'));
+					throw new Error('Parámetros no válidos en el estado del comentario');
 			}
-
-			comment.modifier = req.user;
-
-			comment.save(function (err) {
-				if (err)
-					return next(err);
-
-				res.redirect(req.originalUrl);
-			});
-		});
+		})
+		.then(() => comment.save())
+		.then(() => res.redirect(req.originalUrl))
+		.catch(next);
 };
