@@ -16,9 +16,7 @@ fs.mkdir(tmpdir).catch(err => {
 const w3c = {
 	results: {},
 
-	getUrl(uri) {
-		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri;
-	},
+	getUrl: (uri) => this.req.site.externalProtocol + '://' + this.req.headers.host + uri,
 
 	get(uri, sec) {
 		const file = w3c.getUrl.call(this, uri);

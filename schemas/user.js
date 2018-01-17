@@ -87,7 +87,7 @@ module.exports = function user(Schema){
 			return ret;
 		},
 		getName: function(usereal){
-			return usereal ? this.name || this.uname : this.uname;
+			return usereal ? this.name || this.uname : this.uname || this.name;
 		},
         /**
 		 * @deprecated
@@ -177,7 +177,7 @@ module.exports = function user(Schema){
 		= function(req, query, fields, options){
 			if(typeof query === 'function')	//old compat
 				query = null;
-			
+
 			return this
 				.find(query, fields, options)
 				.then(result =>
