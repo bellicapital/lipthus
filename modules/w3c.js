@@ -16,12 +16,12 @@ fs.mkdir(tmpdir).catch(err => {
 const w3c = {
 	results: {},
 
-	getUrl(req, uri) {
-		return req.site.externalProtocol + '://' + req.headers.host + uri;
+	getUrl(uri) {
+		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri;
 	},
 
-	get: function (req, uri, sec) {
-		const file = w3c.getUrl(req, uri);
+	get(uri, sec) {
+		const file = w3c.getUrl.call(this, uri);
 
 		return w3c.getCached(file)
 			.then(cached => {
