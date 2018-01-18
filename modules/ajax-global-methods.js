@@ -25,14 +25,6 @@ module.exports = {
 		return req.site.config.set(name, value, ns, true);
 	},
 
-	resetUserNoti(){
-		const req = this.req;
-
-		return req.db.notification
-			.update({uid: req.user, seen: {$ne: true}}, {$set: {seen: true}}, {multi: true})
-			.exec();
-	},
-
 	loginInfo(){
 		return this.req.ml.load('ecms-user')
 			.then(() => methods.main.call(this))

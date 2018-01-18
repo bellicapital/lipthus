@@ -15,7 +15,7 @@ module.exports = function notification(Schema){
 		collection: 'notifications',
 		created: true
 	});
-	
+
 	s.statics = {
 		user: function(user){
 			return this.find({uid: user})
@@ -30,8 +30,11 @@ module.exports = function notification(Schema){
 		},
 		userUnseen: function(user){
 			return this.count({uid: user, seen: {$ne: true}});
+		},
+		resetUserNoti : function(user) {
+			return this.update({uid: user, seen: {$ne: true}}, {$set: {seen: true}}, {multi: true});
 		}
 	};
-	
+
 	return s;
 };
