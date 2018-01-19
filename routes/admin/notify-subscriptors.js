@@ -21,7 +21,7 @@ module.exports = function(req, res, next){
 				return next();
 
 			return req.db[q.s]
-				.findById(q.id, 'title notifiedNew')
+				.findById(q.id, 'title')
 				.then(item => {
 					res.locals.q = q;
 

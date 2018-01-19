@@ -19,21 +19,21 @@ block body
 					p: a.ui-btn.ui-btn-inline.ui-corner-all(href="/mail-templates?s=" + q.s + "&id=" + q.id + "&type=" + q.type + "&referer=" + q.referer) Preview
 
 					form#notiForm(method="POST")
-						input(type="hidden",name="schema",value=item.schema)
-						input(type="hidden",name="id",value=item.id)
-						input(type="hidden",name="_csrf",value=csrfToken)
+						input(type="hidden" name="schema" value=item.schema)
+						input(type="hidden" name="id" value=item.id)
+						input(type="hidden" name="_csrf" value=csrfToken)
 
 						ul(data-role="listview", data-inset="true")
 							li#test-mode-block
 								span Modo de prueba:&nbsp;
-								input(type="checkbox",data-role="flipswitch",name="testmode")
+								input(type="checkbox" data-role="flipswitch" name="testmode")
 								p(style="clear:both"): i Se envía sólo un email al administrador y webmaster
 
 						div
 							if !q.type || q.type === "newItem"
-								button(data-inline="true",type="submit",name="type",value="itemCreated",disabled=!!item.notifiedNew) Notificar novedad
+								button(data-inline="true" type="submit" name="type" value="itemCreated") Notificar novedad
 							if !q.type || q.type === "itemActivated"
-								button(data-inline="true",type="submit",name="type",value="itemActivated",disabled=hideBackButton) Notificar activación
+								button(data-inline="true" type="submit" name="type" value="itemActivated" disabled=hideBackButton) Notificar activación
 
 					if notifications
 						table#noti-list
