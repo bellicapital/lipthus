@@ -1,6 +1,7 @@
 "use strict";
 
-const Gcm = require('node-gcm');
+const FCM = require('fcm-push');
+const Gcm = require('node-gcm');	// deprecated
 const fs = require('fs');
 const debug = require('debug')('site:gcm');
 const merge = require('merge-descriptors');
@@ -104,7 +105,7 @@ class Notifier {
 		const site = this.site;
 
 		site.db.user.findOne({email: site.config.adminmail}, (err, admin) => {
-			const lang = (admin && admin.language) || site.config.language;
+			// const lang = (admin && admin.language) || site.config.language;
 
 			if (admin)
 				this.toUser(admin, subject, content, tag, extra);
@@ -177,7 +178,7 @@ class Notifier {
 			});
 		}
 
-		this.site.db.notification.create({
+		const noti = {
 			subject: opt.subject,
 			content: opt.content,
 			uid: user._id,
@@ -185,7 +186,9 @@ class Notifier {
 			tag: opt.tag,
 			from: opt.from,
 			extra: opt.extra
-		});
+		};
+
+		this.site.db.notification.create(noti);
 
 		if (user.email_notifications !== false) {
 			this.site.sendMail({
@@ -197,24 +200,39 @@ class Notifier {
 		}
 
 		if (user.devices && user.devices.length) {
-			let ids = [];
-			let options = {
-				message: opt.subject,
-				data: {
-					message: opt.subject
+			const firebase = this.site.config.firebase;
+
+			if (!firebase || !firebase.serverkey)
+				return Promise.reject(new Error('No Firebase server key'));
+
+			const fcm = new FCM(firebase.serverkey);
+
+			const ids = [];
+
+			user.devices.forEach(device => ids.push(device.regId));
+
+			// https://firebase.google.com/docs/cloud-messaging/http-server-ref
+			const options = {
+				to: ids.length === 1 ? ids[0] : undefined,
+				registration_ids: ids.length > 1 ? ids : undefined,
+				collapse_key: this.site.key,
+				// dry_run: process.env.NODE_ENV !== 'production',
+				// data: noti,
+				notification: {
+					title: opt.subject,
+					body: opt.content,
+					icon: firebase.icon,
+					click_action: noti.url
 				}
 			};
 
-			user.devices.forEach(device => ids.push(device.uuid));
-
-			if (opt.extra)
-				Object.extend(options.data, opt.extra);
-
-			this.gcm(ids, options)
+			fcm.send(options)
+				.then(a => debug(a))
 				.catch(console.error.bind(console));
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	toSubscriptors(dbname, model, type, value, onlyUsers, params) {
 		return this.site.app.subscriptor
 		// si no se facilita asunto, no se envía email a los no usuarios
@@ -311,9 +329,9 @@ class Notifier {
 				}
 
 				subject = subject
-					.replace(/\{X_SITENAME}/g, sitename)
-					.replace(/\{X_ITEMTITLE}/g, item.title)
-					.replace(/\{X_ITEMTYPE}/g, itemtype);
+					.replace(/{X_SITENAME}/g, sitename)
+					.replace(/{X_ITEMTITLE}/g, item.title)
+					.replace(/{X_ITEMTYPE}/g, itemtype);
 
 				content.X_ITEM_TITLE = item.title[lang] || item.title['es'] || item.title;
 				content.X_UNAME = subscriptor.email;
@@ -390,9 +408,9 @@ class Notifier {
 			}
 
 			subject = subject
-				.replace(/\{X_SITENAME}/g, sitename)
-				.replace(/\{X_ITEMTITLE}/g, itemTitle)
-				.replace(/\{X_ITEMTYPE}/g, itemtype);
+				.replace(/{X_SITENAME}/g, sitename)
+				.replace(/{X_ITEMTITLE}/g, itemTitle)
+				.replace(/{X_ITEMTYPE}/g, itemtype);
 
 			content.X_UNAME = 'preview';
 			content.X_ITEM_TYPE = itemtype;

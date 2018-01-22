@@ -564,6 +564,12 @@
 				"bool",
 				"Responsive"
 			],
+			"firebase": [
+				"object",
+				"Firebase settings",
+				null,
+				"<a href='https://console.firebase.google.com/'>Firebase console</a>"
+			],
 			"googleApiKey": [
 				"string",
 				"Google Api key",

@@ -7,10 +7,10 @@ env.TMPDIR = env.TMPDIR || '/tmp';
 
 const Site = require('./modules/site');
 
-if(!env.NODE_ENV)
+if (!env.NODE_ENV)
 	env.NODE_ENV = 'development';
 
-if(env.TMPDIR.substr(-1) !== '/')
+if (env.TMPDIR.substr(-1) !== '/')
 	env.TMPDIR += '/';
 
 process.on('warning', (warning) => {
@@ -26,9 +26,9 @@ process.on('unhandledRejection', (reason, p) => {
 require ('./modules/functions');
 
 // noinspection JSUnusedGlobalSymbols
-export function lipthusSite(dir:string, options?: any){
+export function lipthusSite(pdir: string, options?: any) {
 	return server.check()
-		.then(() => new Site(dir).init(options));
+		.then(() => new Site(pdir).init(options));
 }
 
 exports.Site = Site;

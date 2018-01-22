@@ -49,3 +49,4 @@ exports.dir = __dirname;
 exports.listen = listen;
 exports.express = express;
 exports.build = build;
+exports.AjaxGlobalMethods = require('./modules/ajax-global-methods');

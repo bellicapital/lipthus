@@ -41,7 +41,6 @@ module.exports = function user(Schema){
 		facebook: {}, // @deprecated
 		devices: [{
 			regId: String,
-			prevType: String,
 			uuid: String,
 			version: String,
 			model: String,

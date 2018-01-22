@@ -1,7 +1,6 @@
 "use strict";
 
-const methods =
-module.exports = {
+module.exports = class AjaxGlobalMethods {
 	main(){
 		const req = this.req;
 		const config = req.site.config;
@@ -17,17 +16,19 @@ module.exports = {
 					facebook: !!config.fb_app_id
 				}
 			}));
-	},
+	}
 
+	// noinspection JSUnusedGlobalSymbols
 	setConfig(name, value, ns){
 		const req = this.req;
 
 		return req.site.config.set(name, value, ns, true);
-	},
+	}
 
+	// noinspection JSUnusedGlobalSymbols
 	loginInfo(){
 		return this.req.ml.load('ecms-user')
-			.then(() => methods.main.call(this))
+			.then(() => this.main())
 			.then(ret => {
 				if(ret.user)
 					ret.msg = 'Ya estás logueado como ' + ret.user.name;
@@ -51,5 +52,33 @@ module.exports = {
 
 				return ret;
 			});
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	storeFcmToken(params) {
+		const devices = this.req.user.devices || [];
+		const device = devices.find(d => d.uuid === params.uuid || d.regId === params.regId);
+
+		if (device) {
+			if (device.regId === params.regId)
+				return {ok: true};
+
+			device.regId = params.regId;
+		} else {
+			if (!params.platform)
+				params.platform = this.req.device.type;
+
+			if (!params.title)
+				params.title = this.req.device.name;
+
+			if (!params.version)
+				params.version = this.req.headers.userAgent;
+
+			devices.push(params);
+		}
+
+		return this.req.user.set('devices', devices)
+			.save()
+			.then(() => ({ok: true}));
 	}
 };
