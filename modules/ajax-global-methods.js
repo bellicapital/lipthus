@@ -1,6 +1,10 @@
 "use strict";
 
 module.exports = class AjaxGlobalMethods {
+	constructor(req) {
+		this.req = req;
+	}
+
 	main(){
 		const req = this.req;
 		const config = req.site.config;

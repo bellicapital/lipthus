@@ -1,10 +1,10 @@
 "use strict";
 
-const globalMethods = require('../modules/ajax-global-methods');
+const AjaxGlobalMethods = require('../modules/ajax-global-methods');
 
-class AjaxProcess {
+class AjaxProcess extends AjaxGlobalMethods{
 	constructor(req) {
-		this.req = req;
+		super(req);
 	}
 
 	process() {
@@ -79,7 +79,7 @@ class AjaxProcess {
 		let func;
 
 		if (q.g)
-			return globalMethods[q.g].apply(this, q.a);
+			return this[q.g].apply(this, q.a);
 
 		if(q.md)
 			func = require(req.site.dir + '/routes/' + q.md + '/' + (q.c || 'ajax'))[q.m];
