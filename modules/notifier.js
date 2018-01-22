@@ -213,15 +213,15 @@ class Notifier {
 
 			// https://firebase.google.com/docs/cloud-messaging/http-server-ref
 			const options = {
-				to: ids.length === 1 ? ids[0] : undefined,
-				registration_ids: ids.length > 1 ? ids : undefined,
+				// to: ids.length === 1 ? ids[0] : undefined,
+				registration_ids: ids,//.length > 1 ? ids : undefined,
 				collapse_key: this.site.key,
 				// dry_run: process.env.NODE_ENV !== 'production',
 				// data: noti,
 				notification: {
 					title: opt.subject,
 					body: opt.content,
-					icon: firebase.icon,
+					icon: opt.icon || this.site.config.sitelogo,
 					click_action: noti.url
 				}
 			};
