@@ -1,4 +1,5 @@
 import * as Debug from 'debug';
+require('./modules/date.extensions');
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');

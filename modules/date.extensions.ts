@@ -3,48 +3,50 @@ export {};
 
 declare global {
 	interface Date {
-		hmFull(): string;
-		
-		toUserDatetimeString(): string;
-		
+		toUserDatetimeString(intl: string, sep: string): string;
 		toFormDateString(): string;
-		
-		addDays(): Date;
-		
-		toUserDateString(): string;
+		addDays(days: number): any;
+		toUserDateString(intl: string, sep: string): string;
+		toUserTimeString(): string;
+		toFormDateTimeString(): string;
+		toSpanishDatepickerString(): string;
+		hm(): string;
+		hmFull(intl: string, sep: string): string;
+	}
+
+	interface Number {
+		size(): string;
 	}
 }
 
-function leadZero(n, s) {
-	s = s || 2;
-	
+function leadZero(n: number, s = 2) {
 	return ('0' + n).substr(-s, s);
 }
 
-Date.prototype.addDays = function (days: number) {
+Date.prototype.addDays = function (days) {
 	this.setDate(this.getDate() + days);
 	return this;
 };
 
 Date.prototype.toUserDateString = function (intl, sep) {
 	let ret;
-	let date = this.getDate();
-	let month = this.getMonth() + 1;
-	
+	const date = this.getDate();
+	const month = this.getMonth() + 1;
+
 	sep = sep || '/';
-	
+
 	if (intl === 'en-US')
 		ret = month + sep + date;
 	else
 		ret = date + sep + month;
-	
+
 	ret += sep + this.getFullYear();
-	
+
 	return ret;
 };
 
 
-Date.prototype.hmFull = Date.prototype.toUserDatetimeString = function (intl, sep) {
+Date.prototype.hmFull = Date.prototype.toUserDatetimeString = function (intl: string, sep: string) {
 	return this.toUserDateString(intl, sep) + ' ' + this.toUserTimeString();
 };
 
