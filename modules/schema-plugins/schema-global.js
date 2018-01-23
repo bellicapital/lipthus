@@ -40,7 +40,7 @@ module.exports = function(schema){
 			.then(() => files);
 	};
 
-	schema.methods.getValues = function(req, virtuals){
+	schema.methods.getValues = function(req, virtuals, forceTranslate = true){
 		const ret = new DocValues();
 		const promises = [];
 
@@ -62,7 +62,7 @@ module.exports = function(schema){
 					break;
 
 				default:
-					promises.push(this.getVar(k, req)
+					promises.push(this.getVar(k, req, forceTranslate)
 						.then(v => {
 							if(v !== undefined)
 								ret[k] = v;
@@ -93,7 +93,7 @@ module.exports = function(schema){
 		return ret;
 	};
 
-	schema.methods.getVar = function(k, req){
+	schema.methods.getVar = function(k, req, forceTranslate = true){
 		const val = this.get(k);
 
 		if (val === undefined)
@@ -110,10 +110,12 @@ module.exports = function(schema){
 				if (!val)
 					return Promise.resolve(val);
 
-				if(!Array.isArray(val))
-					return val.getLangOrTranslate(req.ml.lang);
+				const fn = forceTranslate ? 'getLangOrTranslate' : 'getLang';
 
-				return Promise.all(val.map(v => v.getLangOrTranslate(req.ml.lang)));
+				if(!Array.isArray(val))
+					return Promise.resolve(val[fn](req.ml.lang));
+
+				return Promise.all(val.map(v => v[fn](req.ml.lang)));
 
 			case 'Bdf':
 				if (!val)
