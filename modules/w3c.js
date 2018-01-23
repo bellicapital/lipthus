@@ -16,7 +16,9 @@ fs.mkdir(tmpdir).catch(err => {
 const w3c = {
 	results: {},
 
-	getUrl: (uri) => this.req.site.externalProtocol + '://' + this.req.headers.host + uri,
+	getUrl(uri) {
+		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri
+	},
 
 	get(uri, sec) {
 		const file = w3c.getUrl.call(this, uri);
@@ -32,7 +34,9 @@ const w3c = {
 			});
 	},
 
-	ajaxErrorCount: (uri) => w3c.get(this.req, uri, 30).then(r => ({count: r.errors})),
+	ajaxErrorCount(uri) {
+		return w3c.get.call(this, uri, 30).then(r => ({count: r.errors}));
+	},
 
 	validate(uri) {
 		debug('validating', uri);

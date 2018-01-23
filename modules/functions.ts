@@ -3,19 +3,19 @@
 const truncate = require('html-truncate');
 const striptags = require('striptags');
 
-global.t = console.trace;
+(global as any).t = console.trace;
 
-global.l = function(){
+(global as any).l = function(){
 	console.log.apply(this, arguments);
 
 	const orig = Error.prepareStackTrace;
-	Error.prepareStackTrace = function(_, stack){ return stack; };
+	Error.prepareStackTrace = function(_, stack) { return stack; };
 	const err = new Error;
 	Error.captureStackTrace(err);
-	const stack = err.stack;
+	const stack_ = err.stack;
 	Error.prepareStackTrace = orig;
 
-	console.log('called at %s, line %d', stack[1].getFileName(), stack[1].getLineNumber());
+	console.log('called at %s, line %d', stack_[1].getFileName(), stack_[1].getLineNumber());
 };
 
 Object.each = function(o, fn){
@@ -123,60 +123,4 @@ String.prototype.truncate = function(length, opt) {
 		ret = striptags(ret, opt.allowedTags);
 
 	return ret;
-};
-
-
-function leadZero(n, s){
-	s = s || 2;
-
-	return ('0' + n).substr(-s, s);
-}
-
-Date.prototype.addDays = function(days) {
-	this.setDate(this.getDate()+days);
-	return this;
-};
-
-Date.prototype.toUserDateString = function(intl, sep){
-	let ret;
-	let date = this.getDate();
-	let month = this.getMonth() + 1;
-
-	sep = sep || '/';
-
-	if(intl === 'en-US')
-		ret = month + sep + date;
-	else
-		ret = date + sep + month;
-
-	ret += sep + this.getFullYear();
-
-	return ret;
-};
-
-Date.prototype.hmFull = Date.prototype.toUserDatetimeString = function(intl, sep){
-	return this.toUserDateString(intl, sep) + ' ' + this.toUserTimeString();
-};
-
-Date.prototype.toFormDateString = function(){
-	return this.getFullYear() + '-' + leadZero(this.getMonth() + 1) + '-' + leadZero(this.getDate());
-};
-
-Date.prototype.toSpanishDatepickerString = function(){
-	return leadZero(this.getDate()) + '/' + leadZero(this.getMonth() + 1) + '/' + this.getFullYear();
-};
-
-Date.prototype.toFormDateTimeString = function(){
-	return this.toFormDateString() + 'T' + this.toUserTimeString();
-};
-
-Date.prototype.hm = Date.prototype.toUserTimeString = function(){
-	return leadZero(this.getHours()) + ':' + leadZero(this.getMinutes());
-};
-
-Number.prototype.size = function() {
-	const n = this.valueOf();
-	if (!n) { return "-"; }
-	const e = Math.floor(Math.log(n) / Math.log(1024));
-	return (Math.floor(n/Math.pow(1024, e)*100)/100)+' KMGTP'.charAt(e)+'B';
 };

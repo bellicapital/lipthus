@@ -435,7 +435,7 @@ module.exports = function(schema){
 
 
 //events
-	schema.pre('init', function(next, obj){
+	schema.pre('init', function(obj){
 		this.schema.eachPath((k,v) => {
 			switch(this.schema.getTypename(k)){
 				case 'BdfList':
@@ -451,8 +451,6 @@ module.exports = function(schema){
 					break;
 			}
 		});
-
-		next();
 	});
 
 	if(!schema.options.toObject) schema.options.toObject = {};
