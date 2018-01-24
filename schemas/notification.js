@@ -22,9 +22,6 @@ module.exports = function notification(Schema){
 				.select('-uid')
 				.sort({created: -1});
 		},
-		clearUser: function(user){l(user);
-			return this.remove({uid: user});
-		},
 		userTotalCount: function(user){
 			return this.count({uid: user});
 		},
