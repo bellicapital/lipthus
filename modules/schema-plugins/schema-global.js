@@ -435,24 +435,27 @@ module.exports = function(schema){
 
 
 //events
-	schema.pre('init', function(next, obj){
-		this.schema.eachPath((k,v) => {
-			switch(this.schema.getTypename(k)){
+	schema.pre('init', function(obj){
+		schema.eachPath((k,v) => {
+			switch(schema.getTypename(k)){
 				case 'BdfList':
 				case 'Bdf':
 				case 'Fs':
 					v.id = obj._id;
-					v.collection = this.schema.get('name');
+					v.collection = schema.get('name');
 					v.dbname = this.db.name;
 					break;
 				case 'Multilang':
-					if(this.schema.tree[k].constructor.name === 'Array')
-						obj[k] && obj[k].forEach((o, i) => obj[k][i] = new Types.Multilang.MultilangText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site));
+					if(schema.tree[k].constructor.name === 'Array' && obj[k]) {
+						const MlText = Types.Multilang.MultilangText;
+
+						obj[k].forEach((o, i) =>
+							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site)
+						);
+					}
 					break;
 			}
 		});
-
-		next();
 	});
 
 	if(!schema.options.toObject) schema.options.toObject = {};
