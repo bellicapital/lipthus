@@ -5,6 +5,7 @@ const path = require('path');
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
+const request = require('request');
 
 
 class BinDataFile {
@@ -161,19 +162,31 @@ class BinDataFile {
 					.stat(p.path)
 					.then(stats => p.mtime = stats.mtime);
 			})
-			.then(() => ({
-				name: p.name || p.originalname || path.basename(p.path),
-				contentType: p.mimetype,
-				mtime: p.mtime,
-				uploadDate: new Date(),
-				size: p.buffer.length,
-				md5: md5(p.buffer),
-				MongoBinData: new Binary(p.buffer)
-			}))
-			.then(obj => /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj));
+			.then(() => BinDataFile.fromBuffer({
+				originalname: p.name || p.originalname || path.basename(p.path),
+				mimetype: p.mimetype,
+				mtime: p .mtime,
+				buffer: p.buffer
+			}, opt));
 	}
 
-	//noinspection JSUnusedGlobalSymbols
+	// noinspection JSUnusedGlobalSymbols
+	static fromUrl(url) {
+		return new Promise((ok, ko) => {
+			request({url: url, encoding: null}, (err, res, body) => {
+				if (err)
+					return ko(err);
+
+				ok(BinDataFile.fromBuffer({
+					originalname: path.basename(url),
+					mimetype: res.headers['content-type'],
+					mtime: new Date(),
+					buffer: body
+				}));
+			});
+		});
+	}
+
 	static fromBuffer(p, opt){
 		const obj = {
 			name: p.originalname,

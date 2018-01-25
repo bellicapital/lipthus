@@ -1,4 +1,4 @@
-"use strict";
+
 
 const Image = require('./image');
 const gm = require('gm').subClass({ imageMagick: true });//jj 23-9-15 con imageMagick es más estable
@@ -180,7 +180,7 @@ class BinDataImage extends BinDataFile {
 				.then(cached => cached.send(req, res))
 				.catch(req.next);
 	}
-	
+
 	postFromFile(opt){
 		return new Promise((ok, ko) => {
 			const gmi = gm(this.MongoBinData.buffer)
@@ -348,4 +348,4 @@ class DbfThumb {
 	}
 }
 
-module.exports = BinDataImage;
+module.exports = exports = BinDataImage;

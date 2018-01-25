@@ -1,13 +1,10 @@
 import {NextFunction} from "express";
-import {Request} from "express";
-import {Response} from "express";
-import {Application} from "express";
 import {EventEmitter} from "events";
-import Hooks = lipthus.Hooks;
-
-const express = require('express');
-const debug = require('debug')('site:site');
-const Db = require('./db');
+import {Hooks, Request, Response, Application} from "../typings";
+import * as Debug from "debug";
+import {Db} from "./db";
+import * as express from "express";
+const debug = Debug('site:site');
 const auth = require('./auth');
 const path = require('path');
 const Config = require('./config');
@@ -159,7 +156,8 @@ export class Site extends EventEmitter {
 			.then(() => debug(this.key + ' ready'))
 			.then(this.hooks.bind(this, 'pre', 'finish'))
 			.then(this.finish.bind(this))
-			.then(this.hooks.bind(this, 'post', 'finish'));
+			.then(this.hooks.bind(this, 'post', 'finish'))
+			.then(() => this);
 	}
 	
 	hooks(hook: string, method: string) {
@@ -328,7 +326,7 @@ export class Site extends EventEmitter {
 	}
 	
 	createApp() {
-		const app: Application = express();
+		const app: Application = express() as Application;
 		
 		Object.defineProperty(this, 'app', {value: app});
 		Object.defineProperty(app, 'site', {value: this});
@@ -342,7 +340,7 @@ export class Site extends EventEmitter {
 			.set('csrf', csrf)
 			.set('conf', this.conf);
 		
-		app.use((req: any, res: any, next: NextFunction) => {
+		app.use((req: Request, res: Response, next: NextFunction) => {
 			if (req.url === '/__test__')
 				return res.send('Connection: ' + this.db.connected);
 			
@@ -364,12 +362,12 @@ export class Site extends EventEmitter {
 			});
 			
 			req.cmsDir = this.cmsDir;
-			req.domainName = (req.hostname || req.get('host')).replace(/^.+\.([^.]+\.[^.]+)$/, '$1');
+			req.domainName = (req.hostname || req.get('host') || '').replace(/^.+\.([^.]+\.[^.]+)$/, '$1');
 			req.fullUri = req.protocol + '://' + req.headers.host + req.originalUrl;
 			
 			res.set('X-Powered-By', 'Eucalipthus');
 			
-			req.notifyError = (err: any) => {
+			req.notifyError = err => {
 				err.url = req.fullUri;
 				err.referer = req.get('referer');
 				err.title = 'Problem with a ' + req.method + ' request';
@@ -493,11 +491,11 @@ export class Site extends EventEmitter {
 		
 		return multilang(app)
 			.then(() => {
-				app.use((req: any, res: any, next: NextFunction) => {
+				app.use((req: Request, res: Response, next: NextFunction) => {
 					if (req.ml && req.ml.lang && req.subdomains.length) {
 						const luri = this.langUrl(req.ml.lang);
 						
-						if (luri.substr(2) !== req.headers.host && req.headers.host.indexOf(this.domainName) > 0)
+						if (luri.substr(2) !== req.headers.host && (req.headers.host || '').indexOf(this.domainName) > 0)
 							return res.redirect(this.externalProtocol + ':' + luri + req.url);
 					}
 					
@@ -553,10 +551,10 @@ export class Site extends EventEmitter {
 				const router = express.Router({strict: true});
 				
 				if (this.config.startpage && this.pages[this.config.startpage])
-					router.all('/', (req: Request, res: Response, next: NextFunction) => this.pages[this.config.startpage].display(req, res, next));
+					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));
 				
 				Object.values(this.pages).forEach(p =>
-					router.all('/' + (p.url || p.key), (req: Request, res: Response, next: NextFunction) => p.display(req, res, next))
+					router.all('/' + (p.url || p.key), p.display.bind(p))
 				);
 				
 				this.app.use('/', router);
@@ -571,9 +569,7 @@ export class Site extends EventEmitter {
 	}
 	
 	routeNotFound() {
-		this.app.use((reqq, res) => {
-			const req = reqq as any;
-			
+		this.app.use((req: Request, res) => {
 			const min = !req.ml
 				|| req.xhr
 				|| req.device.type === 'bot'
@@ -614,5 +610,3 @@ export class Site extends EventEmitter {
 		this.translator.translate(src, from, to, cb, srclog);
 	}
 }
-
-module.exports = Site;

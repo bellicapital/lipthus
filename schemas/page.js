@@ -34,13 +34,7 @@ module.exports = function page(Schema){
 		collection: 'pages',
 		lastMod: true
 	});
-	/*
-	s.options.toObject = {
-		transform: function (doc, ret, options) {
-			ret.css = doc.css;
-		}
-	};
-	*/
+
 	s.methods= {
 		display: function(req, res, next){
 			const route = req.site.dir + '/routes/' + (this.route || this.key);
@@ -85,22 +79,6 @@ module.exports = function page(Schema){
 			return Promise.all(promises);
 		}
 	};
-
-	// s.statics = {
-	// 	getAll: function(cb){
-	// 		this.find().sort({weight: 1}).exec(function(err, pages){
-	// 			if(err) return cb(err);
-	//
-	// 			const ret = {};
-	//
-	// 			pages.forEach(function(p){
-	// 				ret[p.key] = p.jsonInfo();
-	// 			});
-	//
-	// 			cb(err, ret);
-	// 		});
-	// 	}
-	// };
 
 	return s;
 };
