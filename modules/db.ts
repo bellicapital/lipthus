@@ -20,6 +20,9 @@ debug.log = console.log.bind(console);
 require('./schema-types').install();
 
 export class Db extends (events.EventEmitter as { new(): any; }) {
+	
+	public name: string;
+	
 	constructor(options: any, site: Site) {
 		super();
 		
@@ -84,7 +87,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 		
 		Object.defineProperties(this._conn, {
 			eucaDb: {value: this},
-			site: {value: this},
+			site: {value: this.site},
 			app: {value: this.app}
 		});
 		

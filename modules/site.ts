@@ -55,7 +55,7 @@ export class Site extends EventEmitter {
 	public externalProtocol: string;
 	public staticHost: string;
 	public domainName: string;
-	public db: any;
+	public db: Db;
 	public app: Application;
 	public pages: any = {};
 	public plugins: any = {};
@@ -411,9 +411,6 @@ export class Site extends EventEmitter {
 				this.staticHost = req.protocol + '://' + (this.config.static_host || req.headers.host);
 			
 			res.locals.staticHost = this.staticHost;
-			
-			/** @deprecated */
-			req.staticHost = this.staticHost;
 			
 			next();
 		});

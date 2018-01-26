@@ -1,7 +1,5 @@
 "use strict";
 
-const path = require('path');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
 const mongoose = require('mongoose');
 
 const getFile = (id, fss, idx = 0) => {
@@ -14,8 +12,8 @@ module.exports = function(req, res, next){
 
 	if(!id)
 		return next(new Error('No id param'));
-	
-	const m = id.match(/(^[^\.]+)\.(.+)$/);
+
+	const m = id.match(/(^[^.]+)\.(.+)$/);
 	const dbname = m && m[1];
 
 	if(m)
@@ -43,7 +41,7 @@ module.exports = function(req, res, next){
 			const video = res.locals.video = file.info();
 
 			const params = {
-				url: req.staticHost + '/embed/' + video.id,
+				url: req.site.staticHost + '/embed/' + video.id,
 				type: "text/html",
 				width: video.width,
 				height: video.height
@@ -55,7 +53,7 @@ module.exports = function(req, res, next){
 				})
 				.then(p => p.load())
 				.then(p => p
-					.addOpenGraph('image', req.staticHost + video.thumb)
+					.addOpenGraph('image', req.site.staticHost + video.thumb)
 					.addOpenGraph('type', 'video')
 					.addOpenGraph('video', params, true)
 					// .addCSS('video')
