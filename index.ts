@@ -40,8 +40,7 @@ require('./modules/functions');
 
 export function lipthusSite(dir: string, options: any) {
 	return server.check()
-		.then(() => new Site(dir).init(options))
-		.catch(console.error.bind(console));
+		.then(() => new Site(dir).init(options));
 }
 
 export const urlContent = utils.urlContent;

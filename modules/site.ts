@@ -262,8 +262,7 @@ export class Site extends EventEmitter {
 				const promises = this.conf.dbs.map((db_: any) => this.connectDB(db_));
 				
 				return Promise.all(promises);
-			})
-			.catch(console.error.bind(console));
+			});
 	}
 	
 	sendMail(opt: any, throwError?: boolean) {
