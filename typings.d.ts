@@ -16,7 +16,7 @@ type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((..
 
 declare namespace e {
 	
-	function lipthusSite(dir: string, options: any): Promise<void>;
+	function lipthusSite(dir: string, options: any): Promise<Site>;
 	function urlContent(url: string): Promise<string>;
 	
 	interface Hooks {
