@@ -5,17 +5,13 @@ require('./modules/vanilla.extensions');
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
 
-import express = require( "express" );
 import {Site} from "./modules/site";
 import * as Bdi from './modules/bdi';
 
 const server = require('./lib/server');
-const build = require('./modules/ng2').build;
 
 if (!process.env.TMPDIR)
 	process.env.TMPDIR = '/tmp';
-
-export const listen = require('./modules/listen');
 
 if (!process.env.NODE_ENV)
 	process.env.NODE_ENV = 'development';
@@ -45,10 +41,5 @@ export function lipthusSite(dir: string, options: any) {
 
 export const urlContent = utils.urlContent;
 export const BinDataImage = Bdi;
-module.exports = exports;
-exports.Site = Site;
-exports.dir = __dirname;
-exports.listen = listen;
-exports.express = express;
-exports.build = build;
-exports.AjaxGlobalMethods = require('./modules/ajax-global-methods');
+export {Site};
+// export default lipthusSite;

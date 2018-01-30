@@ -1,9 +1,8 @@
-
 "use strict";
 
 const res = [
-	/compatible;\s(.+);.*(http[^\)]+)/i,
-	/^([^\s]+)\s*.*(http[^\)\\]+)/i
+	/compatible;\s(.+);.*(http[^)]+)/i,
+	/^([^\s]+)\s*.*(http[^)\\]+)/i
 ];
 
 module.exports = function bot(Schema){

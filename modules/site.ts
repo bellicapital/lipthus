@@ -39,7 +39,6 @@ process.env.GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || "120000000"
 
 export class Site extends EventEmitter {
 	
-	public dir: string;
 	public cmsDir: string;
 	public package: any;
 	public cmsPackage: any;
@@ -65,11 +64,14 @@ export class Site extends EventEmitter {
 	public langUrls: any;
 	public translator: any;
 	
-	constructor(dir: string) {
+	constructor(public dir: string) {
 		super();
 		
-		this.dir = dir;
 		this.cmsDir = path.dirname(__dirname);
+		
+		if (path.basename(this.cmsDir) === 'dist')
+			this.cmsDir = path.dirname(this.cmsDir);
+
 		this.package = require(dir + '/package');
 		this.cmsPackage = require('../package');
 		
