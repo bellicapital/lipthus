@@ -1,10 +1,10 @@
 import * as Debug from 'debug';
-require('./modules/vanilla.extensions');
+import {Site} from "./modules";
+require('./lib/vanilla.extensions');
+require('./modules/functions');
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
-
-import {Site} from "./modules";
 
 const server = require('./lib/server');
 
@@ -28,9 +28,9 @@ process.on('warning', (warning) => {
 
 process.on('unhandledRejection', (reason, p) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
-require('./modules/functions');
-
 export function lipthusSite(dir: string, options: any) {
 	return server.check()
 		.then(() => new Site(dir).init(options));
 }
+
+export * from './modules';
