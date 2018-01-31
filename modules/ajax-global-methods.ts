@@ -1,4 +1,4 @@
-export default class AjaxGlobalMethods {
+export class AjaxGlobalMethods {
 	constructor(public req: any) {
 	}
 	
@@ -81,3 +81,5 @@ export default class AjaxGlobalMethods {
 			.then(() => ({ok: true}));
 	}
 }
+
+export default AjaxGlobalMethods;

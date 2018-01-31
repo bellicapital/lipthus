@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const mongoose = require('mongoose');
+const {BinDataFile} = require('../modules');
 const multimedia = require('multimedia-helper');
 const debug = require('debug')('site:upload');
 
@@ -88,7 +89,7 @@ class ReqFile {
 				maxheight: this.req.site.config.imgmaxheight
 			};
 
-			require('../modules/bdi').fromFile(this.file, opt)
+			BinDataFile.fromFile(this.file, opt)
 				.then(bdf => {
 					let key = bdf.getKey();
 					let namespace = this.field;

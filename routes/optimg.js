@@ -1,11 +1,9 @@
-/* global module, process */
-
 "use strict";
 
 const optimage = require('../lib/optimage');
 const fs = require('fs');
 const Mime = require('mime');
-const BinDataImage = require('../modules/bdi');
+const {BinDataImage} = require('../modules');
 
 module.exports = function(req, res, next){
 	const opt = {

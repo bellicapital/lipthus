@@ -22,7 +22,7 @@ import striptags = require('striptags');
 // 	console.log('called at %s, line %d', stack_[1].getFileName(), stack_[1].getLineNumber());
 // };
 
-Object.each = function (o, fn) {
+Object.each = function (o: any, fn: Function) {
 	if (!o)
 		return;
 	
@@ -31,7 +31,7 @@ Object.each = function (o, fn) {
 	}
 };
 
-Object.map = function (o, fn) {
+Object.map = function (o: any, fn: Function) {
 	if (!o)
 		return;
 	
@@ -44,14 +44,14 @@ Object.map = function (o, fn) {
 	return ret;
 };
 
-Object.some = function (o, fn) {
+Object.some = function (o: any, fn: Function) {
 	if (!o)
 		return;
 	
 	Object.keys(o).some(k => fn(k, o[k]));
 };
 
-Object.extend = function (a, b) {
+Object.extend = function (a: any, b?: any) {
 	if (!b) {
 		b = a;
 		a = {};
@@ -64,15 +64,11 @@ Object.extend = function (a, b) {
 	return a;
 };
 
-Object.toArray = o => {
-	return Object.keys(o).map(k => ({key: k, value: o[k]}));
-};
+Object.toArray = (o: any) => Object.keys(o).map(k => ({key: k, value: o[k]}));
 
-Object.ksort = function (o) {
-	return Object.keys(o).sort().reduce((r: any, k: string) => r[k] = o[k], {});
-};
+Object.ksort = (o: any) => Object.keys(o).sort().reduce((r: any, k: string) => r[k] = o[k], {});
 
-Object.sort = ((o, fn) => {
+Object.sort = ((o: any, fn?: (a: ObjectArray, b: ObjectArray) => number) => {
 	const arr: Array<ObjectArray> = [];
 	
 	Object.keys(o).forEach(k => {
@@ -106,17 +102,17 @@ String.prototype.ucfirst = function () {
  * @param {type} allowedTags
  * @returns {string}
  */
-String.prototype.striptags = function (allowedTags) {
+String.prototype.striptags = function (allowedTags?: string | string[]) {
 	return striptags(this + '', allowedTags);
 };
 
-String.prototype.truncate = function (length, opt) {
+String.prototype.truncate = function (length = 100, opt: any | string = {}) {
 	if (typeof opt === 'string')
 		opt = {ellipsis: opt};
 	else if (!opt)
 		opt = {};
 	
-	let ret = truncate(this, length || 100, opt);
+	let ret = truncate(this, length, opt);
 	
 	if (opt.stripTags)
 		ret = striptags(ret, opt.allowedTags);
@@ -124,17 +120,15 @@ String.prototype.truncate = function (length, opt) {
 	return ret;
 };
 
-Date.prototype.addDays = function (days) {
+Date.prototype.addDays = function (days: number) {
 	this.setDate(this.getDate() + days);
 	return this;
 };
 
-Date.prototype.toUserDateString = function (intl, sep) {
+Date.prototype.toUserDateString = function (intl: string, sep = '/') {
 	let ret;
 	const date = this.getDate();
 	const month = this.getMonth() + 1;
-
-	sep = sep || '/';
 
 	if (intl === 'en-US')
 		ret = month + sep + date;
