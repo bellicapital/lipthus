@@ -1,16 +1,13 @@
-"use strict";
-
-module.exports = class AjaxGlobalMethods {
-	constructor(req) {
-		this.req = req;
+export default class AjaxGlobalMethods {
+	constructor(public req: any) {
 	}
-
-	main(){
+	
+	main() {
 		const req = this.req;
 		const config = req.site.config;
-
+		
 		return req.ml.langUserNames()
-			.then(ln => ({
+			.then((ln: any) => ({
 				sitename: req.site + '',
 				languages: ln,
 				user: req.user && req.user.baseInfo() || undefined,
@@ -21,22 +18,20 @@ module.exports = class AjaxGlobalMethods {
 				}
 			}));
 	}
-
+	
 	// noinspection JSUnusedGlobalSymbols
-	setConfig(name, value, ns){
-		const req = this.req;
-
-		return req.site.config.set(name, value, ns, true);
+	setConfig(name: string, value: any, ns: string) {
+		return this.req.site.config.set(name, value, ns, true);
 	}
-
+	
 	// noinspection JSUnusedGlobalSymbols
-	loginInfo(){
+	loginInfo() {
 		return this.req.ml.load('ecms-user')
 			.then(() => this.main())
-			.then(ret => {
-				if(ret.user)
+			.then((ret: any) => {
+				if (ret.user)
 					ret.msg = 'Ya estás logueado como ' + ret.user.name;
-
+				
 				const keys = [
 					'_US_LOGIN',
 					'_US_USERNAME',
@@ -47,42 +42,42 @@ module.exports = class AjaxGlobalMethods {
 					'_US_NOPROBLEM',
 					'_US_SENDPASSWORD'
 				];
-
+				
 				const LC = this.req.ml.all;
-
+				
 				ret.LC = {};
-
+				
 				keys.forEach(k => ret.LC[k] = LC[k]);
-
+				
 				return ret;
 			});
 	}
-
+	
 	// noinspection JSUnusedGlobalSymbols
-	storeFcmToken(params) {
+	storeFcmToken(params: any) {
 		const devices = this.req.user.devices || [];
-		const device = devices.find(d => d.uuid === params.uuid || d.regId === params.regId);
-
+		const device = devices.find((d: any) => d.uuid === params.uuid || d.regId === params.regId);
+		
 		if (device) {
 			if (device.regId === params.regId)
 				return {ok: true};
-
+			
 			device.regId = params.regId;
 		} else {
 			if (!params.platform)
 				params.platform = this.req.device.type;
-
+			
 			if (!params.title)
 				params.title = this.req.device.name;
-
+			
 			if (!params.version)
 				params.version = this.req.headers.userAgent;
-
+			
 			devices.push(params);
 		}
-
+		
 		return this.req.user.set('devices', devices)
 			.save()
 			.then(() => ({ok: true}));
 	}
-};
+}

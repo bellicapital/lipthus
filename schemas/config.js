@@ -2,7 +2,7 @@
 
 const definitions = require('../configs/configs');
 const groupsByKey = {};
-const Bdf = require('../modules/bdf');
+const Bdf = require('../modules').BinDataFile;
 
 Object.each(definitions, (group, d) => {
 	Object.each(d.configs, key => groupsByKey[key] = group);

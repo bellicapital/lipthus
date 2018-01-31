@@ -1,21 +1,23 @@
-
-
 const Image = require('./image');
-const gm = require('gm').subClass({ imageMagick: true });//jj 23-9-15 con imageMagick es más estable
-const BinDataFile = require('./bdf');
+const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
+import {BinDataFile, DbfInfo} from './bdf';
 const path = require('path');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
 const debug = require('debug')('site:bdi');
 
 
-class BinDataImage extends BinDataFile {
-	constructor(data, colRef) {
+export class BinDataImage extends BinDataFile {
+	
+	public width: number;
+	public height: number;
+	
+	constructor(data: any, colRef?: any) {
 		super(data, colRef);
 	}
-
-	info(width, height, crop, enlarge, nwm) {
-		const ret = new DbfImageInfo({
+	
+	info(width?: number, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
+		const ret: any = new DbfImageInfo({
 			name: this.name,
 			contentType: this.contentType,
 			naturalWidth: this.width,
@@ -29,42 +31,41 @@ class BinDataImage extends BinDataFile {
 			md5: this.md5,
 			key: this.getKey()
 		});
-
+		
 		if (width) {
-			if (!height)
-			{ //noinspection JSSuspiciousNameCombination
+			if (!height) { //noinspection JSSuspiciousNameCombination
 				height = width;
 			}
-
+			
 			if (enlarge) {
 				ret.width = width;
 				ret.height = height;
 			} else
 				Object.extend(ret, Image.fitCalc(this.width, this.height, width, height, crop));
 		}
-
+		
 		let params_fragment = ret.width + 'x' + ret.height;
-
+		
 		if (crop)
 			params_fragment += 'k1';
-
+		
 		if (nwm)
 			params_fragment += 'm' + this.md5;
-
+		
 		ret.uri = ret.path + params_fragment + '/' + this.uriName();
-
+		
 		return ret;
 	}
-
+	
 	toJSON() {
 		const ret = super.info();
-
+		
 		ret.width = this.width;
 		ret.height = this.height;
-
+		
 		return ret;
 	}
-
+	
 	getDimentions() {
 		if (!this.width) {
 			if (this.contentType === 'image/png') {
@@ -72,45 +73,45 @@ class BinDataImage extends BinDataFile {
 				this.height = this.MongoBinData.buffer.readUInt32BE(20);
 			}
 		}
-
+		
 		return {
 			width: this.width,
 			height: this.height
 		};
 	}
-
-	getThumb(width, height, crop, enlarge) {
+	
+	getThumb(width?: number, height?: number, crop?: boolean, enlarge?: boolean) {
 		return this.info().getThumb(width, height, crop, enlarge);
 	}
-
-	getCached(db, opt) {
+	
+	getCached(db: any, opt: any) {
 		const Cache = db.cache;
-
+		
 		if (this.md5)
 			opt.srcmd5 = this.md5;
-
+		
 		if (!opt['ref.id'] && this.colRef)
 			Object.keys(this.colRef).forEach(i => opt['ref.' + i] = this.colRef[i]);
-
-		const cacheOpt = {};
-
+		
+		const cacheOpt: any = {};
+		
 		Object.extend(cacheOpt, opt);
-
+		
 		cacheOpt.contentType = 'image/' + (opt.format || 'jpg');
 		delete cacheOpt.format;
-
+		
 		if (cacheOpt.wm)
 			cacheOpt.wm = true;
-
+		
 		if (!cacheOpt.width)
 			cacheOpt.width = {$exists: false};
-
+		
 		return Cache
 			.findOne(cacheOpt)
-			.then(cached => {
+			.then((cached: any) => {
 				if (cached)
 					return BinDataFile.fromMongo(cached);
-
+				
 				return this.toBuffer(opt)
 					.then(buffer => new Cache(Object.extend({
 							name: this.name,
@@ -122,120 +123,118 @@ class BinDataImage extends BinDataFile {
 							srcmd5: this.md5
 						}, opt))
 					)
-					.then(cached => cached.save())
-					.then(cached => BinDataFile.fromMongo(cached));
+					.then((cached2: any) => cached2.save())
+					.then((cached3: any) => BinDataFile.fromMongo(cached3));
 			});
-
+		
 	}
-
-	toBuffer(opt) {
+	
+	toBuffer(opt: any) {
 		return new Promise((ok, ko) => {
 			let gmi = gm(this.MongoBinData.buffer, this.contentType.replace('/', '.'))
 				.quality(70)
 				.strip()
 				.autoOrient();
-
+			
 			if (opt.width) {
 				gmi.coalesce().resize(opt.width, opt.height, opt.crop && '^');
-
+				
 				if (opt.crop)
 					gmi.gravity('Center').crop(opt.width, opt.height);
 			}
-
-			if(opt.format)
+			
+			if (opt.format)
 				gmi.setFormat(opt.format);
-
-			gmi.toBuffer((err, buffer) => {
-				if(err)
+			
+			gmi.toBuffer((err: Error, buffer: Buffer) => {
+				if (err)
 					return ko(err);
-
+				
 				if (!buffer || !opt.wm)
 					return ok(buffer);
-
+				
 				// todo: opacity
-				if (opt.wm.type === 1)//text watermark. TODO.
+				if (opt.wm.type === 1) // text watermark. TODO.
 					return ok(buffer);
-
+				
 				if (opt.wm.type === 2) {
 					gmi = gm(buffer, this.name)
 						.command('composite')
 						.gravity(opt.wm.gravity || 'Center')
 						.strip()
 						.in(opt.wm.image);
-
+					
 					if (opt.wm.geometry)
 						gmi.geometry(opt.wm.geometry);
-
-					gmi.toBuffer((err, buffer) => err ? ko(err) : ok(buffer));
+					
+					gmi.toBuffer((err2: Error, buffer2: Buffer) => err ? ko(err2) : ok(buffer2));
 				}
 			});
 		});
 	}
-
-	send(req, res, opt) {
+	
+	send(req: any, res: any, opt?: any) {
 		if (!opt)
 			return super.send(req, res);
 		else
 			return this.getCached(req.site.db, opt)
-				.then(cached => cached.send(req, res))
+				.then((cached: BinDataFile) => cached.send(req, res))
 				.catch(req.next);
 	}
-
-	postFromFile(opt){
+	
+	postFromFile(opt: any = {}) {
 		return new Promise((ok, ko) => {
 			const gmi = gm(this.MongoBinData.buffer)
 				.strip();
-
-			gmi.identify((err, ft) => {
+			
+			gmi.identify((err: any, ft: any) => {
 				if (err) {
 					if (err.code === 'ENOENT')
 						err.message += '\nis graphicsmagick installed?\nhttps://github.com/aheckmann/gm';
-
+					
 					return ko(err);
 				}
-
+				
 				this.width = ft.size.width;
 				this.height = ft.size.height;
-
-				opt = opt || {};
-
+				
 				if (opt.noResize || this.contentType.match(/(gif|svg)/i))
 					return ok(this);
-
+				
 				gmi.autoOrient();
-
+				
 				opt.maxwidth = opt.maxwidth || 960;
 				opt.maxheight = opt.maxheight || 960;
-
+				
 				if (this.width > opt.maxwidth || this.height > opt.maxheight) {
 					const s = Math.min(opt.maxwidth / this.width, opt.maxheight / this.height);
-
-					this.width = parseInt(s * this.width);
-					this.height = parseInt(s * this.height);
-
+					
+					this.width = s * this.width;
+					this.height = s * this.height;
+					
 					debug('resize image');
-
+					
 					gmi.resize(this.width, this.height);
 				}
-
-				gmi.toBuffer((err, buffer) => {
-					if (err)
-						return ko(err);
-
+				
+				gmi.toBuffer((err2: Error, buffer: Buffer) => {
+					if (err2)
+						return ko(err2);
+					
 					this.MongoBinData = new Binary(buffer);
 					this.size = buffer.length;
-
+					
 					ok(this);
 				});
 			});
 		});
 	}
-
-    static fromFile(p, opt = {}) {
-        return BinDataFile.fromFile(p, opt)
-            .then(bdi => bdi.postFromFile());
-    }
-
+	
+	static fromFile(p: any, opt = {}) {
+		return BinDataFile.fromFile(p, opt)
+			.then((bdi: BinDataImage) => bdi.postFromFile());
+	}
+	
 	// noinspection JSUnusedGlobalSymbols
 	/**
 	 *
@@ -250,12 +249,12 @@ class BinDataImage extends BinDataFile {
 	 * @param colRef
 	 * @returns {Promise.<BinDataImage>}
 	 */
-	static fromFrontEnd (params, colRef) {
+	static fromFrontEnd(params: any, colRef: any) {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
-
+		
 		if (!r)
 			return;
-
+		
 		const ext = r[1].split('/')[1];
 		const buffer = new Buffer(r[3], r[2]);
 		const date = params.lastModified || new Date();
@@ -269,31 +268,36 @@ class BinDataImage extends BinDataFile {
 			MongoBinData: new Binary(buffer),
 			weight: params.weight
 		};
-
-		if(params.size && params.size !== obj.size)
+		
+		if (params.size && params.size !== obj.size)
 			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
-
-		if(params.contentType && params.contentType !== obj.contentType)
+		
+		if (params.contentType && params.contentType !== obj.contentType)
 			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
-
+		
 		return new BinDataImage(obj, colRef).postFromFile();
 	}
 }
 
-class DbfInfo{
-	constructor(values){
-		Object.keys(values).forEach(i => this[i] = values[i]);
+class DbfImageInfo extends DbfInfo {
+	
+	width: number;
+	height: number;
+	naturalWidth: number;
+	naturalHeight: number;
+	
+	constructor(p: any) {
+		super(p);
+		
+		this.width = p.width;
+		this.height = p.height;
+		this.naturalWidth = p.naturalWidth;
+		this.naturalHeight = p.naturalHeight;
 	}
-}
-
-class DbfImageInfo extends DbfInfo{
-	constructor(values){
-		super(values);
-	}
-
+	
 	// noinspection JSUnusedLocalSymbols
-	getThumb(width, height, crop, nwm, enlarge, ext = '.jpg') {
-		let ret = {
+	getThumb(width: number, height: number, crop: boolean, nwm = false, enlarge = false, ext = '.jpg') {
+		const ret: any = {
 			uri: this.path,
 			name: this.uriName(ext),
 			width: this.width,
@@ -301,51 +305,57 @@ class DbfImageInfo extends DbfInfo{
 			originalWidth: this.width,
 			originalHeight: this.height
 		};
-
-		if(width) {
+		
+		if (width) {
 			if (!crop) {
 				const fc = Image.fitCalc(this.width, this.height, width, height, crop);
-
+				
 				ret.width = fc.width;
 				ret.height = fc.height;
 			} else {
 				ret.width = width;
 				ret.height = height;
 			}
-
+			
 			ret.uri += ret.width + 'x' + ret.height;
-
+			
 			if (crop)
 				ret.uri += 'k1';
-
+			
 			ret.uri += '/';
 		}
-
+		
 		if (nwm)
 			ret.uri += 'm' + this.md5;
-
+		
 		ret.uri += ret.name;
 		ret.originalUri = this.path + ret.name;
-
-		return  new DbfThumb(ret);
+		
+		return new DbfThumb(ret);
 	}
-
-	uriName(ext) {
+	
+	uriName(ext: string) {
 		const curext = path.extname(this.name);
 		const bn = path.basename(this.name, curext);
-
+		
 		return encodeURIComponent(bn.replace(/\s/g, '')) + (ext || curext);
 	}
 }
 
 class DbfThumb {
-	constructor(values){
+	originalUri: string;
+	uri: string;
+	name: string;
+	
+	constructor(values: any) {
 		Object.extend(this, values);
 	}
-
-	toHtml(){
+	
+	toHtml() {
 		return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';
 	}
 }
 
-module.exports = exports = BinDataImage;
+// compat
+if (process.env.NODE_ENV === 'production')
+	module.exports = exports = BinDataImage;

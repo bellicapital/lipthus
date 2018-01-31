@@ -1,40 +1,4 @@
-export {};
-
-declare global {
-	
-	interface Date {
-		toUserDatetimeString(intl: string, sep: string): string;
-		toFormDateString(): string;
-		addDays(days: number): any;
-		toUserDateString(intl: string, sep: string): string;
-		toUserTimeString(): string;
-		toFormDateTimeString(): string;
-		toSpanishDatepickerString(): string;
-		hm(): string;
-		hmFull(intl: string, sep: string): string;
-	}
-
-	interface Number {
-		size(): string;
-	}
-	
-	interface Object {
-		some(o: any, fn: (a: string, b: any) => any): void;
-		each(o: any, fn: (a: string, b: any) => any): void;
-		map(o: any, fn: (a: string, b: any) => any): any;
-		extend(a: any, b: any): any;
-		toArray(o: any): Array<any>;
-		ksort(o: any): any;
-		sort(o: any, fn: (a: ObjectArray, b: ObjectArray) => any): any;
-		values(o: any): Array<any>;
-	}
-	
-	interface String {
-		ucfirst(): string;
-		striptags(allowedTags?: string): string;
-		truncate(length: number, options?: any): string;
-	}
-}
+import {ObjectArray} from "../typings";
 
 function leadZero(n: number, s = 2) {
 	return ('0' + n).substr(-s, s);
@@ -212,7 +176,4 @@ Number.prototype.size = function () {
 	return (Math.floor(n / Math.pow(1024, e) * 100) / 100) + ' KMGTP'.charAt(e) + 'B';
 };
 
-interface ObjectArray {
-	key: string;
-	value: any;
-}
+export {};

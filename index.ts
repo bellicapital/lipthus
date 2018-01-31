@@ -28,9 +28,7 @@ process.on('warning', (warning) => {
 	console.warn(warning.stack);
 });
 
-process.on('unhandledRejection', (reason, p) => {
-	console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-});
+process.on('unhandledRejection', (reason, p) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
 require('./modules/functions');
 
@@ -42,4 +40,3 @@ export function lipthusSite(dir: string, options: any) {
 export const urlContent = utils.urlContent;
 export const BinDataImage = Bdi;
 export {Site};
-// export default lipthusSite;
