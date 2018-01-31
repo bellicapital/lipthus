@@ -62,6 +62,8 @@
 		"suppressImplicitAnyIndexErrors": true
 	},
 	"exclude": [
-		"ng-routes"
+		"ng-routes",
+		"public",
+		"dist"
 	]
 }

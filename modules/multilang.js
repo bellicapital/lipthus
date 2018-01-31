@@ -2,7 +2,6 @@
 
 const merge = require('merge-descriptors');
 const accounting = require('accounting');
-const fblocales = require('../configs/fblocales');//TODO: get from https://www.facebook.com/translations/FacebookLocales.xml
 const moment = require('moment');
 
 class Multilang {
@@ -17,6 +16,7 @@ class Multilang {
 		this.all = {};
 		this.translator = site.translator;
 		this.baseHost = req.headers && req.headers.host;
+		this.fblocales = require(site.lipthusDir + '/configs/fblocales');//TODO: get from https://www.facebook.com/translations/FacebookLocales.xml
 
 		if (/^www\./.test(this.baseHost))
 			this.baseHost = this.baseHost.substr(4);
@@ -68,7 +68,7 @@ class Multilang {
 			.catch(err => {
 				console.error(err);
 				site.config.auto_translate = false;
-				
+
 				return Multilang.availableLangs;
 			});
 	}
@@ -89,10 +89,10 @@ class Multilang {
 		if (this.locale)
 			return this.locale;
 
-		if (!fblocales[this.lang])
+		if (!this.fblocales[this.lang])
 			return Multilang.defaultLocale;
 
-		const countries = Object.keys(fblocales[this.lang]);
+		const countries = Object.keys(this.fblocales[this.lang]);
 		let ret = this.lang + '_';
 
 		if (countries.length === 1)
@@ -109,7 +109,7 @@ class Multilang {
 			default:
 				const country = this.lang.toUpperCase();
 
-				return ret += fblocales[this.lang][country] ? country : countries[0];
+				return ret += this.fblocales[this.lang][country] ? country : countries[0];
 		}
 	}
 
@@ -130,7 +130,7 @@ class Multilang {
 	_loadArray(tags, cb) {
 		if(!tags.length)
 			return Promise.resolve(this.all);
-		
+
 		const ret = {};
 		let loaded = 0;
 

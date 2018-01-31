@@ -18,7 +18,7 @@ class Config {
 
 				obj.forEach(c => indb[c.name] = c);
 
-				const configs = require('../../configs/configs');
+				const configs = require(this.site.lipthusDir + '/configs/configs');
 
 				configs.general.configs.version[2] = this.site.cmsPackage.version;
 

@@ -39,7 +39,7 @@ process.env.GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || "120000000"
 
 export class Site extends EventEmitter {
 	
-	public cmsDir: string;
+	public lipthusDir: string;
 	public lipthusBuildDir: string;
 	public package: any;
 	public cmsPackage: any;
@@ -65,11 +65,17 @@ export class Site extends EventEmitter {
 	public langUrls: any;
 	public translator: any;
 	
+	/**
+	 * @deprecated
+	 */
+	public cmsDir: string;
+	
 	constructor(public dir: string) {
 		super();
 		
 		this.lipthusBuildDir = path.dirname(__dirname);
-		this.cmsDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
+		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
+		this.cmsDir = this.lipthusDir;
 		this.package = require(dir + '/package');
 		this.cmsPackage = require('../package');
 		
@@ -469,7 +475,7 @@ export class Site extends EventEmitter {
 			dbs: {value: this.dbs}
 		});
 		
-		Object.each(require('../configs/defaults'), (k, v) => app.set(k, v));
+		Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
 		
 		if (production)
 			app.enable('socket');
