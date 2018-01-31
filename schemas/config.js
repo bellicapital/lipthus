@@ -2,7 +2,7 @@
 
 const definitions = require('../configs/configs');
 const groupsByKey = {};
-const Bdf = require('../modules').BinDataFile;
+const {BinDataFile} = require('../modules');
 
 Object.each(definitions, (group, d) => {
 	Object.each(d.configs, key => groupsByKey[key] = group);
@@ -23,7 +23,7 @@ module.exports = function config(Schema){
 		name: {type: String, unique: true},
 		value: {type: Schema.Types.Mixed, get: function(val){
 			if(this.name &&  getDefinition(this.name)[0] === 'bdf')
-				return Bdf.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
+				return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
 
 			return val;
 		}}

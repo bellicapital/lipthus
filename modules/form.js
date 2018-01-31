@@ -3,7 +3,7 @@
 "use strict";
 
 const mongoose = require('mongoose');
-const BinDataFile = require('../modules/bdf');
+const {BinDataFile} = require('../modules');
 const debug = require('debug')('site:form');
 
 
@@ -114,7 +114,7 @@ class EucaForm
 			});
 	}
 	set(name, value) {
-		const match = name.match(/^(.+)\[(.+)\]\.(.+)$/);
+		const match = name.match(/^(.+)\[(.+)]\.(.+)$/);
 
 		if(match)
 			return this.setArraySubdocValue(match[1], match[2], match[3], value);

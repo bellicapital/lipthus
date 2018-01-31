@@ -356,6 +356,4 @@ class DbfThumb {
 	}
 }
 
-// compat
-if (process.env.NODE_ENV === 'production')
-	module.exports = exports = BinDataImage;
+export default BinDataImage;

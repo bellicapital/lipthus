@@ -1,12 +1,10 @@
 import * as Debug from 'debug';
-import * as utils from './modules/utils';
 require('./modules/vanilla.extensions');
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
 
-import {Site} from "./modules/site";
-import * as Bdi from './modules/bdi';
+import {Site} from "./modules";
 
 const server = require('./lib/server');
 
@@ -36,7 +34,3 @@ export function lipthusSite(dir: string, options: any) {
 	return server.check()
 		.then(() => new Site(dir).init(options));
 }
-
-export const urlContent = utils.urlContent;
-export const BinDataImage = Bdi;
-export {Site};

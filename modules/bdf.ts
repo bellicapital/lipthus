@@ -279,6 +279,4 @@ export class DbfInfo {
 
 import {BinDataImage} from './bdi';
 
-// compat tmp
-if (process.env.NODE_ENV === 'production')
-	module.exports = exports = BinDataFile;
+export default BinDataFile;

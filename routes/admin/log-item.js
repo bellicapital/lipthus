@@ -1,7 +1,6 @@
 "use strict";
 
-const ObjectId = require('mongoose').Types.ObjectId;
-const Bdf = require('../../modules/bdf');
+const {ObjectId} = require('mongoose').Types;
 
 module.exports = (req, res, next) => {
 	const schema = req.params.schema;
@@ -14,7 +13,7 @@ module.exports = (req, res, next) => {
 				return next();
 
 			res.locals.item = item;
-			
+
 			req.logger
 				.collection('updates')
 				.find({

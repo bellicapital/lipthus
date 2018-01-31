@@ -1,9 +1,7 @@
 "use strict";
 
-const Bdf = require('../modules/bdf');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
-const $ = require('../modules/utils');
-const ObjectId = require('mongoose').Types.ObjectId;
+const {BinDataFile} = require('../modules');
+const {ObjectId} = require('mongoose').Types;
 const gm = require( 'gm' );
 
 module.exports = function(req, res, next){
@@ -54,7 +52,7 @@ module.exports = function(req, res, next){
 					.findOne({name: name})
 					.then(cached => {
 						if (cached)
-							return Bdf.fromMongo(cached).send(req, res);
+							return BinDataFile.fromMongo(cached).send(req, res);
 
 						gm(opt.width, opt.height, 'aliceblue')
 							.setFormat('png')
@@ -74,7 +72,7 @@ module.exports = function(req, res, next){
 										name: name,
 										MongoBinData: buffer
 									})
-										.then(cached => Bdf.fromMongo(cached).send(req, res));
+										.then(cached => BinDataFile.fromMongo(cached).send(req, res));
 								}
 							);
 					})
