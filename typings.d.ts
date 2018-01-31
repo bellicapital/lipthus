@@ -67,7 +67,9 @@ declare global {
 
 declare namespace e {
 	
+	// noinspection JSUnusedLocalSymbols
 	function lipthusSite(dir: string, options: any): Promise<Site>;
+	// noinspection JSUnusedLocalSymbols
 	function urlContent(url: string): Promise<string>;
 	
 	interface Hooks {
@@ -110,6 +112,7 @@ declare namespace e {
 		width: number;
 		height: number;
 		
+		// noinspection JSUnusedLocalSymbols
 		static fromUrl(str: string): Promise<BinDataImage>;
 	}
 	
