@@ -98,7 +98,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 		const s = require('../schemas/dynobject');
 		this.schema(s.name, s(Schema));
 		
-		this.addSchemasDir(this.site.cmsDir + '/schemas')
+		this.addSchemasDir(this.site.lipthusBuildDir + '/schemas')
 			.then(() => this.dynobject.getSchemas())
 			.then((schemas: any) => Object.each(schemas, (name, schema) => this.schema(name, schema)))
 			.then(() => this.schemasDir && this.addSchemasDir(this.schemasDir))
