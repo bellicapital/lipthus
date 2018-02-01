@@ -1,11 +1,4 @@
-import AjaxGlobalMethods from './ajax-global-methods';
-import {BinDataFile} from './bdf';
-import {BinDataImage} from './bdi';
-import {Site} from './site';
-
-export {
-	Site,
-	AjaxGlobalMethods,
-	BinDataFile,
-	BinDataImage
-};
+export {AjaxGlobalMethods} from './ajax-global-methods';
+export {BinDataFile} from './bdf';
+export {BinDataImage} from './bdi';
+export {Site} from './site';

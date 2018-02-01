@@ -6,8 +6,7 @@
 		"start": "node app",
 		"install": "npm run build",
 		"dev": "nodemon --exec ./node_modules/.bin/ts-node -- ./lipthus.ts",
-		"build": "npm run copy-files && tsc",
-		"copy-files": "copyfiles package.json lib/*.js lib/**/*.js modules/*.js modules/**/*.js modules/**/**/*.js routes/*.js routes/**/*.js routes/**/**/*.js schemas/*.js schemas/**/*.js updates/*.js dist"
+		"build": "tsc && copyfiles package.json lib/*.js lib/**/*.js modules/*.js modules/**/*.js modules/**/**/*.js routes/*.js routes/**/*.js routes/**/**/*.js schemas/*.js schemas/**/*.js dist"
 	},
 	"repository": {
 		"type": "git",
