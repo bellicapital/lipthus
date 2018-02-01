@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {Site} from "./site";
 import {DBRef} from "bson";
-import * as Schema from '../lib/eucaschema';
+import {LipthusSchema} from '../lib';
 
 const fs = require('mz/fs');
 const debug = require('debug')('site:db');
@@ -96,7 +96,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 		ndb.on('videoProcessed', (item: any) => this.emit('videoProcessed', item));
 		
 		const s = require('../schemas/dynobject');
-		this.schema(s.name, s(Schema));
+		this.schema(s.name, s(LipthusSchema));
 		
 		this.addSchemasDir(this.site.lipthusBuildDir + '/schemas')
 			.then(() => this.dynobject.getSchemas())
@@ -190,7 +190,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 						if (typeof s === 'function') {
 							const name = s.name || path.basename(file, '.js');
 							
-							return this.schema(name, s(Schema, this.site));
+							return this.schema(name, s(LipthusSchema, this.site));
 						}
 					});
 				});

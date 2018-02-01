@@ -4,10 +4,10 @@ const mongoose = require('mongoose');
 const _methods = require('./methods');
 const _statics = require('./statics');
 const Types = mongoose.Schema.Types;
-const EucaSchema = require('../../lib/eucaschema');
+const {LipthusSchema} = require('../../lib/lipthus-schema');
 
 
-class DoSchema extends EucaSchema {
+class DoSchema extends LipthusSchema {
 
 	/**
 	 *

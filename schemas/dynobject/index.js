@@ -1,13 +1,14 @@
 "use strict";
 
+const {LipthusSchema} = require('../../lib');
 const DoSchema = require('./do');
 const _ = require('underscore');
 
 
-module.exports = function dynobject(Schema){
-	const s = new Schema({
-		title: {type: Schema.Types.Multilang, caption: '_TITLE'},
-		description: {type: Schema.Types.Multilang, formtype: 'textarea', caption: '_DESCRIPTION'},
+module.exports = function dynobject(){
+	const s = new LipthusSchema({
+		title: {type: LipthusSchema.Types.Multilang, caption: '_TITLE'},
+		description: {type: LipthusSchema.Types.Multilang, formtype: 'textarea', caption: '_DESCRIPTION'},
 		name: String,
 		colname: String,
 		tag: String, //blog, category, product, ...
@@ -94,7 +95,7 @@ module.exports = function dynobject(Schema){
 			});
 		}
 	};
-	
+
 	s.methods = {
 		getDynValues: function(req){
 			const ret = this.toObject();
@@ -157,6 +158,6 @@ module.exports = function dynobject(Schema){
 			);
 		}
 	};
-	
+
 	return s;
 };

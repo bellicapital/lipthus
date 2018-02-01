@@ -1,5 +1,7 @@
 "use strict";
 
+import LipthusSchema from "../../lib/lipthus-schema";
+
 const mongoose  = require('mongoose');
 const DBRef = require('../../lib/dbref');
 
@@ -163,7 +165,7 @@ class ShopItemExtra {
 	}
 }
 
-ShopItemExtra.schema = new mongoose.EucaSchema({
+ShopItemExtra.schema = new mongoose.LipthusSchema({
 	key: String,
 	value: String,
 	price: Number
@@ -172,7 +174,7 @@ ShopItemExtra.schema = new mongoose.EucaSchema({
 //	_id: false
 });
 
-ShopItem.schema = new mongoose.EucaSchema({
+ShopItem.schema = new mongoose.LipthusSchema({
 	quantity: {type: Number, default: 1},
 	description: {},
 	ref: DBRef.schema,
