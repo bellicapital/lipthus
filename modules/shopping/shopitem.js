@@ -1,6 +1,6 @@
 "use strict";
 
-import {LipthusSchema, DBRef} from "../../lib/";
+import {LipthusSchema, DBRef} from "../../lib";
 
 /**
  * Used in payment
