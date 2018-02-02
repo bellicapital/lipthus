@@ -150,7 +150,7 @@ export class BinDataImage extends BinDataFile {
 		if (opt.format)
 			gmi.setFormat(opt.format);
 		
-		return gmi.toBuffer()
+		return promisify(gmi.toBuffer.bind(gmi))()
 			.then((buffer: Buffer) => {
 				if (!buffer || !opt.wm)
 					return buffer;
@@ -165,7 +165,7 @@ export class BinDataImage extends BinDataFile {
 					if (opt.wm.geometry)
 						gmi.geometry(opt.wm.geometry);
 					
-					return gmi.toBuffer();
+					return promisify(gmi.toBuffer.bind(gmi))();
 				}
 				
 				return buffer;
