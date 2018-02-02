@@ -90,6 +90,18 @@ export interface Response extends express.Response {
 
 export interface Application extends express.Application {
 	use: ApplicationRequestHandler<this>;
+	/**
+	 * @deprecated
+	 */
+	getModule: (name: string) => any;
+	/**
+	 * @deprecated
+	 */
+	eucaModule: (name: string) => any;
+	/**
+	 * @deprecated
+	 */
+	nodeModule: (name: string) => any;
 }
 
 export interface ObjectArray {

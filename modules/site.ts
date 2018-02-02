@@ -111,8 +111,18 @@ export class Site extends EventEmitter {
 		// TODO: personalizar
 		this.secret = 'euca ' + this.conf.db;
 		
-		this.db = this.connect();
-		this.app = express() as Application;
+		this.app = express() as any;
+		
+		this.db = this.connect()
+			.on('error', (err: Error) => this.emit('error', err))
+			.on('ready', () => {
+				if (!this.conf.dbs)
+					return;
+				
+				return Promise.all(this.conf.dbs.map((db_: any) => this.connectDB(db_)))
+					.then(() => this.init())
+					.catch((err: Error) => this.emit('error', err));
+			});
 	}
 	
 	init() {
@@ -258,15 +268,7 @@ export class Site extends EventEmitter {
 			user: this.dbconf.user,
 			pass: this.dbconf.pass,
 			schemasDir: this.dir + '/schemas'
-		})
-			.on('error', (err: Error) => this.emit('error', err))
-			.on('ready', () => {
-				if (!this.conf.dbs)
-					return;
-				
-				return Promise.all(this.conf.dbs.map((db_: any) => this.connectDB(db_)))
-					.then(() => this.init());
-			});
+		});
 	}
 	
 	sendMail(opt: any, throwError?: boolean) {
@@ -415,10 +417,10 @@ export class Site extends EventEmitter {
 			next();
 		});
 		
-		// ts tmp solution
-		const aapp = app as any;
-		aapp.getModule = aapp.eucaModule = (name: string) => require('./' + name); // to deprecate: eucaModule
-		aapp.nodeModule = (name: string) => require(name);
+		// noinspection JSDeprecatedSymbols
+		app.getModule = app.eucaModule = (name: string) => require('./' + name);
+		// noinspection JSDeprecatedSymbols
+		app.nodeModule = (name: string) => require(name);
 		
 		app.set('views', [this.dir + '/views', this.lipthusDir + '/views']);
 		app.set('view engine', 'pug');
