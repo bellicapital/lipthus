@@ -4,6 +4,7 @@ import {Hooks, Request, Response, Application} from "../interfaces/global.interf
 import * as Debug from "debug";
 import {Db} from "./db";
 import * as express from "express";
+
 const debug = Debug('site:site');
 const auth = require('./auth');
 const path = require('path');
@@ -115,14 +116,10 @@ export class Site extends EventEmitter {
 		
 		this.db = this.connect()
 			.on('error', (err: Error) => this.emit('error', err))
-			.on('ready', () => {
-				if (!this.conf.dbs)
-					return;
-				
-				return Promise.all(this.conf.dbs.map((db_: any) => this.connectDB(db_)))
-					.then(() => this.init())
-					.catch((err: Error) => this.emit('error', err));
-			});
+			.on('ready', () => Promise.all((this.conf.dbs || []).map((db_: any) => this.connectDB(db_)))
+				.then(() => this.init())
+				.catch((err: Error) => this.emit('error', err))
+			);
 	}
 	
 	init() {
