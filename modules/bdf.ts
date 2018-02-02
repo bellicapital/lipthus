@@ -9,29 +9,31 @@ const request = require('request');
 
 
 export class BinDataFile {
-	public weight = 0;
+	public name: string;
 	public uploadDate: Date;
 	public mtime: Date;
-	public name: string;
 	public contentType: string;
 	public size: number;
 	public colRef: any;
 	public MongoBinData: any;
 	public key: string;
 	public md5: string;
+	public weight: number;
 	
 	constructor(data: any, colRef?: any) {
-		if (data)
-			Object.extend(this, data);
+		
+		this.name = data.name;
+		this.uploadDate = ensureDate(data.uploadDate);
+		this.mtime = ensureDate(data.mtime);
+		this.contentType = data.contentType;
+		this.size = data.size;
+		this.MongoBinData = data.MongoBinData;
+		this.key = data.key;
+		this.md5 = data.md5;
+		this.weight = data.weight || 0;
 		
 		if (colRef)
 			this.setColRef(colRef);
-		
-		if (data.uploadDate && typeof data.uploadDate === 'string')
-			this.uploadDate = new Date(data.uploadDate);
-		
-		if (data.mtime && typeof data.mtime === 'string')
-			this.mtime = new Date(data.mtime);
 	}
 	
 	setColRef(colRef: any) {
@@ -293,3 +295,13 @@ export class DbfInfo implements DbfInfoParams {
 import {BinDataImage} from './bdi';
 
 export default BinDataFile;
+
+function ensureDate(date: any): Date {
+	if (date instanceof Date)
+		return date;
+	
+	if (!date)
+		return new Date();
+	
+	return new Date(date);
+}
