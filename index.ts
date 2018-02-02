@@ -36,3 +36,4 @@ export function lipthusSite(dir: string, options: any) {
 export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
+export {Request, Response, Application} from './interfaces/global.interface';
