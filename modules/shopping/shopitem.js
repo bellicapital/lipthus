@@ -1,9 +1,6 @@
 "use strict";
 
-import LipthusSchema from "../../lib/lipthus-schema";
-
-const mongoose  = require('mongoose');
-const DBRef = require('../../lib/dbref');
+import {LipthusSchema, DBRef} from "../../lib/";
 
 /**
  * Used in payment
@@ -156,7 +153,7 @@ class ShopItemExtra {
 		};
 	}
 
-	data4save(req) {
+	data4save() {
 		return {
 			key: this.key,
 			value: this.value,
@@ -165,7 +162,7 @@ class ShopItemExtra {
 	}
 }
 
-ShopItemExtra.schema = new mongoose.LipthusSchema({
+ShopItemExtra.schema = new LipthusSchema({
 	key: String,
 	value: String,
 	price: Number
@@ -174,7 +171,7 @@ ShopItemExtra.schema = new mongoose.LipthusSchema({
 //	_id: false
 });
 
-ShopItem.schema = new mongoose.LipthusSchema({
+ShopItem.schema = new LipthusSchema({
 	quantity: {type: Number, default: 1},
 	description: {},
 	ref: DBRef.schema,
