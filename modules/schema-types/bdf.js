@@ -3,9 +3,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
-const Types = mongoose.Types;
 const mongo = mongoose.mongo;
-const BinDataFile = require('../bdf');
+const {BinDataFile} = require('../bdf');
 
 
 class Bdf extends SchemaType {
@@ -86,8 +85,6 @@ const handleSingle = function(val){return this.cast(val);};
 const handleExists = () => true;
 const handleArray = function(val){return val.map(m => this.cast(m));};
 
-module.exports.install = function(){
-	Schema.Types.Bdf = Bdf;
-	Types.Bdf = mongo.BdfType;
-	return Bdf;
-};
+Schema.Types.Bdf = Bdf;
+
+module.exports.BdfType = Bdf;

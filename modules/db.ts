@@ -7,7 +7,7 @@ const fs = require('mz/fs');
 const debug = require('debug')('site:db');
 const path = require('path');
 const events = require('events');
-const GridFS = require('./../lib/gridfs').GridFS;
+const {GridFS} = require('./../lib');
 const schemaGlobal = require('./schema-plugins/schema-global');
 const schemaStatics = require('./schema-plugins/schema-statics');
 
@@ -16,8 +16,6 @@ debug.log = console.log.bind(console);
 // native promises
 // mongoose.Promise = global.Promise;
 (mongoose as any).dbs = {};
-
-require('./schema-types').install();
 
 export class Db extends (events.EventEmitter as { new(): any; }) {
 	

@@ -206,8 +206,5 @@ const handleArray = function (val) {
 /**
  * Expose
  */
-
-module.exports.install = function () {
-	Schema.Types.MlCheckboxes = MlCheckboxes;
-	return MlCheckboxes;
-};
+Schema.Types.MlCheckboxes = MlCheckboxes;
+module.exports.MlCheckboxesType = MlCheckboxes;

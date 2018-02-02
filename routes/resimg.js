@@ -1,6 +1,6 @@
 "use strict";
 
-const BinDataFile = require('../modules');
+const {BinDataFile} = require('../modules');
 const gm = require('gm').subClass({imageMagick: true});
 const fs = require('fs');
 

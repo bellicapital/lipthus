@@ -117,8 +117,8 @@ export class BinDataFile {
 			: new BinDataFile(mongo, colRef);
 	}
 	
-	static fromString(string: string, colRef: any, datetime = new Date()) {
-		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(string);
+	static fromString(str: string, colRef: any, datetime = new Date()) {
+		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
 		
 		if (!r)
 			return;
@@ -253,20 +253,33 @@ export class BinDataFile {
 	}
 }
 
-export class DbfInfo {
+export interface DbfInfoParams {
+	path: string | null;
+	name: string;
+	md5?: string;
+	contentType: string;
+	uploadDate?: Date;
+	weight: number;
+	mtime: Date;
+	size: number;
+	key: string;
+}
+
+export class DbfInfo implements DbfInfoParams {
 	
 	path: string | null;
 	name: string;
 	md5?: string;
 	contentType: string;
-	uploadDate: Date;
+	uploadDate?: Date;
 	weight: number;
 	mtime: Date;
 	size: number;
 	key: string;
 	
-	constructor(p: DbfInfo) {
+	constructor(p: DbfInfoParams) {
 		this.path = p.path;
+		this.name = p.name;
 		this.md5 = p.md5;
 		this.contentType = p.contentType;
 		this.uploadDate = p.uploadDate;

@@ -5,8 +5,8 @@ const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
 const Types = mongoose.Types;
 const mongo = mongoose.mongo;
-const BinDataFile = require('../bdf');
-const GridFSFile = require('../../lib/gridfs').GridFSFile;
+const {BinDataFile} = require('../bdf');
+const {GridFSFile} = require('../../lib');
 const GridStore = mongo.GridStore;
 
 class FsList{
@@ -231,8 +231,7 @@ Fs.prototype.castForQuery = function ($conditional, value) {
  * Expose
  */
 
-module.exports.install = function(){
-	Schema.Types.Fs = Fs;
-	Types.Fs = mongo.FsType;
-	return Fs;
-};
+Schema.Types.Fs = Fs;
+Types.Fs = mongo.FsType;
+
+module.exports.FsType = Fs;

@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const Types = mongoose.Schema.Types;
-const BinDataFile = require('../bdf');
+const {BinDataFile} = require('../bdf');
 const DBRef = require('../../lib/dbref');
 const Location = require('../geo').location;
 // const debug = require('debug')('site:schema-global');

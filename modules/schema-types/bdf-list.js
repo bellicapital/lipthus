@@ -1,6 +1,6 @@
 "use strict";
 
-const BinDataFile = require('../bdf');
+const {BinDataFile} = require('../bdf');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
@@ -14,10 +14,10 @@ class BinDataFileList
 	getFirst()
 	{
 		const keys = Object.keys(this);
-		
+
 		if(!keys.length)
 			return;
-		
+
 		return Object.keys(this).map(key => this[key]).sort((a, b) => a.weight - b.weight)[0];
 	}
 
@@ -62,7 +62,7 @@ class BdfList extends SchemaType {
 	constructor(key, options) {
 		super(key, options);
 	}
-	
+
 	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	checkRequired(val) {
 		return null !== val;
@@ -162,13 +162,8 @@ const handleExists = () => true;
 const handleArray = function(val){return val.map(m => this.cast(m));};
 
 
-module.exports.install = function(){
-
-	/**
-	 * Expose
-	 */
-
-	Schema.Types.BdfList = BdfList;
-
-	return BdfList;
-};
+/**
+ * Expose
+ */
+Schema.Types.BdfList = BdfList;
+module.exports.BinDataFileList = BinDataFileList;

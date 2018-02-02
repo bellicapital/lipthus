@@ -1,7 +1,7 @@
 "use strict";
 
 const {BinDataFile} = require('../modules');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
+const {GridFSFile} = require('../lib');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = function(req, res, next){

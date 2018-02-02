@@ -118,8 +118,5 @@ const handleArray = function (val) {
 /**
  * Expose
  */
-
-module.exports.install = function () {
-	Schema.Types.MlSelector = MlSelector;
-	return MlSelector;
-};
+Schema.Types.MlSelector = MlSelector;
+module.exports.MlSelectorType = MlSelector;

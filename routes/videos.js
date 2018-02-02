@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require('path');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
+const {GridFSFile} = require('../lib');
 const mongoose = require('mongoose');
 
 module.exports = function(req, res, next){

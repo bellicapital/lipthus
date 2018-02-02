@@ -1,7 +1,5 @@
 "use strict";
 
-const path = require('path');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
 const mongoose = require('mongoose');
 
 const getFile = (id, fss, idx = 0) => {
@@ -14,8 +12,8 @@ module.exports = function(req, res, next){
 
 	if(!id)
 		return next(new Error('No id param'));
-	
-	const m = id.match(/(^[^\.]+)\.(.+)$/);
+
+	const m = id.match(/(^[^.]+)\.(.+)$/);
 	const dbname = m && m[1];
 
 	if(m)

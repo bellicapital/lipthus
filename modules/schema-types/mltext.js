@@ -181,15 +181,11 @@ class MultilangText {
 	}
 }
 
+/**
+ * Expose
+ */
 
-module.exports.install = function () {
-	/**
-	 * Expose
-	 */
-
-	Schema.Types.Multilang = Multilang;
-	Types.Multilang = Multilang;
-	return Multilang;
-};
-
+Schema.Types.Multilang = Multilang;
+Types.Multilang = Multilang;
+module.exports.MultilangType = Multilang;
 module.exports.MultilangText = MultilangText;

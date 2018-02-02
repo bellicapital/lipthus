@@ -1,6 +1,8 @@
 const Image = require('./image');
 const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
-import {BinDataFile, DbfInfo} from './bdf';
+import {BinDataFile, DbfInfo, DbfInfoParams} from './bdf';
+import {promisify} from 'util';
+
 const path = require('path');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
@@ -113,7 +115,7 @@ export class BinDataImage extends BinDataFile {
 					return BinDataFile.fromMongo(cached);
 				
 				return this.toBuffer(opt)
-					.then(buffer => new Cache(Object.extend({
+					.then((buffer: Buffer) => new Cache(Object.extend({
 							name: this.name,
 							contentType: cacheOpt.contentType,
 							mtime: this.mtime || new Date(),
@@ -129,33 +131,26 @@ export class BinDataImage extends BinDataFile {
 		
 	}
 	
-	toBuffer(opt: any) {
-		return new Promise((ok, ko) => {
-			let gmi = gm(this.MongoBinData.buffer, this.contentType.replace('/', '.'))
-				.quality(70)
-				.strip()
-				.autoOrient();
+	toBuffer(opt: any): Promise<Buffer> {
+		let gmi = gm(this.MongoBinData.buffer, this.contentType.replace('/', '.'))
+			.quality(70)
+			.strip()
+			.autoOrient();
+		
+		if (opt.width) {
+			gmi.coalesce().resize(opt.width, opt.height, opt.crop && '^');
 			
-			if (opt.width) {
-				gmi.coalesce().resize(opt.width, opt.height, opt.crop && '^');
-				
-				if (opt.crop)
-					gmi.gravity('Center').crop(opt.width, opt.height);
-			}
-			
-			if (opt.format)
-				gmi.setFormat(opt.format);
-			
-			gmi.toBuffer((err: Error, buffer: Buffer) => {
-				if (err)
-					return ko(err);
-				
+			if (opt.crop)
+				gmi.gravity('Center').crop(opt.width, opt.height);
+		}
+		
+		if (opt.format)
+			gmi.setFormat(opt.format);
+		
+		return gmi.toBuffer()
+			.then((buffer: Buffer) => {
 				if (!buffer || !opt.wm)
-					return ok(buffer);
-				
-				// todo: opacity
-				if (opt.wm.type === 1) // text watermark. TODO.
-					return ok(buffer);
+					return buffer;
 				
 				if (opt.wm.type === 2) {
 					gmi = gm(buffer, this.name)
@@ -167,10 +162,11 @@ export class BinDataImage extends BinDataFile {
 					if (opt.wm.geometry)
 						gmi.geometry(opt.wm.geometry);
 					
-					gmi.toBuffer((err2: Error, buffer2: Buffer) => err ? ko(err2) : ok(buffer2));
+					return gmi.toBuffer();
 				}
+				
+				return buffer;
 			});
-		});
 	}
 	
 	send(req: any, res: any, opt?: any) {
@@ -183,23 +179,16 @@ export class BinDataImage extends BinDataFile {
 	}
 	
 	postFromFile(opt: any = {}) {
-		return new Promise((ok, ko) => {
-			const gmi = gm(this.MongoBinData.buffer)
-				.strip();
-			
-			gmi.identify((err: any, ft: any) => {
-				if (err) {
-					if (err.code === 'ENOENT')
-						err.message += '\nis graphicsmagick installed?\nhttps://github.com/aheckmann/gm';
-					
-					return ko(err);
-				}
-				
+		const gmi = gm(this.MongoBinData.buffer)
+			.strip();
+		
+		return promisify(gmi.identify.bind(gmi))()
+			.then((ft: any) => {
 				this.width = ft.size.width;
 				this.height = ft.size.height;
 				
 				if (opt.noResize || this.contentType.match(/(gif|svg)/i))
-					return ok(this);
+					return;
 				
 				gmi.autoOrient();
 				
@@ -217,17 +206,19 @@ export class BinDataImage extends BinDataFile {
 					gmi.resize(this.width, this.height);
 				}
 				
-				gmi.toBuffer((err2: Error, buffer: Buffer) => {
-					if (err2)
-						return ko(err2);
-					
-					this.MongoBinData = new Binary(buffer);
-					this.size = buffer.length;
-					
-					ok(this);
-				});
+				return promisify(gmi.toBuffer.bind(gmi))()
+					.then((buffer: Buffer) => {
+						this.MongoBinData = new Binary(buffer);
+						this.size = buffer.length;
+					});
+			})
+			.then(() => this)
+			.catch((err: any) => {
+				if (err.code === 'ENOENT')
+					err.message += '\nis graphicsmagick installed?\nhttps://github.com/aheckmann/gm';
+				
+				throw err;
 			});
-		});
 	}
 	
 	static fromFile(p: any, opt = {}) {
@@ -279,14 +270,22 @@ export class BinDataImage extends BinDataFile {
 	}
 }
 
-class DbfImageInfo extends DbfInfo {
+export interface DbfImageInfoParams extends DbfInfoParams {
+	
+	width: number;
+	height: number;
+	naturalWidth: number;
+	naturalHeight: number;
+}
+
+export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	
 	width: number;
 	height: number;
 	naturalWidth: number;
 	naturalHeight: number;
 	
-	constructor(p: any) {
+	constructor(p: DbfImageInfoParams) {
 		super(p);
 		
 		this.width = p.width;
@@ -295,7 +294,6 @@ class DbfImageInfo extends DbfInfo {
 		this.naturalHeight = p.naturalHeight;
 	}
 	
-	// noinspection JSUnusedLocalSymbols
 	getThumb(width: number, height: number, crop: boolean, nwm = false, enlarge = false, ext = '.jpg') {
 		const ret: any = {
 			uri: this.path,
@@ -342,7 +340,7 @@ class DbfImageInfo extends DbfInfo {
 	}
 }
 
-class DbfThumb {
+export class DbfThumb {
 	originalUri: string;
 	uri: string;
 	name: string;
