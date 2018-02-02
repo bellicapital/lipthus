@@ -8,7 +8,7 @@ const path = require('path');
 class JsManager {
 	constructor(req, res) {
 		this.dir = req.site.dir + '/public/js/';
-		this.cmsDir = req.cmsDir + '/public/js/';
+		this.lipthusDir = req.site.lipthusDir + '/public/js/';
 		this.jQueryVersion = req.app.get('jquery_version');
 		this.jQueryUiVersion = req.app.get('jquery_ui_version');
 		this.jQueryMobileVersion = req.app.get('jquery_mobile_version');
@@ -33,14 +33,14 @@ class JsManager {
 				this.add(s, opt);
 			});
 		}
-		
+
 		if (path.extname(src) !== '.js' && /^\w/.test(src) && !/^http/.test(src)) {
 			const srcE = src + '.js';
 			const dSrcE = this.deviceType + '/' + srcE;
 
-			if (exists(this.dir + dSrcE) || exists(this.cmsDir + dSrcE))
+			if (exists(this.dir + dSrcE) || exists(this.lipthusDir + dSrcE))
 				src = dSrcE;
-			else if (exists(this.dir + srcE) || exists(this.cmsDir + srcE))
+			else if (exists(this.dir + srcE) || exists(this.lipthusDir + srcE))
 				src = srcE;
 		}
 
@@ -125,7 +125,7 @@ class JsManager {
 						s.path = this.dir + src;
 						src = '/s/js/' + src;
 					} else {
-						s.path = this.cmsDir + src;
+						s.path = this.lipthusDir + src;
 						src = '/cms/js/' + src;
 					}
 
@@ -136,7 +136,7 @@ class JsManager {
 					const r = /^\/cms\/js(\/.+)/.exec(src);
 
 					if (r)
-						s.path = this.cmsDir + r[1];
+						s.path = this.lipthusDir + r[1];
 					else if (/^\/s\/js\/.+/.test(src))
 						s.path = dir + '/public' + src;
 				}
@@ -329,7 +329,7 @@ class JsFile{
 		this.deferred = true;
 		this.attributes = [];
 		this.priority = 0;
-		
+
 		Object.keys(p).forEach(k => {
 			this[k] = p[k];
 		});

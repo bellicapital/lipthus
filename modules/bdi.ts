@@ -16,6 +16,9 @@ export class BinDataImage extends BinDataFile {
 	
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
+		
+		this.width = data.width;
+		this.height = data.height;
 	}
 	
 	info(width?: number, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -295,14 +298,14 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	}
 	
 	getThumb(width: number, height: number, crop: boolean, nwm = false, enlarge = false, ext = '.jpg') {
-		const ret: any = {
+		const ret = new DbfThumb({
 			uri: this.path,
 			name: this.uriName(ext),
 			width: this.width,
 			height: this.height,
 			originalWidth: this.width,
 			originalHeight: this.height
-		};
+		});
 		
 		if (width) {
 			if (!crop) {
@@ -329,7 +332,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		ret.uri += ret.name;
 		ret.originalUri = this.path + ret.name;
 		
-		return new DbfThumb(ret);
+		return ret;
 	}
 	
 	uriName(ext: string) {
@@ -341,12 +344,21 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 }
 
 export class DbfThumb {
-	originalUri: string;
 	uri: string;
 	name: string;
+	width: number;
+	height: number;
+	originalUri?: string;
+	originalWidth: number;
+	originalHeight: number;
 	
 	constructor(values: any) {
-		Object.extend(this, values);
+		this.uri = values.uri;
+		this.name = values.name;
+		this.width = values.width;
+		this.height = values.height;
+		this.originalWidth = values.originalWidth;
+		this.originalHeight = values.originalHeight;
 	}
 	
 	toHtml() {

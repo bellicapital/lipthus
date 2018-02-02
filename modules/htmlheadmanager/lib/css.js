@@ -1,17 +1,15 @@
 "use strict";
 
 
-const $ = require('../../utils');
 const fs = require('fs');
 const path = require('path');
 const extensions = ['less', 'css'];
-const debug = require('debug')('site:head.css');
 
 class CssManager {
 	constructor(req, res) {
 		this.publicDir = req.site.dir + '/public';
 		this.dir = this.publicDir + '/css/';
-		this.cmsDir = req.site.cmsDir + '/public/css/';
+		this.lipthusDir = req.site.lipthusDir + '/public/css/';
 		this.jQueryUiVersion = req.app.get('jquery_ui_version');
 		this.jQueryMobile = false;
 		this.jQueryMobileVersion = req.app.get('jquery_mobile_version');
@@ -22,8 +20,8 @@ class CssManager {
 		this.routes = [
 			{path: this.dir + this.deviceType, url: '/d/' + this.deviceType + '/', isDevice: true},
 			{path: this.dir, url: '/d/g/'},
-			{path: this.cmsDir + this.deviceType, url: '/d/' + this.deviceType + '/', isDevice: true, isCMS: true},
-			{path: this.cmsDir, url: '/g/g/', isCMS: true}
+			{path: this.lipthusDir + this.deviceType, url: '/d/' + this.deviceType + '/', isDevice: true, isCMS: true},
+			{path: this.lipthusDir, url: '/g/g/', isCMS: true}
 		];
 		Object.defineProperties(this, {
 			cache: {value: req.db.cache},

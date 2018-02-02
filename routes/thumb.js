@@ -8,7 +8,7 @@ module.exports = function(req, res, next){
 	req.db.fs.findById(req.params.id)
 		.then(obj => {
 			if(!obj)
-				return res.status(404).render(req.cmsDir + '/views/status/404');
+				return res.status(404).render(req.site.lipthusDir + '/views/status/404');
 
 			const opt = {
 				'ref.id': new ObjectId(req.params.id),

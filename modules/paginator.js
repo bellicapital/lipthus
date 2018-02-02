@@ -29,7 +29,7 @@ class Paginator {
 
 	render(req){
 		return new Promise((ok, ko) => {
-			req.app.render(req.cmsDir + '/views/paginator', {paginator: this}, (err, html) => {
+			req.app.render(req.lipthusDir + '/views/paginator', {paginator: this}, (err, html) => {
 				err ? ko(err) : ok(html);
 			});
 		});

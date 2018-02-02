@@ -42,7 +42,7 @@ module.exports = function(err, req, res, next) {
 
 	if(err.status === 403){
 		if (!res.headersSent) {
-			return res.status(err.status).render(req.cmsDir + '/views/status/403', {
+			return res.status(err.status).render(req.site.lipthusDir + '/views/status/403', {
 				path: req.path,
 				referer: req.get('referer')
 			});

@@ -48,20 +48,19 @@ export class Site extends EventEmitter {
 	public port: number;
 	public tmpdir: string;
 	public secret: string;
-	public _hooks: Hooks = {pre: {}, post: {}};
 	public mailer: any;
 	public config: any;
-	public protocol: string;
-	public externalProtocol: string;
-	public staticHost: string;
-	public domainName: string;
+	public protocol = 'http';
+	public externalProtocol = 'https';
+	public staticHost = '';
+	public domainName = '';
 	public db: Db;
 	public app: Application;
 	public pages: any = {};
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: any;
-	public dbs: {};
+	public dbs = {};
 	public langUrls: any;
 	public translator: any;
 	
@@ -70,11 +69,12 @@ export class Site extends EventEmitter {
 	 */
 	public cmsDir: string;
 	
-	constructor(public dir: string) {
+	constructor(public dir: string, private _hooks: Hooks = {pre: {}, post: {}}) {
 		super();
 		
 		this.lipthusBuildDir = path.dirname(__dirname);
 		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
+		// noinspection JSDeprecatedSymbols
 		this.cmsDir = this.lipthusDir;
 		this.package = require(dir + '/package');
 		this.cmsPackage = require('../package');
@@ -110,23 +110,25 @@ export class Site extends EventEmitter {
 		
 		// TODO: personalizar
 		this.secret = 'euca ' + this.conf.db;
+		
+		this.db = this.connect();
+		this.app = express() as Application;
 	}
 	
-	init(hooks: Hooks) {
-		if (hooks)
-			Object.extend(this._hooks, hooks);
-		
+	init() {
 		this.createApp();
 		
 		this.mailer = new Mailer(this.conf.mail, this);
 		
-		return this.connect()
-			.then(() => Config(this))
+		Config(this)
 			.then((config: any) => {
 				this.config = config;
 				this.protocol = config.protocol;
 				this.externalProtocol = process.env.NODE_ENV !== 'development' ? config.external_protocol : 'http';
-				this.staticHost = config.static_host ? this.externalProtocol + '://' + config.static_host : '';
+				
+				if (config.static_host)
+					this.staticHost = this.externalProtocol + '://' + config.static_host;
+				
 				this.domainName = config.host;
 				
 				if (!config.port) {
@@ -163,7 +165,7 @@ export class Site extends EventEmitter {
 			.then(this.hooks.bind(this, 'pre', 'finish'))
 			.then(this.finish.bind(this))
 			.then(this.hooks.bind(this, 'post', 'finish'))
-			.then(() => this);
+			.then(() => this.emit('ready'));
 	}
 	
 	hooks(hook: string, method: string) {
@@ -251,23 +253,19 @@ export class Site extends EventEmitter {
 		if (typeof this.dbconf === 'string')
 			this.dbconf = {name: this.dbconf};
 		
-		this.dbs = {};
-		
 		return this.connectDB({
 			name: this.dbconf.name,
 			user: this.dbconf.user,
 			pass: this.dbconf.pass,
 			schemasDir: this.dir + '/schemas'
 		})
-			.then((db: any) => {
-				Object.defineProperty(this, 'db', {value: db});
-				
+			.on('error', (err: Error) => this.emit('error', err))
+			.on('ready', () => {
 				if (!this.conf.dbs)
 					return;
 				
-				const promises = this.conf.dbs.map((db_: any) => this.connectDB(db_));
-				
-				return Promise.all(promises);
+				return Promise.all(this.conf.dbs.map((db_: any) => this.connectDB(db_)))
+					.then(() => this.init());
 			});
 	}
 	
@@ -307,31 +305,27 @@ export class Site extends EventEmitter {
 	}
 	
 	connectDB(p: any): any {
-		return new Promise((ok, ko) => {
-			const params = {
-				name: p.name || p.db,
-				user: p.user || '',
-				pass: p.pass || '',
-				host: this.dbconf.host || 'localhost',
-				schemasDir: p.schemasDir // ,
-				// estas opciones no funcionan en replicaSet
-				// options: {
-				// 	reconnectTries: Number.MAX_VALUE,
-				// 	reconnectInterval: 2000
-				// }
-			};
-			
-			if (!params.name)
-				return ko('No db name provided');
-			
-			new Db(params, this)
-				.on('ready', (db: any) => ok((this.dbs as any)[p.name] = db))
-				.on('error', ko);
-		});
+		const params = {
+			name: p.name || p.db,
+			user: p.user || '',
+			pass: p.pass || '',
+			host: this.dbconf.host || 'localhost',
+			schemasDir: p.schemasDir // ,
+			// estas opciones no funcionan en replicaSet
+			// options: {
+			// 	reconnectTries: Number.MAX_VALUE,
+			// 	reconnectInterval: 2000
+			// }
+		};
+		
+		if (!params.name)
+			throw new Error('No db name provided');
+		
+		return (this.dbs[params.name] = new Db(params, this));
 	}
 	
 	createApp() {
-		const app: Application = express() as Application;
+		const app = this.app;
 		
 		Object.defineProperty(this, 'app', {value: app});
 		Object.defineProperty(app, 'site', {value: this});
@@ -339,7 +333,7 @@ export class Site extends EventEmitter {
 		app
 			.set('name', this.package.name)
 			.set('dir', this.dir)
-			.set('lipthusDir', this.cmsDir)
+			.set('lipthusDir', this.lipthusDir)
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
 			.set('csrf', csrf)
@@ -366,7 +360,8 @@ export class Site extends EventEmitter {
 				db: {value: this.db}
 			});
 			
-			req.cmsDir = this.cmsDir;
+			// noinspection JSDeprecatedSymbols
+			req.cmsDir = this.lipthusDir;
 			req.domainName = (req.hostname || req.get('host') || '').replace(/^.+\.([^.]+\.[^.]+)$/, '$1');
 			req.fullUri = req.protocol + '://' + req.headers.host + req.originalUrl;
 			
@@ -425,7 +420,7 @@ export class Site extends EventEmitter {
 		aapp.getModule = aapp.eucaModule = (name: string) => require('./' + name); // to deprecate: eucaModule
 		aapp.nodeModule = (name: string) => require(name);
 		
-		app.set('views', [this.dir + '/views', this.cmsDir + '/views']);
+		app.set('views', [this.dir + '/views', this.lipthusDir + '/views']);
 		app.set('view engine', 'pug');
 		
 		// Para usar paths absolutos en pug extends

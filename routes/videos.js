@@ -62,7 +62,7 @@ module.exports = function(req, res, next){
 					webm: 'http://' + req.headers.host + file.versions.webm
 				};
 
-				return res.render(req.cmsDir + '/views/videotag');
+				return res.render(req.site.lipthusDir + '/views/videotag');
 			} else if(/^f_\d+_/.test(ext)){//frames
 				const parsed = /^f_(\d+)_(\d*)x?(\d*)(k?)/.exec(ext);
 				const frame = parseInt(parsed[1]);

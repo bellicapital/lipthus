@@ -6,8 +6,6 @@ require('./modules/functions');
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
 
-const server = require('./lib/server');
-
 if (!process.env.TMPDIR)
 	process.env.TMPDIR = '/tmp';
 
@@ -28,9 +26,13 @@ process.on('warning', (warning) => {
 
 process.on('unhandledRejection', (reason, p) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
-export function lipthusSite(dir: string, options: any) {
-	return server.check()
-		.then(() => new Site(dir).init(options));
+export function lipthusSite(dir: string, options: any): Promise<Site> {
+	return new Promise((ok, ko) => {
+		const site = new Site(dir, options);
+		
+		site.on('ready', () => ok(site));
+		site.on('error', ko);
+	});
 }
 
 export * from './modules';

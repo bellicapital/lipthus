@@ -32,7 +32,7 @@ class HtmlPage{
 		this.view = null;
 		this.noCache = true;
 		this.locals = this.res.locals;
-		this.locals.justContent = !!(req.xhr || req.get('HTTP_X_EUCA') === 'content');
+		this.locals.justContent = (req.xhr || req.get('HTTP_X_EUCA') === 'content');
 		this.key = req.path === '/' ? '' : req.path.match(/[^/]+/)[0];
 		this.deviceType = req.device.type;
 		this.openGraph = {};
@@ -311,7 +311,7 @@ class HtmlPage{
 		this.res.status(st);
 
 		if (min && sts.indexOf(st) !== -1)
-			return this.res.headersSent || this.res.render(this.req.cmsDir + '/views/status/' + st);
+			return this.res.headersSent || this.res.render(this.req.site.lipthusDir + '/views/status/' + st);
 
 		const req = this.req;
 
@@ -754,11 +754,11 @@ class HtmlPage{
 
 HtmlPage.middleware = function(req, res, next){
 	let ret;
-	
+
 	Object.defineProperty(res, 'htmlPage', {get: function(){
 		if(!ret)
 			ret = new HtmlPage(req, res, next);
-		
+
 		return ret;
 	}});
 

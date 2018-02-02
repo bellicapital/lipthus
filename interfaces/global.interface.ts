@@ -67,7 +67,6 @@ export interface Hooks {
 }
 
 export interface Request extends express.Request {
-	cmsDir: string;
 	domainName: string;
 	staticHost: string;
 	// hostname: string;
@@ -79,6 +78,10 @@ export interface Request extends express.Request {
 	db: Db;
 	site: Site;
 	user?: any;
+	/**
+	 * @deprecated
+	 */
+	cmsDir: string;
 }
 
 export interface Response extends express.Response {

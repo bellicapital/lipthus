@@ -33,7 +33,7 @@ module.exports = function(req, res, next){
 		.findOneField(req.params.id, req.params.field)
 		.then(obj => {
 			if(!obj)
-				return res.status(404).render(req.cmsDir + '/views/status/404');
+				return res.status(404).render(req.site.lipthusDir + '/views/status/404');
 
 			if(typeof obj === 'string')
 				obj = BinDataFile.fromString(obj, {

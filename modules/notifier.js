@@ -480,8 +480,8 @@ class Notifier {
 				tpl,
 				site.dir + '/views/mail-templates/' + lang + '/' + tpl,
 				site.dir + '/views/mail-templates/es/' + tpl,
-				site.cmsDir + '/views/mail-templates/' + lang + '/' + tpl,
-				site.cmsDir + '/views/mail-templates/es/' + tpl
+				site.lipthusDir + '/views/mail-templates/' + lang + '/' + tpl,
+				site.lipthusDir + '/views/mail-templates/es/' + tpl
 			];
 
 		routes.some(function (r) {
