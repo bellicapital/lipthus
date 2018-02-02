@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const _methods = require('./methods');
 const _statics = require('./statics');
 const Types = mongoose.Schema.Types;
-const {LipthusSchema} = require('../../lib/lipthus-schema');
+const {LipthusSchema} = require('../../lib');
 
 
 class DoSchema extends LipthusSchema {

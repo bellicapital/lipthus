@@ -1,21 +1,19 @@
 "use strict";
 
-module.exports = function settings(Schema, site) {
-    //noinspection JSUnresolvedFunction
-    /** @namespace site.app */
-    const Bdf = site.app.getModule('bdf');
-    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-    const MultilangText = site.app.getModule('schema-types/mltext').MultilangText;
+const {BinDataFile, MultilangText} = require('../modules');
+const {LipthusSchema} = require('../lib');
+
+module.exports = function settings() {
 
     //noinspection JSUnresolvedVariable
-    const s = new Schema({
+    const s = new LipthusSchema({
         name: {type: String, unique: true},
         type: String,
         value: {
-            type: Schema.Types.Mixed, noWatermark: true, get: function (val) {
+            type: LipthusSchema.Types.Mixed, noWatermark: true, get: function (val) {
                 //noinspection JSUnresolvedVariable
                 if (val && val.MongoBinData) { //noinspection JSUnresolvedFunction,JSUnresolvedVariable,JSPotentiallyInvalidUsageOfThis
-                    return Bdf.fromMongo(val, {collection: 'settings', id: this._id, field: 'value'});
+                    return BinDataFile.fromMongo(val, {collection: 'settings', id: this._id, field: 'value'});
                 }
 
                 return val;

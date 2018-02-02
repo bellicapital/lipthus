@@ -4,8 +4,9 @@
 	"private": true,
 	"scripts": {
 		"start": "node app",
-		"postinstall": "npm run build && npm run copyfiles && npm run checkserver",
-		"build": "tsc",
+		"postinstall": "npm run build",
+		"build": "npm run tsc && npm run copyfiles && npm run checkserver",
+		"tsc": "tsc",
 		"copyfiles": "copyfiles package.json lib/*.js lib/**/*.js modules/*.js modules/**/*.js modules/**/**/*.js routes/*.js routes/**/*.js routes/**/**/*.js schemas/*.js schemas/**/*.js dist",
 		"checkserver": "node dist/lib/server"
 	},
