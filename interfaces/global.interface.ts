@@ -1,21 +1,17 @@
 import * as express from "express";
-import {NextFunction} from "express";
 import {ErrorRequestHandler, IRouterHandler, IRouterMatcher} from "express-serve-static-core";
-import {Site} from "./modules";
-import {Db} from "./modules";
-import {Binary} from "bson";
-import {ObjectArray} from "./";
+import {Site, Db} from "../modules";
 
-declare function l(): void;
-
-interface RequestHandler {
+export interface RequestHandler {
 	// tslint:disable-next-line callable-types (This is extended from and can't extend from a type alias in ts<2.2
-	(req: Request, res: Response, next: NextFunction): any;
+	// (req: Request, res: Response, next: express.NextFunction): any;
 }
-type RequestHandlerParams = RequestHandler | ErrorRequestHandler | Array<RequestHandler | ErrorRequestHandler>;
-type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((...handlers: RequestHandlerParams[]) => T);
+export type RequestHandlerParams = RequestHandler | ErrorRequestHandler | Array<RequestHandler | ErrorRequestHandler>;
+export type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((...handlers: RequestHandlerParams[]) => T);
 
 declare global {
+	
+	function l(): void;
 	
 	interface Date {
 		// noinspection JSUnusedLocalSymbols
@@ -65,12 +61,7 @@ declare global {
 	}
 }
 
-// noinspection JSUnusedLocalSymbols
-export declare function lipthusSite(dir: string, options: any): Promise<Site>;
-// noinspection JSUnusedLocalSymbols
-export declare function urlContent(url: string): Promise<string>;
-
-declare interface Hooks {
+export interface Hooks {
 	pre: any;
 	post: any;
 }
@@ -98,25 +89,8 @@ export interface Application extends express.Application {
 	use: ApplicationRequestHandler<this>;
 }
 
-export class BinDataImage {
-	weight?: number;
-	contentType: string;
-	size: number;
-	md5: string;
-	uploadDate: Date;
-	mtime: Date;
-	name: string;
-	MongoBinData: Binary;
-	width: number;
-	height: number;
-	
-	// noinspection JSUnusedLocalSymbols
-	static fromUrl(str: string): Promise<BinDataImage>;
-}
-
 export interface ObjectArray {
 	key: string;
 	value: any;
 }
 
-export {Types} from 'mongoose';

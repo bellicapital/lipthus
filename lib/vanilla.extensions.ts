@@ -1,4 +1,5 @@
-import {ObjectArray} from "../typings";
+import {ObjectArray} from "../interfaces/global.interface";
+
 
 function leadZero(n: number, s = 2) {
 	return ('0' + n).substr(-s, s);

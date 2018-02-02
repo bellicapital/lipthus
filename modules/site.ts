@@ -1,6 +1,6 @@
 import {NextFunction} from "express";
 import {EventEmitter} from "events";
-import {Hooks, Request, Response, Application} from "../typings";
+import {Hooks, Request, Response, Application} from "../interfaces/global.interface";
 import * as Debug from "debug";
 import {Db} from "./db";
 import * as express from "express";

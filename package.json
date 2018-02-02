@@ -25,7 +25,7 @@
 		"url": "null"
 	},
 	"homepage": "https://github.com/eucalipthus/lipthus",
-	"typings": "./typings.d.ts",
+	"typings": "dist/index.d",
 	"main": "dist/index",
 	"dependencies": {
 		"accounting": "^0.4.1",
