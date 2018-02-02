@@ -1,6 +1,6 @@
 "use strict";
 
-import {LipthusSchema, DBRef} from "../../lib";
+const {LipthusSchema, DBRef} = require("../../lib");
 
 /**
  * Used in payment
