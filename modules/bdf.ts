@@ -184,7 +184,7 @@ export class BinDataFile {
 	}
 	
 	// noinspection JSUnusedGlobalSymbols
-	static fromUrl(url: string) {
+	static fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
 		return new Promise((ok, ko) => {
 			request({url: url, encoding: null}, (err: Error, res: any, body: any) => {
 				if (err)
