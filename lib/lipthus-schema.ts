@@ -17,6 +17,7 @@ export class LipthusSchema extends Schema {
 	
 	public tree: any;
 	public db: any;
+	public static Types = Schema.Types;
 	
 	constructor(obj: any, public options: any = {}) {
 		super(obj, options);
