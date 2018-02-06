@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {Schema} from "mongoose";
+import {Schema, SchemaTypes} from "mongoose";
 
 const plugins = {
 	lastMod: require('../modules/schema-plugins/lastmod')
@@ -17,7 +17,7 @@ export class LipthusSchema extends Schema {
 	
 	public tree: any;
 	public db: any;
-	public static Types = Schema.Types;
+	public static Types = SchemaTypes;
 	
 	constructor(obj: any, public options: any = {}) {
 		super(obj, options);
