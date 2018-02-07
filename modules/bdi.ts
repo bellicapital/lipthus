@@ -37,27 +37,34 @@ export class BinDataImage extends BinDataFile {
 			key: this.getKey()
 		});
 		
-		if (width) {
-			if (!height) { //noinspection JSSuspiciousNameCombination
-				height = width;
+		ret.uri = ret.path;
+		
+		// los svg no se redimensionan
+		if (this.contentType.indexOf('svg') !== -1) {
+			if (width) {
+				if (!height) { //noinspection JSSuspiciousNameCombination
+					height = width;
+				}
+				
+				if (enlarge) {
+					ret.width = width;
+					ret.height = height;
+				} else
+					Object.extend(ret, Image.fitCalc(this.width, this.height, width, height, crop));
 			}
 			
-			if (enlarge) {
-				ret.width = width;
-				ret.height = height;
-			} else
-				Object.extend(ret, Image.fitCalc(this.width, this.height, width, height, crop));
+			ret.uri += ret.width + 'x' + ret.height;
+			
+			if (crop)
+				ret.uri += 'k1';
+			
+			if (nwm)
+				ret.uri += 'm' + this.md5;
+			
+			ret.uri += '/';
 		}
 		
-		let params_fragment = ret.width + 'x' + ret.height;
-		
-		if (crop)
-			params_fragment += 'k1';
-		
-		if (nwm)
-			params_fragment += 'm' + this.md5;
-		
-		ret.uri = ret.path + params_fragment + '/' + this.uriName();
+		ret.uri += this.uriName();
 		
 		return ret;
 	}
