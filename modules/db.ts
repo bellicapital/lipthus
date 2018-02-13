@@ -200,7 +200,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 					.then((plugins: Array<string>) => {
 						if (plugins) {
 							plugins.forEach(plugin => {
-								const name = path.basename(plugin, '.js');
+								const name = path.basename(plugin, path.extname(plugin));
 								
 								if (this.schemas[name])
 									this.schemas[name].plugin(require(dir + '/plugins/' + name), this);
