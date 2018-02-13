@@ -173,16 +173,16 @@ class Subscriptor {
 	}
 
 	subscribeModel(name, db) {
-		debug('subscribe to %s in %s', name, db);
+		debug('subscribe to ' + name + ' in ' + db.name);
 
 		const itemScript = this.getItemScript(name);
 
 		db = db || this.app.site.db;
 
-		if(!this.models[db])
-			this.models[db] = {};
+		if(!this.models[db.name])
+			this.models[db.name] = {};
 
-		this.models[db][name] = {
+		this.models[db.name][name] = {
 			title: db[name].modelName,
 			itemScript: itemScript
 		};
@@ -267,9 +267,9 @@ class Subscriptor {
 								user.subscriptions = Object.extend(user.subscriptions, subscriptions);
 
 							user.subscriptionUrl = pending.url;
-							
+
 							user.markModified('subscriptions');
-							
+
 							return user.save();
 						}
 
