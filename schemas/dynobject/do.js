@@ -131,9 +131,21 @@ class DoSchema extends LipthusSchema {
 					p.noWatermark = !!dv.noWatermark;
 					break;
 				case 'selector':
+					switch (dv.valueType) {
+						case 'string':
+							p.type = String;
+							break;
+						case 'number':
+							p.type = Number;
+							break;
+						default:
+							p.type = Array.isArray(p.options) ? Number : String; //Types.Mixed;
+					}
+					p.formtype = 'selector';
+					break;
 				case 'lang':
 				case 'country':
-					p.type = Array.isArray(p.options) ? Number : String; //Types.Mixed;
+					p.type = String;
 					p.formtype = 'selector';
 					break;
 				case 'checkboxes':
