@@ -81,14 +81,6 @@ class Subscriptor {
 		} else
 			query['subscriptions.' + dbname + '.' + model + '.' + type] = value;
 
-		let cb;
-
-		if(typeof onlyUsers === 'function') {
-			console.warn('subscriptor.getSubscriptors callback is @deprecated. Use Promise');
-			cb = onlyUsers;
-			onlyUsers = false;
-		}
-
 		const promises = [];
 
 		promises.push(
@@ -114,11 +106,7 @@ class Subscriptor {
 			);
 
 		return Promise.all(promises)
-			.then(() => {
-				const ret = Object.values(byEmail);
-				cb && cb.call(this, null, ret);
-				return ret;
-			});
+			.then(() => Object.values(byEmail));
 	}
 
 	manageComments() {

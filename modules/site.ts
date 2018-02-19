@@ -255,7 +255,7 @@ export class Site extends EventEmitter {
 	}
 	
 	connect() {
-		this.dbconf = this.package.config.db || this.conf.db || {name: this};
+		this.dbconf = this.package.config.db || this.conf.db || {name: this.key};
 		
 		if (typeof this.dbconf === 'string')
 			this.dbconf = {name: this.dbconf};
