@@ -40,7 +40,7 @@ export class BinDataImage extends BinDataFile {
 		ret.uri = ret.path;
 		
 		// los svg no se redimensionan
-		if (this.contentType.indexOf('svg') !== -1) {
+		if (this.contentType.indexOf('svg') === -1) {
 			if (width) {
 				if (!height) { //noinspection JSSuspiciousNameCombination
 					height = width;

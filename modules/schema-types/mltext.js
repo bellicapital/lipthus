@@ -147,7 +147,7 @@ class MultilangText {
 				ok(data || src);
 
 				if (err)
-					console.trace(err);
+					console.error(err.error || (err.response && err.response.body) || err);
 
 				if (!data)
 					return;
