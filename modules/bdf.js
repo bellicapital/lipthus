@@ -16,10 +16,10 @@ class BinDataFile {
 		if (colRef)
 			this.setColRef(colRef);
 
-		if (this.uploadDate && typeof this.uploadDate === 'string')
+		if (this.uploadDate && !(this.uploadDate instanceof Date))
 			this.uploadDate = new Date(this.uploadDate);
 
-		if (this.mtime && typeof this.mtime === 'string')
+		if (this.mtime && !(this.mtime instanceof Date))
 			this.mtime = new Date(this.mtime);
 	}
 
