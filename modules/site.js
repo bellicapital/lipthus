@@ -150,7 +150,7 @@ class Site extends events.EventEmitter {
 		const promises = [];
 
 		if (plugins)
-			Object.each(plugins, k => promises.push(require('cmjs-' + k)(this.app)));
+			Object.each(plugins, k => promises.push(require(this.dir + '/node_modules/cmjs-' + k)(this.app)));
 
 		return Promise.all(promises)
 			.then(r => {
