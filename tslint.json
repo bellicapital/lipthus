@@ -33,7 +33,6 @@
     "no-duplicate-variable": true,
     "no-empty": false,
     "no-empty-interface": false,
-    "no-eval": true,
     "no-inferrable-types": [true, "ignore-params"],
     "no-shadowed-variable": true,
     "no-string-literal": false,

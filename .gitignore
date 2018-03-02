@@ -7,6 +7,5 @@ dist
 pakmanaged.js
 !Icon
 nbproject
-bower_components
 npm-debug.log
 dsresponse_log.json

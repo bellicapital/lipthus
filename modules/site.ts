@@ -4,35 +4,38 @@ import {Hooks, Request, Response, Application} from "../interfaces/global.interf
 import * as Debug from "debug";
 import {Db} from "./db";
 import * as express from "express";
+import * as path from "path";
+import * as bodyParser from "body-parser";
+import * as cookieParser from "cookie-parser";
+import * as os from "os";
+import * as device from "express-device";
+import {Config} from "./config";
+import {checkVersions} from "./updater";
+import {errorHandler} from "./errorhandler";
+import * as csurf from "csurf";
+import {session} from "./session";
 
 const debug = Debug('site:site');
 const auth = require('./auth');
-const path = require('path');
-const Config = require('./config');
-const flash = require('connect-flash');
-const bodyParser = require('body-parser');
 const multipart = require('./multipart');
-const cookieParser = require('cookie-parser');
-const favicons = require('connect-favicons');
-const errorHandler = require('./errorhandler');
-const device = require('express-device');
 const Subscriptor = require('./subscriptor');
 const Notifier = require('./notifier');
 const sitemap = require('./sitemap');
-const updater = require('./updater');
 const listen = require('./listen');
 const multilang = require('./multilang');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
-const csrf = require('csurf')({cookie: true});
+const csrf = csurf({cookie: true});
 const security = require('./security');
-const session = require('./session');
-const os = require('os');
 const HtmlPage = require('./htmlpage');
 const logger = require('./logger');
-const notFoundMin = require('../routes/notfoundmin');
 const fs = require('mz/fs');
 const Ng = require('./ng2');
+const notFoundMin = require("../routes/notfoundmin");
+
+// no se puede con import
+const flash = require('connect-flash');
+const favicons = require("connect-favicons");
 
 debug.log = console.log.bind(console);
 
@@ -61,9 +64,11 @@ export class Site extends EventEmitter {
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: any;
-	public dbs = {};
+	public dbs: any = {};
 	public langUrls: any;
 	public translator: any;
+	public store?: any;
+	private _notifier: any;
 	
 	/**
 	 * @deprecated
@@ -114,12 +119,35 @@ export class Site extends EventEmitter {
 		
 		this.app = express() as any;
 		
-		this.db = this.connect()
-			.on('error', (err: Error) => this.emit('error', err))
-			.on('ready', () => Promise.all((this.conf.dbs || []).map((db_: any) => this.connectDB(db_)))
-				.then(() => this.init())
-				.catch((err: Error) => this.emit('error', err))
-			);
+		this.db = new Db(this.dbParams(), this);
+		this.dbs[this.db.name] = this.db;
+		
+		this.connect();
+	}
+	
+	connect() {
+		this.db
+			.on('error', this.emit.bind(this, 'error'))
+			.on('ready', (db: Db) => {
+				db.addLipthusSchemas()
+					.then(() => this.db.addSchemasDir(this.dir + '/schemas'))
+					.then(() => this.init())
+					.catch(this.emit.bind(this, 'error'));
+			})
+			.connect();
+	}
+	
+	addDb(p: any, schemasDir?: string): Promise<Db> {
+		return new Promise((ok, ko) => {
+			this.dbs[p.name] = new Db(p, this)
+				.on('error', ko)
+				.on('ready', (db: Db) => {
+					db.addLipthusSchemas()
+						.then(() => schemasDir && db.addSchemasDir(schemasDir))
+						.then(() => ok(db), ko);
+				})
+				.connect();
+		});
 	}
 	
 	init() {
@@ -156,10 +184,7 @@ export class Site extends EventEmitter {
 						.catch(console.error.bind(console));
 				}
 				
-				// Notifier
-				Object.defineProperty(this, 'notifier', {value: new Notifier(this)});
-				
-				return updater.checkVersions(this);
+				return checkVersions(this);
 			})
 			.then(this.hooks.bind(this, 'pre', 'setupApp'))
 			.then(this.setupApp.bind(this))
@@ -173,6 +198,13 @@ export class Site extends EventEmitter {
 			.then(this.finish.bind(this))
 			.then(this.hooks.bind(this, 'post', 'finish'))
 			.then(() => this.emit('ready'));
+	}
+	
+	get notifier () {
+		if (!this._notifier)
+			this._notifier = new Notifier(this);
+		
+		return this._notifier;
 	}
 	
 	hooks(hook: string, method: string) {
@@ -191,7 +223,7 @@ export class Site extends EventEmitter {
 		const pr: Array<any> = [];
 		
 		if (plugins)
-			Object.each(plugins, k => pr.push(require('cmjs-' + k)(this.app)));
+			Object.each(plugins, k => pr.push(require(this.dir + '/node_modules/cmjs-' + k)(this.app)));
 		
 		return Promise.all(pr)
 			.then(r => {
@@ -254,18 +286,18 @@ export class Site extends EventEmitter {
 		return ret;
 	}
 	
-	connect() {
+	dbParams() {
 		this.dbconf = this.package.config.db || this.conf.db || {name: this.key};
 		
 		if (typeof this.dbconf === 'string')
 			this.dbconf = {name: this.dbconf};
 		
-		return this.connectDB({
+		return {
 			name: this.dbconf.name,
 			user: this.dbconf.user,
 			pass: this.dbconf.pass,
-			schemasDir: this.dir + '/schemas'
-		});
+			host: this.dbconf.host || 'localhost'
+		};
 	}
 	
 	sendMail(opt: any, throwError?: boolean) {
@@ -301,26 +333,6 @@ export class Site extends EventEmitter {
 				
 				return email;
 			});
-	}
-	
-	connectDB(p: any): any {
-		const params = {
-			name: p.name || p.db,
-			user: p.user || '',
-			pass: p.pass || '',
-			host: this.dbconf.host || 'localhost',
-			schemasDir: p.schemasDir // ,
-			// estas opciones no funcionan en replicaSet
-			// options: {
-			// 	reconnectTries: Number.MAX_VALUE,
-			// 	reconnectInterval: 2000
-			// }
-		};
-		
-		if (!params.name)
-			throw new Error('No db name provided');
-		
-		return (this.dbs[params.name] = new Db(params, this));
 	}
 	
 	createApp() {

@@ -1,4 +1,4 @@
-import {ObjectArray} from "../interfaces/global.interface";
+import {ObjectArray} from "../typings/global";
 
 
 function leadZero(n: number, s = 2) {

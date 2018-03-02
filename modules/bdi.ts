@@ -250,11 +250,11 @@ export class BinDataImage extends BinDataFile {
 	 * @param colRef
 	 * @returns {Promise.<BinDataImage>}
 	 */
-	static fromFrontEnd(params: any, colRef: any) {
+	static fromFrontEnd(params: any, colRef: any): Promise<BinDataImage | undefined> {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
 		
 		if (!r)
-			return;
+			return Promise.reject(new Error('No valid data'));
 		
 		const ext = r[1].split('/')[1];
 		const buffer = new Buffer(r[3], r[2]);

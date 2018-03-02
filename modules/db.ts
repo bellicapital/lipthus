@@ -2,29 +2,27 @@ import * as mongoose from 'mongoose';
 import {Site} from "./site";
 import {DBRef} from "bson";
 import {LipthusSchema} from '../lib';
+import {schemaGlobalMethods} from "./schema-plugins/schema-global";
+import {schemaGlobalStatics} from "./schema-plugins/schema-statics";
+import * as Debug from "debug";
+import * as path from "path";
+import {EventEmitter} from "events";
+import {GridFS} from "./../lib";
 
 const fs = require('mz/fs');
-const debug = require('debug')('site:db');
-const path = require('path');
-const events = require('events');
-const {GridFS} = require('./../lib');
-const schemaGlobal = require('./schema-plugins/schema-global');
-const schemaStatics = require('./schema-plugins/schema-statics');
+const debug = Debug('site:db');
 
 debug.log = console.log.bind(console);
 
-// native promises
-// mongoose.Promise = global.Promise;
 (mongoose as any).dbs = {};
 
-export class Db extends (events.EventEmitter as { new(): any; }) {
+export class Db extends (EventEmitter as { new(): any; }) {
 	
 	public name: string;
+	public connected = false;
 	
 	constructor(options: any, site: Site) {
 		super();
-		
-		let uri = 'mongodb://';
 		
 		this.mongoose = mongoose;
 		this.schemas = {};
@@ -32,26 +30,38 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 		this.name = options.name;
 		this.user = options.user;
 		this.pass = options.pass;
-		this.schemasDir = options.schemasDir;
+		this.host = options.host;
+		this.options = options.options;
 		(mongoose as any).dbs[this.name] = this;
-		this.connected = false;
-		
-		if (options.user && options.pass)
-			uri += options.user + ':' + options.pass + '@';
-		
-		uri += (options.host || 'localhost') + '/' + options.name;
 		
 		Object.defineProperties(this, {
 			site: {value: site, configurable: true},
 			app: {value: site.app, configurable: true}
 		});
+	}
+	
+	connect() {
+		let uri = 'mongodb://';
 		
-		this._conn = mongoose.createConnection(uri, options.options || {promiseLibrary: global.Promise});
+		if (this.user && this.pass)
+			uri += this.user + ':' + this.pass + '@';
+		
+		uri += (this.host || 'localhost') + '/' + this.name;
+		
+		this._conn = mongoose.createConnection(uri, this.options || {promiseLibrary: global.Promise});
 		
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
 		this._conn.on('disconnected', this.onDisconnected.bind(this));
 		this._conn.on('reconnected', this.onReconnected.bind(this));
+	}
+	
+	addLipthusSchemas() {
+		const s = require('../schemas/dynobject');
+		this.schema(s.name, s());
+		
+		return this.addSchemasDir(this.site.lipthusBuildDir + '/schemas')
+			.then(() => this.dynobject.addSchemas());
 	}
 	
 	onConnError(e: any) {
@@ -93,23 +103,7 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 		
 		ndb.on('videoProcessed', (item: any) => this.emit('videoProcessed', item));
 		
-		const s = require('../schemas/dynobject');
-		this.schema(s.name, s(LipthusSchema));
-		
-		this.addSchemasDir(this.site.lipthusBuildDir + '/schemas')
-			.then(() => this.dynobject.getSchemas())
-			.then((schemas: any) => Object.each(schemas, (name, schema) => this.schema(name, schema)))
-			.then(() => this.schemasDir && this.addSchemasDir(this.schemasDir))
-			.then(() => this.emit('ready', this))
-			.catch((err: any) => console.error(err.stack));
-		
-		// process.on('SIGINT', () => {
-		// 	this._conn.close(() => {
-		// 		console.log("Mongoose connection to " + this.name + " is disconnected due to application termination");
-		//
-		// 		setTimeout(() => process.exit(0), 300);
-		// 	});
-		// });
+		this.emit('ready', this);
 	}
 	
 	toString() {
@@ -159,8 +153,8 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 	
 	schema(name: string, schema: any) {
 		schema.set('name', name);
-		schema.plugin(schemaGlobal); // , {name: name});
-		schema.plugin(schemaStatics);
+		schema.plugin(schemaGlobalMethods); // , {name: name});
+		schema.plugin(schemaGlobalStatics);
 		
 		// Avoid collection name mongoose pluralization and add easy access throw the schema object
 		if (!schema.options.collection)
@@ -175,40 +169,43 @@ export class Db extends (events.EventEmitter as { new(): any; }) {
 	
 	addSchemasDir(dir: string) {
 		return fs.readdir(dir)
-			.then((schemas: Array<any>) => {
-				const promises = schemas.map(file => {
-					const fpath = dir + '/' + file;
-					
-					return fs.stat(fpath).then((stat: any) => {
-						if (stat.isDirectory())
+			.then((schemas: Array<any>) =>
+					Promise.all(schemas.map(file => {
+						// avoid ts definition files
+						if (file.match(/\.d\.ts$/))
 							return;
 						
-						const s = require(fpath);
+						const fpath = dir + '/' + file;
 						
-						if (typeof s === 'function') {
-							const name = s.name || path.basename(file, '.js');
+						return fs.stat(fpath).then((stat: any) => {
+							if (stat.isDirectory())
+								return;
 							
-							return this.schema(name, s(LipthusSchema, this.site));
-						}
+							const s = require(fpath);
+							const name = s.name;
+							
+							if (typeof s === 'function') {
+								return this.schema(name, s(LipthusSchema, this.site));
+							} else if (s.getSchema) {
+								return this.schema(s.name, s.getSchema());
+							}
+						});
+					}))
+				, (err: Error) => debug(err)	// catch schemas dir does not exists'))
+			)
+			.then(() => fs.readdir(dir + '/plugins')
+				.then((plugins: Array<string>) => {
+					(plugins || []).forEach(plugin => {
+						const name = path.basename(plugin, path.extname(plugin));
+						
+						if (this.schemas[name])
+							this.schemas[name].plugin(require(dir + '/plugins/' + name), this);
 					});
-				});
-				
-				return Promise.all(promises);
-			}, (err: Error) => debug(err))	// catch schemas dir does not exists'))
-			.then(() => {
-				return fs.readdir(dir + '/plugins')
-					.then((plugins: Array<string>) => {
-						if (plugins) {
-							plugins.forEach(plugin => {
-								const name = path.basename(plugin, path.extname(plugin));
-								
-								if (this.schemas[name])
-									this.schemas[name].plugin(require(dir + '/plugins/' + name), this);
-							});
-						}
-					}, () => {
-					}); // catch plugin directory doesn't exists
-			});
+				})
+				.catch(() => {
+					// debug('No plugins dir in ', dir);
+				}) // catch plugin directory doesn't exists
+			);
 	}
 	
 	collection(name: string, options: any, cb: Function) {

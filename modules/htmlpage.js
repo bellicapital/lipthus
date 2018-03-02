@@ -726,11 +726,6 @@ class HtmlPage{
 		});
 	}
 
-	photoswipe(skin) {
-		this.head.photoswipe(skin);
-		return this;
-	}
-
 	setNoCache () {
 		if (!this.res.headersSent)
 			this.res.set({

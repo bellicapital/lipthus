@@ -1,5 +1,7 @@
 "use strict";
 
+import {LipthusSchema} from "../../lib";
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
@@ -184,7 +186,7 @@ class MultilangText {
 /**
  * Expose
  */
-
+LipthusSchema.Types.Multilang = Multilang;
 Schema.Types.Multilang = Multilang;
 Types.Multilang = Multilang;
 module.exports.MultilangType = Multilang;

@@ -21,7 +21,7 @@ module.exports = function cache(Schema){
 		created: true,
 		lastMod: true
 	});
-	
+
 	s.pre('save', function(next){
 		if(!this.expires){
 			const expires = new Date();
@@ -29,6 +29,6 @@ module.exports = function cache(Schema){
 		}
 		next();
 	});
-	
+
 	return s;
 };

@@ -1,14 +1,21 @@
 import * as mongoose from 'mongoose';
 import {Schema, SchemaTypes} from "mongoose";
+import {lastModifiedPlugin} from "../modules/schema-plugins/lastmod";
+import {createdPlugin} from "../modules/schema-plugins/created";
+import {submitterPlugin} from "../modules/schema-plugins/submitter";
+import {modifierPlugin} from "../modules/schema-plugins/modifier";
+import {locationPlugin} from "../modules/schema-plugins/location";
+import {lastActivated} from "../modules/schema-plugins/lastActivated";
+import {removedPlugin} from "../modules/schema-plugins/removed";
 
 const plugins = {
-	lastMod: require('../modules/schema-plugins/lastmod')
-	, created: require('../modules/schema-plugins/created')
-	, submitter: require('../modules/schema-plugins/submitter')
-	, modifier: require('../modules/schema-plugins/modifier')
-	, location: require('../modules/schema-plugins/location')
-	, lastActivated: require('../modules/schema-plugins/lastActivated')
-	, removed: require('../modules/schema-plugins/removed')
+	lastMod: lastModifiedPlugin
+	, created: createdPlugin
+	, submitter: submitterPlugin
+	, modifier: modifierPlugin
+	, location: locationPlugin
+	, lastActivated: lastActivated
+	, removed: removedPlugin
 };
 
 require('./query');
@@ -17,7 +24,8 @@ export class LipthusSchema extends Schema {
 	
 	public tree: any;
 	public db: any;
-	public static Types = SchemaTypes;
+	public static Types: any = SchemaTypes;
+	public paths: any;
 	
 	constructor(obj: any, public options: any = {}) {
 		super(obj, options);
@@ -134,6 +142,8 @@ export class LipthusSchema extends Schema {
 }
 
 (mongoose as any).LipthusSchema = LipthusSchema;
+
+export {SchemaTypes};
 
 /**
  * @deprecated (usado en cmjs-newsletter)
