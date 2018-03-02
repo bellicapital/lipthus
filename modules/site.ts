@@ -1,8 +1,8 @@
 import {NextFunction} from "express";
 import {EventEmitter} from "events";
-import {Hooks, Request, Response, Application} from "../interfaces/global.interface";
+import {Hooks} from "../interfaces/global.interface";
 import * as Debug from "debug";
-import {Db} from "./db";
+import {LipthusDb} from "./db";
 import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
@@ -14,6 +14,7 @@ import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import {session} from "./session";
+import {LipthusRequest, LipthusResponse, LipthusApplication} from "../typings/lipthus";
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -58,8 +59,8 @@ export class Site extends EventEmitter {
 	public externalProtocol = 'https';
 	public staticHost = '';
 	public domainName = '';
-	public db: Db;
-	public app: Application;
+	public db: LipthusDb;
+	public app: LipthusApplication;
 	public pages: any = {};
 	public plugins: any = {};
 	public _lessVars: any;
@@ -119,7 +120,7 @@ export class Site extends EventEmitter {
 		
 		this.app = express() as any;
 		
-		this.db = new Db(this.dbParams(), this);
+		this.db = new LipthusDb(this.dbParams(), this);
 		this.dbs[this.db.name] = this.db;
 		
 		this.connect();
@@ -128,7 +129,7 @@ export class Site extends EventEmitter {
 	connect() {
 		this.db
 			.on('error', this.emit.bind(this, 'error'))
-			.on('ready', (db: Db) => {
+			.on('ready', (db: LipthusDb) => {
 				db.addLipthusSchemas()
 					.then(() => this.db.addSchemasDir(this.dir + '/schemas'))
 					.then(() => this.init())
@@ -137,11 +138,11 @@ export class Site extends EventEmitter {
 			.connect();
 	}
 	
-	addDb(p: any, schemasDir?: string): Promise<Db> {
+	addDb(p: any, schemasDir?: string): Promise<LipthusDb> {
 		return new Promise((ok, ko) => {
-			this.dbs[p.name] = new Db(p, this)
+			this.dbs[p.name] = new LipthusDb(p, this)
 				.on('error', ko)
-				.on('ready', (db: Db) => {
+				.on('ready', (db: LipthusDb) => {
 					db.addLipthusSchemas()
 						.then(() => schemasDir && db.addSchemasDir(schemasDir))
 						.then(() => ok(db), ko);
@@ -350,7 +351,7 @@ export class Site extends EventEmitter {
 			.set('csrf', csrf)
 			.set('conf', this.conf);
 		
-		app.use((req: Request, res: Response, next: NextFunction) => {
+		app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 			if (req.url === '/__test__')
 				return res.send('Connection: ' + this.db.connected);
 			
@@ -499,7 +500,7 @@ export class Site extends EventEmitter {
 		
 		return multilang(app)
 			.then(() => {
-				app.use((req: Request, res: Response, next: NextFunction) => {
+				app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 					if (req.ml && req.ml.lang && req.subdomains.length) {
 						const luri = this.langUrl(req.ml.lang);
 						
@@ -577,7 +578,7 @@ export class Site extends EventEmitter {
 	}
 	
 	routeNotFound() {
-		this.app.use((req: Request, res) => {
+		this.app.use((req: LipthusRequest, res) => {
 			const min = !req.ml
 				|| req.xhr
 				|| req.device.type === 'bot'

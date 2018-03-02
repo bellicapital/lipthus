@@ -38,5 +38,4 @@ export function lipthusSite(dir: string, options: any): Promise<Site> {
 export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
-export {Request, Response, Application} from './interfaces/global.interface';
 export {Router, NextFunction} from 'express';

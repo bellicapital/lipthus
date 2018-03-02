@@ -16,7 +16,7 @@ debug.log = console.log.bind(console);
 
 (mongoose as any).dbs = {};
 
-export class Db extends (EventEmitter as { new(): any; }) {
+export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	
 	public name: string;
 	public connected = false;

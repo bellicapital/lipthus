@@ -1,23 +1,8 @@
 import * as express from "express";
-import {Site} from "../modules";
-import Db = require("./lipthus-db");
-import {IRouterHandler, IRouterMatcher} from "express-serve-static-core";
+import {Site, LipthusDb} from "../modules";
+import {ApplicationRequestHandler} from "../interfaces/global.interface";
 
-
-export interface RequestHandler extends express.RequestHandler {
-	// tslint:disable-next-line callable-types (This is extended from and can't extend from a type alias in ts<2.2
-	// noinspection JSUnusedLocalSymbols
-	(req: LipthusRequest, res: LipthusResponse, next: express.NextFunction): any;
-}
-export interface ErrorRequestHandler extends express.ErrorRequestHandler {
-	// tslint:disable-next-line callable-types (This is extended from and can't extend from a type alias in ts<2.2
-	// noinspection JSUnusedLocalSymbols
-	(err: any, req: LipthusRequest, res: LipthusResponse, next: express.NextFunction): any;
-}
-export type RequestHandlerParams = RequestHandler | ErrorRequestHandler | Array<RequestHandler> | Array<ErrorRequestHandler>;
-export type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((...handlers: RequestHandlerParams[]) => T);
-
-export interface LipthusRequest extends express.Request {
+declare interface LipthusRequest extends express.Request {
 	domainName: string;
 	staticHost: string;
 	// hostname: string;
@@ -26,7 +11,7 @@ export interface LipthusRequest extends express.Request {
 	ml: any;
 	device: any;
 	logger: any;
-	db: Db;
+	db: LipthusDb;
 	site: Site;
 	app: LipthusApplication;
 	session: any;
@@ -42,14 +27,14 @@ export interface LipthusRequest extends express.Request {
 	cmsDir: string;
 }
 
-export interface LipthusResponse extends express.Response {
+declare interface LipthusResponse extends express.Response {
 	now: number;
 	htmlPage: any;
 }
 
-export interface LipthusApplication extends express.Application {
+declare interface LipthusApplication extends express.Application {
 	use: ApplicationRequestHandler<this>;
-	db: Db;
+	db: LipthusDb;
 	
 	/**
 	 * @deprecated
