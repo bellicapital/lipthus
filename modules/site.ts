@@ -146,8 +146,9 @@ export class Site extends EventEmitter {
 					db.addLipthusSchemas()
 						.then(() => schemasDir && db.addSchemasDir(schemasDir))
 						.then(() => ok(db), ko);
-				})
-				.connect();
+				});
+			
+			this.dbs[p.name].connect();
 		});
 	}
 	
