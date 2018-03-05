@@ -1,5 +1,5 @@
 import {DBRef, LipthusSchema} from "../../lib";
-import {LipthusRequest} from "../../typings/lipthus";
+import {LipthusRequest} from "../../index";
 
 const Types = LipthusSchema.Types;
 

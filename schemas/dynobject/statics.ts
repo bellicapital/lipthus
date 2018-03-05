@@ -1,5 +1,5 @@
 import {Types} from "mongoose";
-import {LipthusRequest} from "../../typings/lipthus";
+import {LipthusRequest} from "../../index";
 
 /**
  *

@@ -1,6 +1,6 @@
 import {Document, Model} from 'mongoose';
 import {LipthusSchema} from "../lib";
-import {LipthusRequest} from "../typings/lipthus";
+import {LipthusRequest} from "../index";
 
 export const name = 'search';
 

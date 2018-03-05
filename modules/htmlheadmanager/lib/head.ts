@@ -1,6 +1,6 @@
 import {CssManager} from "./css";
 import {JsManager} from "./js";
-import {LipthusRequest, LipthusResponse} from "../../../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../../../index";
 
 const fs = require('fs');
 const Url = require('url');

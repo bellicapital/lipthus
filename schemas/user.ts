@@ -1,31 +1,35 @@
-"use strict";
+import {LipthusSchema} from "../lib";
+import {LipthusRequest} from "../index";
+import {Document, Model} from "mongoose";
 
 const md5 = require('md5');
 const ShoppingCart = require('../modules/shopping/shoppingcart');
 
-module.exports = function user(Schema){
-	const s = new Schema({
+export const name = 'user';
+
+export function getSchema() {
+	const s = new LipthusSchema({
 		uname: {type: String, size: 20, maxlength: 25, index: {unique: true}},
-        name: String,
+		name: String,
 		given_name: String,
 		family_name: String,
-        alias: String,
-        email: {type: String, formtype: 'email', required: true, index: {unique: true}},
+		alias: String,
+		email: {type: String, formtype: 'email', required: true, index: {unique: true}},
 		email_verified: Boolean,
-        url: {type: String, formtype: 'url'},
+		url: {type: String, formtype: 'url'},
 		picture: String, // auth0 picture
-        image: {type: String, formtype: 'image'},
-        location: {type: {}, formtype: 'location'},
-        actkey: String,
+		image: {type: String, formtype: 'image'},
+		location: {type: {}, formtype: 'location'},
+		actkey: String,
 		gender: String,
 		birthday: String,
-        pass: {type: String, maxlength:  32},
-        level: {type: Number, formtype: 'int', default: 0},
-        type: String,// tipo de usuario especial (videouploader, translator, blogger, ...)
-        timezone_offset: {type: Number, default: 1},
-        last_login: Date,
-        mailok: Boolean,
-        email_notifications: {type: Boolean, default: true},
+		pass: {type: String, maxlength: 32},
+		level: {type: Number, formtype: 'int', default: 0},
+		type: String,	// tipo de usuario especial (videouploader, translator, blogger, ...)
+		timezone_offset: {type: Number, default: 1},
+		last_login: Date,
+		mailok: Boolean,
+		email_notifications: {type: Boolean, default: true},
 		subscriptions: {},
 		subscriptionUrl: String,
 		language: String,
@@ -53,23 +57,23 @@ module.exports = function user(Schema){
 		collection: 'user',
 		created: true
 	});
-
+	
 	/**
 	 * encripta password antes de ser guardado
 	 * @param {function} next
 	 */
-	s.pre('save', function(next) {
-		if(!this.isModified('pass'))
+	s.pre('save', function (this: any, next) {
+		if (!this.isModified('pass'))
 			return next();
-
+		
 		this.pass = md5(this.pass);
-
+		
 		next();
 	});
-
+	
 	s.methods = {
-		baseInfo: function(includeEmail = false){
-			const ret = {
+		baseInfo: function (this: any, includeEmail = false) {
+			const ret: any = {
 				'id': this.id,
 				'uname': this.getName(),
 				'name': this.getName(true),
@@ -79,67 +83,66 @@ module.exports = function user(Schema){
 				'picture': this.getImage('square'),
 				'fbid': this.facebook && this.facebook.id
 			};
-
+			
 			if (includeEmail)
 				ret.email = this.email;
-
+			
 			return ret;
 		},
-		getName: function(usereal){
+		getName: function (this: any, usereal?: boolean) {
 			return usereal ? this.name || this.uname : this.uname || this.name;
 		},
-        /**
-		 * @deprecated
-         * @returns {boolean}
-         */
-		isAdmin: function(){
+		/**
+		 * @returns {boolean}
+		 */
+		isAdmin: function (this: any) {
 			return this.level > 1;
 		},
-		getImage: function(type = 'normal', height){
+		getImage: function (this: any, type = 'normal', height?: number | string) {
 			let q = '?';
-
-			if(height)
+			
+			if (height)
 				q += 'width=' + type + '&height=' + height;
 			else
 				q += 'type=' + type;
-
-			if(this.facebook && this.facebook.username)
+			
+			if (this.facebook && this.facebook.username)
 				return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
-
-			if(this.picture)
+			
+			if (this.picture)
 				return this.picture;
-
+			
 			return this.image ? this.image + q : undefined;
 		},
-		subscribe2Item: function(ref){
-			if(ref.toJSON)
+		subscribe2Item: function (this: any, ref: any) {
+			if (ref.toJSON)
 				ref = ref.toJSON();
-
+			
 			const colname = ref.namespace.replace('dynobjects.', '');
-
-			if(!this.subscriptions)
+			
+			if (!this.subscriptions)
 				this.subscriptions = {};
-
-			if(!this.subscriptions[ref.db])
+			
+			if (!this.subscriptions[ref.db])
 				this.subscriptions[ref.db] = {};
-
-			if(!this.subscriptions[ref.db][colname])
+			
+			if (!this.subscriptions[ref.db][colname])
 				this.subscriptions[ref.db][colname] = {};
-
-			if(!this.subscriptions[ref.db][colname].items)
+			
+			if (!this.subscriptions[ref.db][colname].items)
 				this.subscriptions[ref.db][colname].items = [];
-
+			
 			this.subscriptions[ref.db][colname].items.push(ref.$id);
-
+			
 			this.save();
 		},
-		getLink: function(){
+		getLink: function (this: any) {
 			return '/users/' + (this.uname || this.id);
 		},
-		htmlLink: function(){
-			return  '<a href="' + this.getLink() + '">' + this.uname + '</a>';
+		htmlLink: function (this: any) {
+			return '<a href="' + this.getLink() + '">' + this.uname + '</a>';
 		},
-		fromOAuth2: function(p){
+		fromOAuth2: function (this: any, p: any) {
 			const obj = {
 				name: p.displayName,
 				given_name: p.name.givenName,
@@ -153,9 +156,9 @@ module.exports = function user(Schema){
 				mailok: true,
 				oauth_data: {}
 			};
-
+			
 			const data = Object.extend({}, p);
-
+			
 			delete data.displayName;
 			delete data.name;
 			delete data.email;
@@ -164,52 +167,69 @@ module.exports = function user(Schema){
 			delete data.language;
 			delete data.gender;
 			delete data.url;
-
+			
 			obj.oauth_data = data;
-
+			
 			return this.set(obj).save();
 		}
 	};
-
+	
 	s.statics.findAndGetValues
 		= s.statics.findAndGetValues4Show
-		= function(req, query, fields, options){
-			if(typeof query === 'function')	//old compat
-				query = null;
-
-			return this
-				.find(query, fields, options)
-				.then(result =>
-					new Promise(ok => {
-						let values = [];
-						let count = 0;
-
-						result.forEach(item => {
-							item.getValues(req).then(v => {
-								values.push(v);
-
-								if(++count === result.length)
-									ok(values);
-							});
-
-
-						});
-					})
-				);
-		};
-
-	s.statics.fromOAuth2 = function(params){
+		= function (this: any, req: LipthusRequest, query: any, fields: any, options: any) {
+		
+		return this
+			.find(query, fields, options)
+			.then((result: Array<any>) => {
+				const values: Array<any> = [];
+				
+				return Promise.all(result.map(item => item.getValues(req).then((v: any) => values.push(v))))
+					.then(() => values);
+			});
+	};
+	
+	s.statics.fromOAuth2 = function (this: any, params: any) {
 		return this.findOne({email: params.email})
-			.then(u => {
-				if(!u)
+			.then((u: User) => {
+				if (!u)
 					u = new this({
 						email: params.email,
 						level: 1
 					});
-
+				
 				return u.fromOAuth2(params);
 			});
 	};
-
+	
 	return s;
-};
+}
+
+export interface User extends Document {
+	key: string;
+	value: any;
+	expire: Date;
+	cart: any;
+	email: string;
+	phone: Array<string>;
+	address: any;
+	
+	// noinspection JSUnusedLocalSymbols
+	fromOAuth2(params: any): Promise<any>;
+	
+	// noinspection JSUnusedLocalSymbols
+	getImage(width: number, height?: number): string;
+	
+	// noinspection JSUnusedLocalSymbols
+	subscribe2Item(ref: any): Promise<any>;
+}
+
+export interface UserModel extends Model<User> {
+	
+	// noinspection JSUnusedLocalSymbols
+	fromOAuth2(params: any): Promise<any>;
+	// noinspection JSUnusedLocalSymbols
+	findAndGetValues(params: any): Promise<any>;
+	// noinspection JSUnusedLocalSymbols
+	findAndGetValues4Show(params: any): Promise<any>;
+	
+}

@@ -1,5 +1,5 @@
 import {NextFunction} from "express";
-import {LipthusRequest, LipthusResponse} from "../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../index";
 
 const Logger = require('./logger');
 const fs = require('fs');

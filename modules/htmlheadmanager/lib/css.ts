@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import {LipthusRequest, LipthusResponse} from "../../../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../../../index";
 
 const extensions = ['less', 'css'];
 

@@ -14,7 +14,7 @@ import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import {session} from "./session";
-import {LipthusRequest, LipthusResponse, LipthusApplication} from "../typings/lipthus";
+import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
 
 const debug = Debug('site:site');
 const auth = require('./auth');

@@ -3,7 +3,7 @@ import {bloggerImage} from "./img";
 import {bloggerForm} from "./form";
 import {bloggerList} from "./list";
 import {bloggerHome} from "./home";
-import {LipthusApplication} from "../../../typings/lipthus";
+import {LipthusApplication} from "../../../index";
 
 module.exports = (app: LipthusApplication) => {
 	const router = Router({strict: true});

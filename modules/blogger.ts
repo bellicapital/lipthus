@@ -1,4 +1,4 @@
-import {LipthusRequest} from "../typings/lipthus";
+import {LipthusRequest} from "../index";
 
 export class Blogger {
 	

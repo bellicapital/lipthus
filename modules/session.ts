@@ -1,6 +1,6 @@
 import {Site} from "./site";
 import {NextFunction} from "express";
-import {LipthusRequest, LipthusResponse} from "../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../index";
 
 const s = require('express-session');
 const MongoStore = require("connect-mongo")(s);

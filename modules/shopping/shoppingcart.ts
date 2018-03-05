@@ -1,4 +1,4 @@
-import {LipthusRequest, LipthusResponse} from '../../typings/lipthus';
+import {LipthusRequest, LipthusResponse} from '../../index';
 
 const ShopItem = require('./shopitem');
 const ShoppingCartPreferences = require('./shoppingcartpreferences');
@@ -20,7 +20,7 @@ class ShoppingCart {
 	public deliveryAddress?: any;
 	public deliveryAmount = 0;
 	public name?: string;
-	public phone?: string;
+	public phone?: Array<string> | string;
 	public email?: string;
 	public comment = '';
 	public itemsTotal = 0;

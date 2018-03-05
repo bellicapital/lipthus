@@ -1,5 +1,10 @@
 import * as Debug from 'debug';
-import {Site} from "./modules";
+import {LipthusDb as Db_, Site} from "./modules";
+import {User, UserModel} from "./schemas/user";
+import * as express from "express";
+import {ApplicationRequestHandler} from "./interfaces/global.interface";
+import {TmpModel} from "./schemas/tmp";
+import {SearchModel} from "./schemas/search";
 require('./lib/vanilla.extensions');
 require('./modules/functions');
 
@@ -39,3 +44,57 @@ export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
 export {Router, NextFunction} from 'express';
+export class LipthusDb extends Db_ {
+	search?: SearchModel;
+	tmp?: TmpModel;
+	user?: UserModel;
+	
+}
+export interface LipthusRequest extends express.Request {
+	domainName: string;
+	staticHost: string;
+	// hostname: string;
+	fullUri: string;
+	notifyError: (err: any) => void;
+	ml: any;
+	device: any;
+	logger: any;
+	db: LipthusDb;
+	site: Site;
+	app: LipthusApplication;
+	session: any;
+	user?: User;
+	maxImgWidth?: number;
+	maxImgHeight?: number;
+	imgCrop?: boolean;
+	imgnwm?: boolean;
+	ipLocation: any;
+	getUser: () => Promise<User>;
+	/**
+	 * @deprecated
+	 */
+	cmsDir: string;
+}
+
+export interface LipthusResponse extends express.Response {
+	now: number;
+	htmlPage: any;
+}
+
+export interface LipthusApplication extends express.Application {
+	use: ApplicationRequestHandler<this>;
+	db: LipthusDb;
+	
+	/**
+	 * @deprecated
+	 */
+	getModule: (name: string) => any;
+	/**
+	 * @deprecated
+	 */
+	eucaModule: (name: string) => any;
+	/**
+	 * @deprecated
+	 */
+	nodeModule: (name: string) => any;
+}

@@ -1,4 +1,4 @@
-import {LipthusRequest, LipthusResponse} from "../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../index";
 
 
 export = function(req: LipthusRequest, res: LipthusResponse) {

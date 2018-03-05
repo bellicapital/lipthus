@@ -1,5 +1,5 @@
 import {IRouterHandler, IRouterMatcher, NextFunction} from "express-serve-static-core";
-import {LipthusRequest, LipthusResponse} from "../typings/lipthus";
+import {LipthusRequest, LipthusResponse} from "../index";
 
 export type RequestHandler = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
 export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
