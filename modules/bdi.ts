@@ -125,15 +125,19 @@ export class BinDataImage extends BinDataFile {
 					return BinDataFile.fromMongo(cached);
 				
 				return this.toBuffer(opt)
-					.then((buffer: Buffer) => new Cache(Object.extend({
-							name: this.name,
-							contentType: cacheOpt.contentType,
-							mtime: this.mtime || new Date(),
-							tag: 'image',
-							MongoBinData: new Binary(buffer),
-							ref: this.colRef,
-							srcmd5: this.md5
-						}, opt))
+					.then((buffer: Buffer) => {
+							const cache = Object.extend({
+								name: this.name,
+								contentType: cacheOpt.contentType,
+								mtime: this.mtime || new Date(),
+								tag: 'image',
+								MongoBinData: new Binary(buffer),
+								ref: this.colRef,
+								srcmd5: this.md5
+							}, opt);
+							
+							return new Cache(cache);
+						}
 					)
 					.then((cached2: any) => cached2.save())
 					.then((cached3: any) => BinDataFile.fromMongo(cached3));

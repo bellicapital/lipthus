@@ -16,7 +16,7 @@ module.exports = function cache(Schema){
 		height: Number,
 		crop: Boolean,
 		size: Number,
-		wm: Boolean
+		wm: {}
 	}, {
 		created: true,
 		lastMod: true
