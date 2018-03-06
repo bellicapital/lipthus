@@ -15,9 +15,9 @@ module.exports = (req, res, next)=>{
 			userLevel: 3
 		})
 		.then(page => page.addJS('admin/w3cv'))
-		.then(page => {
+		.then(() => {
 			if (req.query.uri) {
-				return w3c.get(req, req.query.uri, 60)
+				return w3c.get.call({req: req}, req.query.uri, 60)
 					.then(result => {
 						res.locals.url = result.url;
 						res.locals.result = [];

@@ -110,9 +110,11 @@ $.fn.camera = function(options){
 
 					if (s.type === 'image')
 						$.each(o.values, function (key, name) {
+							const path = '/bdf/' + o.schema + '/' + o.itemid + '/' + o.field + '.' + key + '/';
+
 							thumbs[key] = {
 								name: name,
-								path: '/bdf/' + o.schema + '/' + o.itemid + '/' + o.field + '.' + key + '/',
+								path: path,
 								uri: path + name
 							};
 						});

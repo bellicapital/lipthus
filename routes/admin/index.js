@@ -7,7 +7,7 @@ module.exports = function(app, router){
 	const rdir = app.get('dir') + '/routes/admin/';
 
 	router.all('/admin', require('./admin'));
-	
+
 	require('./blogger')(app);
 
 	const pages = [
