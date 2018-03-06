@@ -207,14 +207,10 @@ class Notifier {
 
 			const fcm = new FCM(firebase.serverkey);
 
-			const ids = [];
-
-			user.devices.forEach(device => ids.push(device.regId));
-
 			// https://firebase.google.com/docs/cloud-messaging/http-server-ref
 			const options = {
 				// to: ids.length === 1 ? ids[0] : undefined,
-				registration_ids: ids,//.length > 1 ? ids : undefined,
+				// registration_ids: ids,//.length > 1 ? ids : undefined,
 				collapse_key: this.site.key,
 				// dry_run: process.env.NODE_ENV !== 'production',
 				// data: noti,
@@ -226,9 +222,28 @@ class Notifier {
 				}
 			};
 
-			fcm.send(options)
-				.then(a => debug(a))
-				.catch(console.error.bind(console));
+			// enviamos uno a uno para comprobar si ya no está registrado y darlo de baja
+			user.devices.reduce((p, device) => p.then(() => {
+				options.to = device.regId;
+
+				return fcm.send(options)
+					.then(a => debug(a))
+					.catch(err => {
+						// jj - 5/3/18. Devuelve un string!!! y aparece un warning en la cónsola
+						// ... así que lo mejor es mostrar sólo el texto del mensaje
+						console.error(err);
+
+						if (err === 'NotRegistered') {
+							debug('Removing user device ' + device.regId);
+
+							user.devices.splice(user.devices.indexOf(device.regId), 1);
+
+							user.markModified('devices');
+
+							return user.save();
+						}
+					})
+			}), Promise.resolve());
 		}
 	}
 
