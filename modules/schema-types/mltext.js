@@ -1,6 +1,6 @@
 "use strict";
 
-import {LipthusSchema} from "../../lib";
+const {LipthusSchema} = require("../../lib");
 
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;

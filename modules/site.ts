@@ -541,7 +541,7 @@ export class Site extends EventEmitter {
 	}
 	
 	getPages() {
-		if (this.pages)
+		if (Object.keys(this.pages).length)
 			return Promise.resolve(this.pages);
 		
 		return this.db.page

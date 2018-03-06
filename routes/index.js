@@ -1,6 +1,6 @@
 "use strict";
 
-import {userPage} from "./user";
+const {userPage} = require("./user");
 
 const fs = require('fs');
 const os = require('os');

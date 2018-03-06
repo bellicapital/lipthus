@@ -1,6 +1,6 @@
 "use strict";
 
-const HeadManager = require('./htmlheadmanager');
+const {HeadManager} = require('./htmlheadmanager');
 const pug = require('pug');
 const fs = require('mz/fs');
 const debug = require('debug')('site:htmlpage');
