@@ -196,14 +196,28 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 			.then(() => fs.readdir(dir + '/plugins')
 				.then((plugins: Array<string>) => {
 					(plugins || []).forEach(plugin => {
-						const name = path.basename(plugin, path.extname(plugin));
+						const basename = path.basename(plugin, path.extname(plugin));
+						let file = require(dir + '/plugins/' + basename);
 						
-						if (this.schemas[name])
-							this.schemas[name].plugin(require(dir + '/plugins/' + name), this);
+						if (!file.getPlugin ) {
+							// old compat
+							file = {
+								name: basename,
+								getPlugin: file
+							};
+						}
+						
+						if (!this.schemas[file.name])
+							throw new Error('Schema ' + file.name + ' not found for plugin file ' + plugin + ' in ' + dir + '. Db: ' + this.name);
+						
+						this.schemas[file.name].plugin(file.getPlugin, this);
 					});
 				})
-				.catch(() => {
-					// debug('No plugins dir in ', dir);
+				.catch((err: any) => {
+					if (err.code === 'ENOENT')
+						debug('No plugins dir for ', dir);
+					else
+						console.error(err);
 				}) // catch plugin directory doesn't exists
 			);
 	}
