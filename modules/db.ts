@@ -207,10 +207,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 							};
 						}
 						
-						if (!this.schemas[file.name])
-							throw new Error('Schema ' + file.name + ' not found for plugin file ' + plugin + ' in ' + dir + '. Db: ' + this.name);
-						
-						this.schemas[file.name].plugin(file.getPlugin, this);
+						this.addPlugin(file);
 					});
 				})
 				.catch((err: any) => {
@@ -220,6 +217,13 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 						console.error(err);
 				}) // catch plugin directory doesn't exists
 			);
+	}
+	
+	addPlugin(file: {name: string, getPlugin: any}) {
+		if (!this.schemas[file.name])
+			throw new Error('Schema ' + file.name + ' not found. Db: ' + this.name);
+		
+		this.schemas[file.name].plugin(file.getPlugin, this);
 	}
 	
 	collection(name: string, options: any, cb: Function) {
