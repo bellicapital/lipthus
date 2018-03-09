@@ -1,5 +1,8 @@
+import {LipthusRequest} from "../index";
+
 export class AjaxGlobalMethods {
-	constructor(public req: any) {
+	
+	constructor(public req: LipthusRequest) {
 	}
 	
 	main() {
@@ -7,7 +10,7 @@ export class AjaxGlobalMethods {
 		const config = req.site.config;
 		
 		return req.ml.langUserNames()
-			.then((ln: any) => ({
+			.then((ln: {[code: string]: string}) => ({
 				sitename: req.site + '',
 				languages: ln,
 				user: req.user && req.user.baseInfo() || undefined,
@@ -55,7 +58,7 @@ export class AjaxGlobalMethods {
 	
 	// noinspection JSUnusedGlobalSymbols
 	storeFcmToken(params: any) {
-		const devices = this.req.user.devices || [];
+		const devices = this.req.user!.devices || [];
 		const device = devices.find((d: any) => d.uuid === params.uuid || d.regId === params.regId);
 		
 		if (device) {
@@ -76,7 +79,7 @@ export class AjaxGlobalMethods {
 			devices.push(params);
 		}
 		
-		return this.req.user.set('devices', devices)
+		return this.req.user!.set('devices', devices)
 			.save()
 			.then(() => ({ok: true}));
 	}

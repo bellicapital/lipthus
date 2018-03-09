@@ -1,12 +1,7 @@
 import * as mongoose from 'mongoose';
 import {Schema, SchemaTypes} from "mongoose";
-import {lastModifiedPlugin} from "../modules/schema-plugins/lastmod";
-import {createdPlugin} from "../modules/schema-plugins/created";
-import {submitterPlugin} from "../modules/schema-plugins/submitter";
-import {modifierPlugin} from "../modules/schema-plugins/modifier";
-import {locationPlugin} from "../modules/schema-plugins/location";
-import {lastActivated} from "../modules/schema-plugins/lastActivated";
-import {removedPlugin} from "../modules/schema-plugins/removed";
+import "./query";
+import {createdPlugin, lastActivated, lastModifiedPlugin, locationPlugin, modifierPlugin, removedPlugin, submitterPlugin} from "../modules/schema-plugins";
 
 const plugins = {
 	lastMod: lastModifiedPlugin
@@ -17,8 +12,6 @@ const plugins = {
 	, lastActivated: lastActivated
 	, removed: removedPlugin
 };
-
-require('./query');
 
 export class LipthusSchema extends Schema {
 	

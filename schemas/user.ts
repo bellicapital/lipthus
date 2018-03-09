@@ -212,6 +212,8 @@ export interface User extends Document {
 	email: string;
 	phone: Array<string>;
 	address: any;
+	devices: Array<any>;
+	subscriptions: any;
 	
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
@@ -221,6 +223,10 @@ export interface User extends Document {
 	
 	// noinspection JSUnusedLocalSymbols
 	subscribe2Item(ref: any): Promise<any>;
+	
+	getName(): string;
+	
+	baseInfo(): any;
 }
 
 export interface UserModel extends Model<User> {

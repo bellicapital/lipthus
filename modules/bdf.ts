@@ -1,5 +1,7 @@
 "use strict";
 
+import {UploadedFile} from "../interfaces/uploaded-file";
+
 const fs = require('mz/fs');
 const path = require('path');
 const Mime = require('mime');
@@ -150,14 +152,13 @@ export class BinDataFile {
 	
 	/**
 	 *
-	 * @param p
+	 * @param param
 	 * @param opt
 	 *
 	 * @return Promise<BinDataFile>
 	 */
-	static fromFile(p: string | any, opt = {}) {
-		if (typeof p === 'string')
-			p = {path: p};
+	static fromFile(param: string | UploadedFile, opt = {}) {
+		const p: UploadedFile = typeof param === 'string' ? {path: param} as UploadedFile : param;
 		
 		if (!p.mimetype)
 			p.mimetype = p.type || Mime.getType(p.name || p.path);

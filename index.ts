@@ -5,8 +5,9 @@ import * as express from "express";
 import {ApplicationRequestHandler} from "./interfaces/global.interface";
 import {TmpModel} from "./schemas/tmp";
 import {SearchModel} from "./schemas/search";
-require('./lib/vanilla.extensions');
-require('./modules/functions');
+import './lib/vanilla.extensions';
+import './modules/functions';
+import {UploadedFile} from "./interfaces/uploaded-file";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -48,8 +49,8 @@ export class LipthusDb extends Db_ {
 	search?: SearchModel;
 	tmp?: TmpModel;
 	user?: UserModel;
-	
 }
+export {User};
 export interface LipthusRequest extends express.Request {
 	domainName: string;
 	staticHost: string;
@@ -70,6 +71,7 @@ export interface LipthusRequest extends express.Request {
 	imgnwm?: boolean;
 	ipLocation: any;
 	getUser: () => Promise<User>;
+	files?: Array<UploadedFile>;
 	/**
 	 * @deprecated
 	 */
