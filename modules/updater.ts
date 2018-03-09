@@ -1,6 +1,7 @@
 import * as Debug from 'debug';
 import {Site} from "./site";
 import {updates} from '../updates';
+import {existsSync} from 'fs';
 
 const debug = Debug('site:updater');
 debug.log = console.log.bind(console);
@@ -14,10 +15,10 @@ export function checkVersions(site: Site): Promise<any> {
 }
 
 function checkCmsVersion(site: Site) {
-	debug('lipthus:' + site.config.version);
+	debug('lipthus version:' + site.config.version);
 	
 	if (site.cmsPackage.version === site.config.version)
-		return Promise.resolve();
+		return;
 	
 	return checkRequireScript(
 		updates,
@@ -28,13 +29,18 @@ function checkCmsVersion(site: Site) {
 }
 
 function checkAppVersion(site: Site) {
-	debug(site.config.siteversion);
+	debug('site version:' + site.config.siteversion);
 	
 	if (site.package.version === site.config.siteversion)
-		return Promise.resolve();
+		return;
+	
+	const file = site.dir + '/updates.ts';
+	
+	if (!existsSync(file))
+		return;
 	
 	return checkRequireScript(
-		require(site.dir + '/updates.ts'),
+		require(file),
 		'siteversion',
 		site.package.version,
 		site
