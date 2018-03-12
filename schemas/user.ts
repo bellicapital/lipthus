@@ -226,7 +226,8 @@ export interface User extends Document {
 	
 	getName(): string;
 	
-	baseInfo(): any;
+	// noinspection JSUnusedLocalSymbols
+	baseInfo(includeEmail?: boolean): any;
 }
 
 export interface UserModel extends Model<User> {
