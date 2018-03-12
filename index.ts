@@ -1,12 +1,12 @@
 import * as Debug from 'debug';
+import './lib/vanilla.extensions';
+import './modules/functions';
 import {LipthusDb as Db_, Site} from "./modules";
 import {User, UserModel} from "./schemas/user";
 import * as express from "express";
 import {ApplicationRequestHandler} from "./interfaces/global.interface";
 import {TmpModel} from "./schemas/tmp";
 import {SearchModel} from "./schemas/search";
-import './lib/vanilla.extensions';
-import './modules/functions';
 import {UploadedFile} from "./interfaces/uploaded-file";
 
 const debug = Debug('site:lipthus');
