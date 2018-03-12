@@ -154,53 +154,30 @@ class Multilang {
 	 * Carga paquetes de idioma
 	 *
 	 * @param {string|array} tag
-	 * @param {function} [cb] (err, all) all: todos los resultados acumulados
-	 * @returns {undefined}
+	 * @returns {Promise<{}>} todos los resultados acumulados
 	 */
-	load(tag, cb) {
-		if(cb) {
-			if(typeof cb !== 'function')
-				cb = null;
-			else
-				console.trace('@deprecated. Multilang.load() returns Promise. Not callback');
-		}
-
+	load(tag) {
 		if (Array.isArray(tag))
 			return this._loadArray(tag, cb);
 
-		if (this.loaded[tag]) {
-			//old compat
-			cb && cb(null, this.all, this.loaded[tag]);
-
+		if (this.loaded[tag])
 			return Promise.resolve(this.loaded[tag]);
-		}
 
-		return new Promise((ok, ko) => {
-			this.req.site.db.lang.load(tag, this.lang).then(r => {
+		return this.req.site.db.lang.load(tag, this.lang)
+			.then(r => {
 				const rr = {};
 
 				Object.keys(r).forEach(i => {
 					rr[r[i]._k] = r[i].get(this.lang);
 				});
 
-				this._checkResult(rr, tag)
+				return this._checkResult(rr, tag)
 					.then(result => {
 						merge(this.all, result);
 						this.loaded[tag] = result;
-
-						//old compat
-						cb && cb(null, this.all, result);
-
-						ok(this.all);
-					})
-					.catch(function(err){
-						//old compat
-						cb && cb(err);
-
-						ko(err);
 					});
-			}, ko);
-		});
+			})
+			.then(() => this.all);
 	}
 
 	_checkResult(result, tag) {

@@ -112,6 +112,7 @@
 		"ws": "^4.0.0"
 	},
 	"devDependencies": {
+		"@types/merge-descriptors": "^1.0.1",
 		"nodemon": "^1.14.11"
 	}
 }

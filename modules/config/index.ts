@@ -1,5 +1,5 @@
 import {Site} from "../site";
 
-const Config_ = require('./config');
+import {Config as Config_} from "./config";
 
 export const Config = (site: Site) => new Config_(site).load();
