@@ -206,6 +206,8 @@ export function getSchema() {
 
 export interface User extends Document {
 	key: string;
+	uname: string;
+	name: string;
 	value: any;
 	expire: Date;
 	cart: any;

@@ -67,6 +67,7 @@ export interface LipthusRequest extends express.Request {
 	imgCrop?: boolean;
 	imgnwm?: boolean;
 	ipLocation: any;
+	nationalities: any;
 	getUser: () => Promise<User>;
 	files?: Array<UploadedFile>;
 	/**
