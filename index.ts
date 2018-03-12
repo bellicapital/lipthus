@@ -12,9 +12,6 @@ import {UploadedFile} from "./interfaces/uploaded-file";
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
 
-if (!process.env.TMPDIR)
-	process.env.TMPDIR = '/tmp';
-
 if (!process.env.NODE_ENV)
 	process.env.NODE_ENV = 'development';
 
