@@ -1,5 +1,5 @@
 import {LipthusSchema} from "../lib";
-import {BinDataFile} from '../modules';
+import {BinDataFile, Site} from '../modules';
 import {LipthusRequest} from "../index";
 import {Document, Model} from "mongoose";
 
@@ -18,9 +18,9 @@ function getDefinition(key: string) {
 
 export const name = 'config';
 
-export function getSchema() {
+export function getSchema(site: Site) {
 	if (!definitions) {
-		definitions = require('../configs/configs');
+		definitions = require(site.lipthusDir + '/configs/configs');
 		
 		Object.each(definitions, (group, d) => Object.each(d.configs, key => groupsByKey[key] = group));
 	}
