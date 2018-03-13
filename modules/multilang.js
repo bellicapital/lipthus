@@ -158,7 +158,7 @@ class Multilang {
 	 */
 	load(tag) {
 		if (Array.isArray(tag))
-			return this._loadArray(tag, cb);
+			return this._loadArray(tag);
 
 		if (this.loaded[tag])
 			return Promise.resolve(this.loaded[tag]);
