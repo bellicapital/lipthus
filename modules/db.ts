@@ -185,9 +185,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 							const name = s.name;
 							
 							if (typeof s === 'function') {
+								// old compat
 								return this.schema(name, s(LipthusSchema, this.site));
 							} else if (s.getSchema) {
-								return this.schema(s.name, s.getSchema());
+								return this.schema(s.name, s.getSchema(this.site));
 							}
 						});
 					}))
