@@ -74,7 +74,7 @@ module.exports = function(req, res, next){
 							return next(new Error(err.message));
 
 						req.db.cache
-							.create(Object.extend({
+							.create(Object.assign({
 								contentType: mime,
 								MongoBinData: buffer,
 								srcmd5: bdf.md5

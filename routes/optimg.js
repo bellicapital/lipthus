@@ -24,7 +24,7 @@ module.exports = function(req, res, next){
 			.then(cached => cached ||
 				optimage(file)
 					.then(r =>
-						req.db.cache.create(Object.extend(opt, {
+						req.db.cache.create(Object.assign(opt, {
 							contentType: Mime.lookup(opt.name),
 							MongoBinData: r,
 							size: r.length

@@ -1,73 +1,70 @@
-"use strict";
+import {BinDataFile} from "../bdf";
+import * as mongoose from "mongoose";
 
-const {BinDataFile} = require('../bdf');
-const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const SchemaType = mongoose.SchemaType;
 
-class BinDataFileList
-{
+export class BinDataFileList {
 	/**
 	 * First element
 	 * @returns {BinDataFile}
 	 */
-	getFirst()
-	{
+	getFirst() {
 		const keys = Object.keys(this);
-
-		if(!keys.length)
+		
+		if (!keys.length)
 			return;
-
+		
 		return Object.keys(this).map(key => this[key]).sort((a, b) => a.weight - b.weight)[0];
 	}
-
-	getThumb(width, height, crop, enlarge)
-	{
+	
+	getThumb(width: number, height: number, crop: boolean, enlarge: boolean) {
 		const first = this.getFirst();
-
+		
 		return first ? first.info(width, height, crop === undefined ? true : crop, enlarge) : null;
 	}
-
-	info(width, height, crop, enlarge)
-	{
+	
+	info(width: number, height: number, crop: boolean, enlarge: boolean) {
 		return Object.keys(this).map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
 	}
-
-	toObject()
-	{
-		const ret = [];
+	
+	toObject() {
+		const ret = <any> [];
 		const keys = Object.keys(this);
-
+		
 		keys.forEach(key => ret.push(this[key]));
-
+		
 		return ret;
 	}
-
-	formDataValue()
-	{
-		const arr = [];
-
+	
+	formDataValue() {
+		const arr = <any> [];
+		
 		Object.keys(this).forEach(key => arr.push(key + ':' + this[key].name || this[key]));
-
+		
 		return arr.join('|');
 	}
-
-	size()
-	{
+	
+	size() {
 		return Object.keys(this).length;
 	}
 }
 
 class BdfList extends SchemaType {
-	constructor(key, options) {
+	
+	collection?: string;
+	id?: string;
+	path?: string;
+	
+	constructor(key: string, options: any) {
 		super(key, options);
 	}
-
+	
 	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
-	checkRequired(val) {
+	checkRequired(val: any) {
 		return null !== val;
 	}
-
+	
 	// noinspection JSUnusedLocalSymbols
 	/**
 	 * Implement casting.
@@ -77,23 +74,23 @@ class BdfList extends SchemaType {
 	 * @param {Boolean} [init]
 	 * @return {*}
 	 */
-
-	cast(val, scope, init) {
+	
+	cast(val: any, scope?: any, init?: any) {
 		if (null === val) return val;
 		if ('object' !== typeof val) return null;
-		if (val instanceof BinDataFile) return val;//Necesario para cuando se hace un update individual
-
-		//if (!init)
-		//	return val;
-
+		if (val instanceof BinDataFile) return val; // Necesario para cuando se hace un update individual
+		
+		// if (!init)
+		// 	return val;
+		
 		const retTmp = {};
 		const ret = new BinDataFileList;
-		const w = [];
-
+		const w: Array<string> = [];
+		
 		Object.keys(val).forEach(i => {
 			if (val[i].MongoBinData) {
 				w.push(i);
-
+				
 				if (val[i] instanceof BinDataFile)
 					retTmp[i] = val[i];
 				else
@@ -102,23 +99,19 @@ class BdfList extends SchemaType {
 						id: this.id,
 						field: this.path + '.' + i
 					});
-
+				
 				retTmp[i].key = i;
 			}
 		});
-
-		//Sort by weight
-		w.sort(function (a, b) {
-			return retTmp[a].weight - retTmp[b].weight;
-		});
-
-		w.forEach(function (k) {
-			ret[k] = retTmp[k];
-		});
-
+		
+		// Sort by weight
+		w.sort((a, b) => retTmp[a].weight - retTmp[b].weight);
+		
+		w.forEach(k => ret[k] = retTmp[k]);
+		
 		return ret;
 	}
-
+	
 	//noinspection JSMethodCanBeStatic
 	get $conditionalHandlers() {
 		return {
@@ -131,10 +124,10 @@ class BdfList extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
-			, '$exists' : handleExists
+			, '$exists': handleExists
 		};
 	}
-
+	
 	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
@@ -142,28 +135,32 @@ class BdfList extends SchemaType {
 	 * @param {String} $conditional
 	 * @param {*} [value]
 	 */
-
-	castForQuery ($conditional, value) {
+	
+	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			let handler = this.$conditionalHandlers[$conditional];
+			const handler: any = this.$conditionalHandlers[$conditional];
+			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with BdfList Type.");
-
+			
 			return handler.call(this, value);
 		} else
 			return this.cast($conditional);
 	}
 }
 
-BdfList.BinDataFileList = BinDataFileList;
+(BdfList as any).BinDataFileList = BinDataFileList;
 
-const handleSingle = function(val){return this.cast(val);};
+const handleSingle = function (this: any, val: any) {
+	return this.cast(val);
+};
 const handleExists = () => true;
-const handleArray = function(val){return val.map(m => this.cast(m));};
+const handleArray = function (this: any, val: any) {
+	return val.map((m: any) => this.cast(m));
+};
 
 
 /**
  * Expose
  */
-Schema.Types.BdfList = BdfList;
-module.exports.BinDataFileList = BinDataFileList;
+(Schema.Types as any).BdfList = BdfList;

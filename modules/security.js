@@ -2,7 +2,7 @@
 
 
 const SpamBlocker = require('express-spam-referral-blocker');
-const urlContent = require('./utils').urlContent;
+const urlContent = require('./util').urlContent;
 
 class Security {
 	constructor(req) {

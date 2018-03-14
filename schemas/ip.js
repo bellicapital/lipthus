@@ -1,7 +1,7 @@
 "use strict";
 
 const ipLocation = require('../modules/geo').ipLocation;
-const urlContent = require('../modules/utils').urlContent;
+const urlContent = require('../modules/util').urlContent;
 const geobytes = "http://gd.geobytes.com/GetCityDetails?fqcn=";
 const expire = 3600 * 24 * 30;//un mes
 

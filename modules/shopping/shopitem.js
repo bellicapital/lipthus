@@ -14,7 +14,7 @@ class ShopItem {
 		if (d.constructor.name === 'EmbeddedDocument')
 			d = d._doc;
 
-		Object.extend(this, d);
+		Object.assign(this, d);
 
 		this.price = parseInt(this.price) || 0;
 

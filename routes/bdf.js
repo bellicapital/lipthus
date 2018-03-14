@@ -82,13 +82,13 @@ module.exports = function(req, res, next){
 			if(r){
 				opt.crop = !!r[3];
 
-				Object.extend(opt, {
+				Object.assign(opt, {
 					width: parseInt(r[1]),
 					height: parseInt(r[2]),
 					nwm: r[4]
 				});
 			} else if(/^[a-f0-9]+$/i.test(req.params.p)){
-				Object.extend(opt, {
+				Object.assign(opt, {
 					width: obj.width,
 					height: obj.height,
 					nwm: req.params.p

@@ -157,7 +157,7 @@ export function getSchema() {
 				oauth_data: {}
 			};
 			
-			const data = Object.extend({}, p);
+			const data = Object.assign({}, p);
 			
 			delete data.displayName;
 			delete data.name;

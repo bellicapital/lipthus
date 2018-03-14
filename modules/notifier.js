@@ -171,7 +171,7 @@ class Notifier {
 
 		if (opt.tpl) {
 			return this.parseContent(user.language || this.site.config.language, opt.content, opt.tpl, function (err, content) {
-				const opt = Object.extend({}, o);
+				const opt = Object.assign({}, o);
 				delete opt.tpl;
 				opt.content = content;
 				this.toUser(opt);

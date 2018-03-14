@@ -10,7 +10,7 @@ class ShoppingCartPreferences {
 		this.deliveryMinAmountNoCharge = null;
 
 		if(opt)
-			Object.extend(this, opt);
+			Object.assign(this, opt);
 	}
 }
 

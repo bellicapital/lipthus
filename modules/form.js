@@ -216,7 +216,7 @@ class EucaForm
 	}
 
 	setArraySubdocValue(field, idx, name, value){
-		const query = Object.extend({}, this.query);
+		const query = Object.assign({}, this.query);
 		const update = {$set: {}};
 
 		update.$set[field + '.$.' + name] = value;

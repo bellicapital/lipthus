@@ -50,7 +50,7 @@ export class BinDataImage extends BinDataFile {
 					ret.width = width;
 					ret.height = height;
 				} else
-					Object.extend(ret, Image.fitCalc(this.width, this.height, width, height, crop));
+					Object.assign(ret, Image.fitCalc(this.width, this.height, width, height, crop));
 			}
 			
 			ret.uri += ret.width + 'x' + ret.height;
@@ -107,7 +107,7 @@ export class BinDataImage extends BinDataFile {
 		
 		const cacheOpt: any = {};
 		
-		Object.extend(cacheOpt, opt);
+		Object.assign(cacheOpt, opt);
 		
 		cacheOpt.contentType = 'image/' + (opt.format || 'jpg');
 		delete cacheOpt.format;
@@ -126,7 +126,7 @@ export class BinDataImage extends BinDataFile {
 				
 				return this.toBuffer(opt)
 					.then((buffer: Buffer) => {
-							const cache = Object.extend({
+							const cache = Object.assign({
 								name: this.name,
 								contentType: cacheOpt.contentType,
 								mtime: this.mtime || new Date(),

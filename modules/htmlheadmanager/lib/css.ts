@@ -55,7 +55,7 @@ export class CssManager {
 		else if (!opt)
 			opt = {};
 		else
-			opt = Object.extend({}, opt);
+			opt = Object.assign({}, opt);
 		
 		if (/^(http|\/)/.test(src) && !opt.path) {
 			opt.url = src;

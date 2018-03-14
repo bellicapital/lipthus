@@ -4,7 +4,7 @@ const debug = require('debug')('site:cache');
 
 class Cache {
 	constructor(s) {
-		Object.extend(this, s);
+		Object.assign(this, s);
 	}
 
 	getType(res) {

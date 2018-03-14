@@ -95,7 +95,7 @@ class MultilangText {
 				delete obj.undefined;
 			}
 
-			Object.extend(this, obj);
+			Object.assign(this, obj);
 		}
 
 		if(!this._id && _id)

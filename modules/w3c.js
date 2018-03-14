@@ -5,7 +5,7 @@ const os = require('os');
 const md5 = require('md5');
 const w3cjs = require('w3cjs');
 const debug = require('debug')('site:w3c');
-const urlContent = require('./utils').urlContent;
+const urlContent = require('./util').urlContent;
 const tmpdir = os.tmpdir() + '/w3cv/';
 
 fs.mkdir(tmpdir).catch(err => {

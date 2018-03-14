@@ -52,19 +52,6 @@ Object.some = function (o: any, fn: Function) {
 	Object.keys(o).some(k => fn(k, o[k]));
 };
 
-Object.extend = function (a: any, b?: any) {
-	if (!b) {
-		b = a;
-		a = {};
-	}
-	
-	for (const k of Object.keys(b)) {
-		a[k] = b[k];
-	}
-	
-	return a;
-};
-
 Object.toArray = (o: any) => Object.keys(o).map(k => ({key: k, value: o[k]}));
 
 Object.ksort = (o: any) => Object.keys(o).sort().reduce((r: any, k: string) => r[k] = o[k], {});

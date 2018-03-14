@@ -252,7 +252,7 @@ class Subscriptor {
 							if (user.subscriptions.constructor.name !== 'Object')
 								user.subscriptions = subscriptions;
 							else
-								user.subscriptions = Object.extend(user.subscriptions, subscriptions);
+								user.subscriptions = Object.assign(user.subscriptions, subscriptions);
 
 							user.subscriptionUrl = pending.url;
 

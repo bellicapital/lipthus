@@ -91,7 +91,7 @@ class HtmlPage{
 
 	set(opt) {
 		if (opt)
-			Object.extend(this, opt);
+			Object.assign(this, opt);
 
 		return this;
 	}
@@ -192,7 +192,7 @@ class HtmlPage{
 			.then(this.setMetaKeywords.bind(this))
 			.then(this.setMetaDescription.bind(this))
 			.then(() => {
-				Object.extend(this.locals, {
+				Object.assign(this.locals, {
 					LC: this.req.ml.all,
 					lang: this.lang,
 					langs: this.req.ml.langs
@@ -267,14 +267,14 @@ class HtmlPage{
 			.then(this.init.bind(this))
 			.then(this.load.bind(this))
 			.then(() => {
-				locals = Object.extend({
+				locals = Object.assign({
 					page: this.key,
 					metas: this.head.metas,
 					hreflangs: this.head.hreflangs,
 					user: this.req.user
 				}, locals);
 
-				Object.extend(this.locals, locals);
+				Object.assign(this.locals, locals);
 
 				this.addOpenGraphMetas();
 
@@ -348,7 +348,7 @@ class HtmlPage{
 			let html = this.html;
 
 			if(!html.match(/^\s*</))
-				html = pug.compile(html, {filename: this.req.app.get('views')[0] + '/' + this.key})(Object.extend(res.locals, this.req.app.locals));
+				html = pug.compile(html, {filename: this.req.app.get('views')[0] + '/' + this.key})(Object.assign(res.locals, this.req.app.locals));
 
 			return res.send(html)
 		}

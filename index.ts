@@ -42,9 +42,9 @@ export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
 export {Router, NextFunction} from 'express';
-export class LipthusDb extends Db_ {
+export declare class LipthusDb extends Db_ {
 	search?: SearchModel;
-	tmp?: TmpModel;
+	tmp: TmpModel;
 	user?: UserModel;
 }
 export {User};
@@ -85,16 +85,6 @@ export interface LipthusApplication extends express.Application {
 	use: ApplicationRequestHandler<this>;
 	db: LipthusDb;
 	
-	/**
-	 * @deprecated
-	 */
 	getModule: (name: string) => any;
-	/**
-	 * @deprecated
-	 */
-	eucaModule: (name: string) => any;
-	/**
-	 * @deprecated
-	 */
 	nodeModule: (name: string) => any;
 }

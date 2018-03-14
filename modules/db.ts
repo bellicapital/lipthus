@@ -118,7 +118,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		return this.model('dynobject');
 	}
 	
-	model(name: string) {
+	model(name: string) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
 		

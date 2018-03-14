@@ -15,6 +15,7 @@ import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import {session} from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
+import * as lipthus from '../index';
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -194,6 +195,7 @@ export class Site extends EventEmitter {
 			.then(() => Ng(this.app))
 			.then(this.getPages.bind(this))
 			.then(this.loadPlugins.bind(this))
+			.then(this.hooks.bind(this, 'post', 'plugins'))
 			.then(() => new Subscriptor(this.app))
 			.then(() => debug(this.key + ' ready'))
 			.then(this.hooks.bind(this, 'pre', 'finish'))
@@ -274,7 +276,7 @@ export class Site extends EventEmitter {
 		
 		// jj - solución temporal hasta incluirlo en htmlPage
 		if (this._lessVars)
-			Object.extend(ret, this._lessVars);
+			Object.assign(ret, this._lessVars);
 		
 		return ret;
 	}
@@ -429,7 +431,7 @@ export class Site extends EventEmitter {
 		});
 		
 		// noinspection JSDeprecatedSymbols
-		app.getModule = app.eucaModule = (name: string) => require('./' + name);
+		app.getModule = (name: string) => lipthus[name] || require('./' + name);
 		// noinspection JSDeprecatedSymbols
 		app.nodeModule = (name: string) => require(name);
 		
