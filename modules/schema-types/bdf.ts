@@ -1,38 +1,30 @@
-"use strict";
-
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const SchemaType = mongoose.SchemaType;
-const mongo = mongoose.mongo;
-const {BinDataFile} = require('../bdf');
+import {Schema, SchemaType} from "mongoose";
+import {BinDataFile} from "../bdf";
 
 
-class Bdf extends SchemaType {
-	constructor(key, options) {
-		super(key, options);
+export class Bdf extends SchemaType {
+	
+	public collection?: string;
+	public id?: string;
+	
+	constructor(public path: string, public options: any) {
+		super(path, options);
 	}
-
+	
 	//noinspection JSMethodCanBeStatic
-	checkRequired(val) {
+	checkRequired(val: any) {
 		return null !== val;
 	}
-
-	/**
-	 * Implement casting.
-	 *
-	 * @param {*} val
-	 * @param {Object} [scope]
-	 * @param {Boolean} [init]
-	 * @return {mongo.Bdf|null}
-	 */
-
-	cast(val, scope, init) {
+	
+	
+	// noinspection JSUnusedLocalSymbols
+	cast(val: any, scope?: any, init?: any) {
 		if (null === val) return val;
 		if ('object' !== typeof val) return null;
-
+		
 		if (val instanceof BinDataFile)
 			return val;
-
+		
 		if (val.MongoBinData) {
 			return BinDataFile.fromMongo(val, {
 				collection: this.collection,
@@ -40,11 +32,11 @@ class Bdf extends SchemaType {
 				field: this.path
 			});
 		}
-
-		throw new SchemaType.CastError('Bdf', val);
+		
+		throw new (SchemaType as any).CastError('Bdf', val);
 	}
-
-
+	
+	
 	//noinspection JSMethodCanBeStatic
 	get $conditionalHandlers() {
 		return {
@@ -57,23 +49,24 @@ class Bdf extends SchemaType {
 			, '$nin': handleArray
 			, '$mod': handleArray
 			, '$all': handleArray
-			, '$exists' : handleExists
-		}
+			, '$exists': handleExists
+		};
 	}
-
+	
 	/**
 	 * Implement query casting, for mongoose 3.0
 	 *
 	 * @param {String} $conditional
 	 * @param {*} [value]
 	 */
-
-	castForQuery($conditional, value) {
+	
+	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			let handler = this.$conditionalHandlers[$conditional];
+			const handler = this.$conditionalHandlers[$conditional];
+			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with Bdf Type.");
-
+			
 			return handler.call(this, value);
 		} else {
 			return this.cast($conditional);
@@ -81,10 +74,14 @@ class Bdf extends SchemaType {
 	}
 }
 
-const handleSingle = function(val){return this.cast(val);};
+const handleSingle = function (this: any, val: any) {
+	return this.cast(val);
+};
 const handleExists = () => true;
-const handleArray = function(val){return val.map(m => this.cast(m));};
+const handleArray = function (this: any, val: Array<any>) {
+	return val.map(m => this.cast(m));
+};
 
-Schema.Types.Bdf = Bdf;
+(Schema.Types as any).Bdf = Bdf;
 
-module.exports.BdfType = Bdf;
+export {Bdf as BdfType};

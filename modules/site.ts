@@ -618,7 +618,7 @@ export class Site extends EventEmitter {
 		return this.langUrls[this.config.language];
 	}
 	
-	translate(src: string, from: string, to: string, cb: () => void, srclog: string) {
+	translate(src: string, from: string, to: string, cb: (err: Error, r: any) => void, srclog: string) {
 		this.translator.translate(src, from, to, cb, srclog);
 	}
 }

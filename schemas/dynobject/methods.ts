@@ -1,4 +1,4 @@
-import {DBRef, LipthusSchema} from "../../lib";
+import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
 import {LipthusRequest} from "../../index";
 
 const Types = LipthusSchema.Types;
@@ -457,7 +457,7 @@ export function changeVar(this: any, name: string, val: any) {
 	
 	const update: any = {};
 	
-	if (Types.BdfList === this.schema.path(name).options.type) {
+	if (LipthusSchemaTypes.BdfList === this.schema.path(name).options.type) {
 		if (val.event === 'deleteFile') {
 			const key = Object.keys(this.get(name))[val.val];
 			

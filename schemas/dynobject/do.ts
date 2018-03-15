@@ -1,4 +1,4 @@
-import {LipthusSchema} from "../../lib";
+import {LipthusSchema, LipthusSchemaTypes} from "../../lib";
 
 const _methods = require('./methods');
 const _statics = require('./statics');
@@ -35,8 +35,8 @@ class DoSchema extends LipthusSchema {
 			
 			this.eachPath((k: string, path: any) => {
 				switch (path.options.type) {
-					case Types.MlSelector:
-					case Types.MlCheckboxes:
+					case LipthusSchemaTypes.MlSelector:
+					case LipthusSchemaTypes.MlCheckboxes:
 						ret[k] = ret[k] && ret[k].val;
 						break;
 				}
@@ -87,7 +87,7 @@ class DoSchema extends LipthusSchema {
 					break;
 				case 'text':
 				case 'textarea':
-					p.type = dv.multilang ? Types.Multilang : String;
+					p.type = dv.multilang ? LipthusSchemaTypes.Multilang : String;
 					
 					if (dv.multilang)
 						p.translatable = dv.translatable === undefined ? true : dv.translatable;
@@ -121,10 +121,10 @@ class DoSchema extends LipthusSchema {
 				case 'signature':
 				case 'bdf':
 				case 'bdi':
-					p.type = Types.Bdf;
+					p.type = LipthusSchemaTypes.Bdf;
 					break;
 				case 'image':
-					p.type = Types.BdfList;
+					p.type = LipthusSchemaTypes.BdfList;
 					p.multi = dv.multi;
 					p.noWatermark = !!dv.noWatermark;
 					break;
@@ -147,17 +147,17 @@ class DoSchema extends LipthusSchema {
 					p.formtype = 'selector';
 					break;
 				case 'checkboxes':
-					p.type = Types.MlCheckboxes;
+					p.type = LipthusSchemaTypes.MlCheckboxes;
 					p.formtype = 'checkboxes';
 					break;
 				case 'nationality':
-					p.type = Types.MlSelector;
+					p.type = LipthusSchemaTypes.MlSelector;
 					p.formtype = 'selector';
 					break;
 				case 'audio':
 				case 'video':
 				case 'file':
-					p.type = Types.Fs;
+					p.type = LipthusSchemaTypes.Fs;
 					p.multi = dv.multi;
 					break;
 				case 'refid':
@@ -169,7 +169,7 @@ class DoSchema extends LipthusSchema {
 				
 				case 'user':
 				case 'id':
-					p.type = Types.ObjectId;
+					p.type = LipthusSchemaTypes.ObjectId;
 					break;
 				case 'location':
 					p.type = {

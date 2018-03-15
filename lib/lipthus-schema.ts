@@ -1,7 +1,13 @@
 import * as mongoose from 'mongoose';
-import {Schema, SchemaTypes} from "mongoose";
+import {Schema} from "mongoose";
 import "./query";
 import {createdPlugin, lastActivated, lastModifiedPlugin, locationPlugin, modifierPlugin, removedPlugin, submitterPlugin} from "../modules/schema-plugins";
+import * as mls from "../modules/schema-types/mlselector";
+import * as mlcb from "../modules/schema-types/mlcheckboxes";
+import * as mlbdf from "../modules/schema-types/bdf";
+import * as mlbdfl from "../modules/schema-types/bdf-list";
+import * as mlfs from "../modules/schema-types/fs";
+import * as mltext from "../modules/schema-types/mltext";
 
 const plugins = {
 	lastMod: lastModifiedPlugin
@@ -17,7 +23,7 @@ export class LipthusSchema extends Schema {
 	
 	public tree: any;
 	public db: any;
-	public static Types: any = SchemaTypes;
+	public static Types = Schema.Types;
 	public paths: any;
 	
 	constructor(obj: any, public options: any = {}) {
@@ -136,7 +142,19 @@ export class LipthusSchema extends Schema {
 
 (mongoose as any).LipthusSchema = LipthusSchema;
 
-export {SchemaTypes};
+export let SchemaTypes: typeof LipthusSchema.Types;
+
+export namespace LipthusSchemaTypes {
+	export const ObjectId = LipthusSchema.Types.ObjectId;
+	export const MlSelector = mls.MlSelector;
+	export const MlCheckboxes = mlcb.MlCheckboxes;
+	export const Bdf = mlbdf.Bdf;
+	export const BdfList = mlbdfl.BdfList;
+	export const Fs = mlfs.Fs;
+	export const FsList = mlfs.FsList;
+	export const Multilang = mltext.Multilang;
+	export const MultilangText = mltext.MultilangText;
+}
 
 /**
  * @deprecated (usado en cmjs-newsletter)

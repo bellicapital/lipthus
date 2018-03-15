@@ -1,11 +1,9 @@
 import {BinDataFile} from "../bdf";
-import {DBRef, LipthusSchema} from "../../lib";
+import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
 import {LipthusRequest} from "../../index";
 
-const Types = LipthusSchema.Types;
 const Location = require('../geo').location;
 
-// const debug = require('debug')('site:schema-global');
 
 class DocValues {
 	
@@ -200,8 +198,8 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 		
 		this.schema.eachPath((k: string, path: any) => {
 			switch (path.options.type) {
-				case Types.Bdf:
-				case Types.BdfList:
+				case LipthusSchemaTypes.Bdf:
+				case LipthusSchemaTypes.BdfList:
 					if (this[k]) {
 						if (!this[k].info)
 							console.error(new Error('Schema BdfList. Wrong object: ' + this[k].constructor.name));
@@ -209,12 +207,12 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 							ret[k] = this[k].info(width, height, crop);
 					}
 					break;
-				case Types.Fs:
+				case LipthusSchemaTypes.Fs:
 					if (this[k])
 						ret[k] = this[k].info();
 					break;
-				case Types.MlSelector:
-				case Types.MlCheckboxes:
+				case LipthusSchemaTypes.MlSelector:
+				case LipthusSchemaTypes.MlCheckboxes:
 					// jj 21/10/14. No he encontrado mejor forma de solucionar que toJSON devuelve 'nationality'
 					if (path.options.origType === 'nationality') {
 						if (this[k])
@@ -243,14 +241,14 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				return console.error('Field ' + k + ' not found in schema ' + schema.options.collection);
 			
 			switch (this.schema.paths[k].options.type) {
-				case Types.Bdf:
+				case LipthusSchemaTypes.Bdf:
 					v[k] = BinDataFile.fromMongo(v[k], {
 						collection: this.collection.name,
 						id: this._id,
 						field: k
 					});
 					break;
-				case Types.BdfList:
+				case LipthusSchemaTypes.BdfList:
 					Object.keys(v[k]).forEach(i => {
 						v[k][i] = BinDataFile.fromMongo(v[k][i], {
 							collection: this.collection.name,
@@ -260,7 +258,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 					});
 					
 					break;
-				case Types.MlSelector:
+				case LipthusSchemaTypes.MlSelector:
 					if (typeof v[k] === 'object')
 						v[k] = v[k].val;
 					break;
@@ -428,7 +426,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 					break;
 				case 'Multilang':
 					if (schema.tree[k].constructor.name === 'Array' && obj[k]) {
-						const MlText = Types.Multilang.MultilangText;
+						const MlText = LipthusSchemaTypes.MultilangText;
 						
 						obj[k].forEach((o: any, i: number) =>
 							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site));
@@ -446,11 +444,11 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				return;
 			
 			switch (path.options.type) {
-				case Types.MlSelector:
-				case Types.MlCheckboxes:
+				case LipthusSchemaTypes.MlSelector:
+				case LipthusSchemaTypes.MlCheckboxes:
 					ret[k] = ret[k] && ret[k].val;
 					break;
-				case Types.BdfList:
+				case LipthusSchemaTypes.BdfList:
 					ret[k] = ret[k] && ret[k].toObject();
 					break;
 			}

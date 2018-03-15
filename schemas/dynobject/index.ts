@@ -1,11 +1,11 @@
-import {LipthusSchema} from '../../lib';
+import {LipthusSchema, LipthusSchemaTypes} from '../../lib';
 import * as _ from "underscore";
 
 const DoSchema = require('./do');
 module.exports = function dynobject() {
 	const s = new LipthusSchema({
-		title: {type: LipthusSchema.Types.Multilang, caption: '_TITLE'},
-		description: {type: LipthusSchema.Types.Multilang, formtype: 'textarea', caption: '_DESCRIPTION'},
+		title: {type: LipthusSchemaTypes.Multilang, caption: '_TITLE'},
+		description: {type: LipthusSchemaTypes.Multilang, formtype: 'textarea', caption: '_DESCRIPTION'},
 		name: String,
 		colname: String,
 		tag: String, // blog, category, product, ...

@@ -1,48 +1,33 @@
-"use strict";
-
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const SchemaType = mongoose.SchemaType;
+import {Schema, SchemaType} from "mongoose";
+import {LipthusRequest} from "../../index";
+import {LipthusDb} from "../db";
 
 
-class MlCheckbox {
-
-	constructor(val, path, options, schema){
-		this.val = val;
-		this.path = path;
-		this.options = options;
-
-		if(schema)
-			Object.defineProperty(this, 'model', {value: schema});
+export class MlCheckbox {
+	
+	model = {options: {collection: ''}};
+	
+	constructor(public val: any, public path: string, public options: any, public schema?: any) {
 	}
 
-	getVal(req, db, cb) {
-		if (typeof db === 'function') {
-			cb = db;
-			db = req.db;
-		}
-
-		if (typeof cb === 'function')
-			console.trace('schema getVar is @deprecated');
+	getVal(req: LipthusRequest, db: LipthusDb) {
+		db = db || req.db;
 
 		if (!this.val || !this.val.length)
 			return Promise.resolve();
 
 		return this.checkLang(req, db)
 			.then(o => {
-				const ret = [];
+				const ret: Array<string> = [];
 
 				if (this.val)
-					this.val.forEach(val => ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
+					this.val.forEach((val: any) => ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
 
 				return ret;
 			});
 	}
 
-	checkLang(req, db, cb) {
-		if (typeof cb === 'function')
-			console.trace('schema getVar is @deprecated');
-
+	checkLang(req: LipthusRequest, db: LipthusDb) {
 		const o = this.options.options;
 
 		return new Promise((ok, ko) => {
@@ -55,8 +40,8 @@ class MlCheckbox {
 				return ok(o);
 			}
 
-			const toTranslate = [];
-			const toTranslateKeys = [];
+			const toTranslate = <any>[];
+			const toTranslateKeys = <any>[];
 
 			Object.each(o, (k, v) => {
 				if (!v[req.ml.lang]) {
@@ -71,11 +56,11 @@ class MlCheckbox {
 			if (!req.ml.translateAvailable())
 				return ok();
 
-			req.ml.translate(toTranslate, (err, result) => {
+			req.ml.translate(toTranslate, (err: Error, result: any) => {
 				if (err)
 					return ko(err);
 
-				result.forEach((r, idx) => o[toTranslateKeys[idx]][req.ml.lang] = r);
+				result.forEach((r: string, idx: number) => o[toTranslateKeys[idx]][req.ml.lang] = r);
 
 				const query = {colname: this.model.options.collection.replace('dynobjects.', '')};
 				const update = {};
@@ -99,40 +84,42 @@ class MlCheckbox {
 		if (!this.val)
 			return ret;
 
-		this.val.forEach(val => ret[val] = this.options.options[val]);
+		this.val.forEach((val: string) => ret[val] = this.options.options[val]);
 
 		return ret;
 	}
 }
 
 
-/**
- * MlCheckboxes constructor
- *
- * @inherits SchemaType
- * @param {String} key
- * @param {Object} [options]
- */
-class MlCheckboxes extends SchemaType {
-	constructor(path, options) {
+export class MlCheckboxes extends SchemaType {
+	
+	public val: any;
+	
+	/**
+	 *
+	 * @param {String} path
+	 * @param {Object} [options]
+	 */
+	constructor(public path: string, public options: any) {
 		super(path, options, 'MlCheckboxesType');
-
-		Object.defineProperty(this, '$conditionalHandlers', {
-			value: {
-				'$lt': handleSingle
-				, '$lte': handleSingle
-				, '$gt': handleSingle
-				, '$gte': handleSingle
-				, '$ne': handleSingle
-				, '$in': handleArray
-				, '$nin': handleArray
-				, '$mod': handleArray
-				, '$all': handleArray
-				, '$exists': handleExists
-			}
-		});
 	}
-
+	
+	// noinspection JSMethodCanBeStatic
+	get $conditionalHandlers() {
+		return {
+			'$lt': handleSingle
+			, '$lte': handleSingle
+			, '$gt': handleSingle
+			, '$gte': handleSingle
+			, '$ne': handleSingle
+			, '$in': handleArray
+			, '$nin': handleArray
+			, '$mod': handleArray
+			, '$all': handleArray
+			, '$exists': handleExists
+		};
+	}
+	
 	// default(val) {
 	// 	return new MlCheckboxes(val);
 	// }
@@ -145,7 +132,7 @@ class MlCheckboxes extends SchemaType {
 	 * @return {Boolean}
 	 */
 
-	checkRequired(val) {
+	checkRequired(val: any) {
 		return !!(val && val.length);
 	}
 
@@ -154,10 +141,10 @@ class MlCheckboxes extends SchemaType {
 	 *
 	 * @param {*} val
 	 * @param {Object} [scope]
-	 * @return {mongo.Multilang|null}
+	 * @return {any}
 	 */
 
-	cast(val, scope) {
+	cast(val: any, scope: any) {
 		if (val instanceof MlCheckbox)
 			return val;
 
@@ -173,9 +160,10 @@ class MlCheckboxes extends SchemaType {
 	 * @param {*} [value]
 	 */
 
-	castForQuery($conditional, value) {
+	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			let handler = this.$conditionalHandlers[$conditional];
+			const handler = this.$conditionalHandlers[$conditional];
+			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with MlCheckboxes.");
 
@@ -194,11 +182,11 @@ class MlCheckboxes extends SchemaType {
  * ignore
  */
 
-const handleSingle = function (val) {
+const handleSingle = function (this: any, val: any) {
 	return this.cast(val);
 };
 const handleExists = () => true;
-const handleArray = function (val) {
+const handleArray = function (this: any, val: Array<any>) {
 	return val.map(m => typeof m === 'string' ? m : this.cast(m));
 };
 
@@ -206,5 +194,6 @@ const handleArray = function (val) {
 /**
  * Expose
  */
-Schema.Types.MlCheckboxes = MlCheckboxes;
-module.exports.MlCheckboxesType = MlCheckboxes;
+(Schema.Types as any).MlCheckboxes = MlCheckboxes;
+
+export const MlCheckboxesType = MlCheckboxes;

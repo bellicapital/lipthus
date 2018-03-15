@@ -1,8 +1,6 @@
 import {BinDataFile} from "../bdf";
-import * as mongoose from "mongoose";
+import {Schema, SchemaType} from "mongoose";
 
-const Schema = mongoose.Schema;
-const SchemaType = mongoose.SchemaType;
 
 export class BinDataFileList {
 	/**
@@ -50,7 +48,7 @@ export class BinDataFileList {
 	}
 }
 
-class BdfList extends SchemaType {
+export class BdfList extends SchemaType {
 	
 	collection?: string;
 	id?: string;
