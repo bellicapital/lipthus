@@ -216,19 +216,6 @@ const handleArray = function (this: any, val: Array<any>) {
 	return val.map(m => this.cast(m));
 };
 
-(Fs.prototype as any).$conditionalHandlers = {
-	'$lt': handleSingle
-	, '$lte': handleSingle
-	, '$gt': handleSingle
-	, '$gte': handleSingle
-	, '$ne': handleSingle
-	, '$in': handleArray
-	, '$nin': handleArray
-	, '$mod': handleArray
-	, '$all': handleArray
-	, '$exists': handleExists
-};
-
 /**
  * Implement query casting, for mongoose 3.0
  *
