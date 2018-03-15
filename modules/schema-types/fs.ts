@@ -216,24 +216,6 @@ const handleArray = function (this: any, val: Array<any>) {
 	return val.map(m => this.cast(m));
 };
 
-/**
- * Implement query casting, for mongoose 3.0
- *
- * @param {String} $conditional
- * @param {*} [value]
- */
-
-(Fs.prototype as any).castForQuery = function ($conditional: any, value: any) {
-	if (2 === arguments.length) {
-		const handler = this.$conditionalHandlers[$conditional];
-		
-		if (!handler)
-			throw new Error("Can't use " + $conditional + " with Fs Type.");
-		
-		return handler.call(this, value);
-	} else
-		return this.cast($conditional);
-};
 
 /**
  * Expose
