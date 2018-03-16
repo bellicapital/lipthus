@@ -109,12 +109,9 @@
 		"underscore": "^1.8.3",
 		"unidecode": "^0.1.8",
 		"w3cjs": "^0.4.0",
-		"ws": "^5.0.0"
-	},
-	"devDependencies": {
+		"ws": "^5.0.0",
 		"@types/md5": "^2.1.32",
 		"@types/merge-descriptors": "^1.0.1",
-		"@types/mz": "0.0.32",
-		"nodemon": "^1.17.2"
+		"@types/mz": "0.0.32"
 	}
 }
