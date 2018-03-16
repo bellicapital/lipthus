@@ -97,7 +97,7 @@ class ReqFile {
 					if (['BdfList', 'Fs'].indexOf(this.schemaTypeName()) !== -1)
 						namespace += '.' + key;
 
-					let options = {};
+					const options = {};
 
 					let endImageUpload = () => {
 						let update = {$set: {}};
@@ -181,20 +181,21 @@ class ReqFile {
 
 				return multimedia(this.file.path)
 					.then(metadata => {
-						if (metadata)
+						if (metadata) {
 							fileOptions.metadata = metadata;
+							Object.assign(fileOptions, metadata);
+						}
 					});
 			})
 			.then(() => gsFile.update(fileOptions))
 			.then(() => {
-				let update = {$set: {}};
-				let options = {};
+				const update = {$set: {}};
 
 				namespace = this.field + '.' + gsFile.getKey();
 
 				update.$set[namespace] = gsFile._id;
 
-				return this.model.findOneAndUpdate(this.query, update, options);
+				return this.model.findOneAndUpdate(this.query, update);
 			})
 			.then(() => {
 				if (this.itemid)

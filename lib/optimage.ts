@@ -1,11 +1,10 @@
-"use strict";
+import {readFile} from "mz/fs";
 
 const imagemin = require('imagemin');
 const imageminGifsicle = require('imagemin-gifsicle');
 const imageminMozjpeg = require('imagemin-mozjpeg');
 const imageminOptipng = require('imagemin-optipng');
 const imageminSvgo = require('imagemin-svgo');
-const fs = require('mz/fs');
 const imageminopt = {
 	use: [
 		imageminGifsicle(),
@@ -15,5 +14,7 @@ const imageminopt = {
 	]
 };
 
-module.exports = path => fs.readFile(path)
-	.then(buf => imagemin.buffer(buf, imageminopt));
+export function optimage (path: string) {
+	return readFile(path)
+		.then((buf: Buffer) => imagemin.buffer(buf, imageminopt));
+}

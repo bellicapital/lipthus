@@ -1,8 +1,8 @@
 import * as mongoose from "mongoose";
 import {Schema, SchemaType, Types, mongo} from "mongoose";
+import {GridFSFile} from "../../lib";
+import {BinDataFile} from "../bdf";
 
-const {BinDataFile} = require('../bdf');
-const {GridFSFile} = require('../../lib');
 const GridStore = (mongo as any).GridStore;
 
 export class FsList {

@@ -1,3 +1,3 @@
-
-export const GridFS = require('./gridfs');
-export const GridFSFile = require('./gridfs-file');
+export {GridFSFile} from "./gridfs-file";
+export {GridFS} from './gridfs';
+export const eee = 111;

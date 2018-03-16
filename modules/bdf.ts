@@ -73,8 +73,11 @@ export class BinDataFile {
 		return this.colRef ? this.getPath() + this.uriName() : null;
 	}
 	
-	uriName() {
-		return encodeURIComponent(this.name.replace(/\s/g, ''));
+	uriName(ext?: string) {
+		const curext = path.extname(this.name);
+		const bn = path.basename(this.name, curext);
+		
+		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curext);
 	}
 	
 	formDataValue() {
