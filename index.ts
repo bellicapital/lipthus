@@ -49,6 +49,7 @@ export declare class LipthusDb extends Db_ {
 }
 export {User};
 export interface LipthusRequest extends express.Request {
+	res: LipthusResponse;
 	domainName: string;
 	staticHost: string;
 	// hostname: string;
@@ -88,3 +89,5 @@ export interface LipthusApplication extends express.Application {
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;
 }
+
+export {LipthusError} from './classes/lipthus-error';
