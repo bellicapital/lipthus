@@ -141,15 +141,19 @@ export class MlCheckboxes extends SchemaType {
 	 *
 	 * @param {*} val
 	 * @param {Object} [scope]
+	 * @param init
 	 * @return {any}
 	 */
 
-	cast(val: any, scope: any) {
+	cast(val: any, scope: any, init: boolean) {
 		if (val instanceof MlCheckbox)
 			return val;
 
 		if (null === val || !Array.isArray(val)) return null;
 
+		if (!init)
+			return val;
+		
 		return new MlCheckbox(val, this.path, this.options, scope && scope.constructor.name === 'model' && scope.schema);
 	}
 
