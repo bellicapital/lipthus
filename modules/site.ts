@@ -16,6 +16,7 @@ import * as csurf from "csurf";
 import {session} from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
 import * as lipthus from '../index';
+import {security} from "./security";
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -28,7 +29,6 @@ const multilang = require('./multilang');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
-const security = require('./security');
 const HtmlPage = require('./htmlpage');
 const logger = require('./logger');
 const fs = require('mz/fs');
