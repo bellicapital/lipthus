@@ -71,6 +71,7 @@ export interface LipthusRequest extends express.Request {
 	nationalities: any;
 	getUser: () => Promise<User>;
 	files?: Array<UploadedFile>;
+	security: any;
 	/**
 	 * @deprecated
 	 */
