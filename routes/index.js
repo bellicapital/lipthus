@@ -1,6 +1,6 @@
 "use strict";
 
-import {Setup} from "./setup";
+const {Setup} = require("./setup");
 
 const {userPage} = require("./user");
 
