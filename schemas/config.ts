@@ -1,6 +1,5 @@
 import {LipthusSchema} from "../lib";
 import {BinDataFile, Site} from '../modules';
-import {LipthusRequest} from "../index";
 import {Document, Model} from "mongoose";
 
 let definitions: any;
@@ -28,7 +27,8 @@ export function getSchema(site: Site) {
 	const s = new LipthusSchema({
 		name: {type: String, unique: true},
 		value: {
-			type: LipthusSchema.Types.Mixed, get: function (this: any, val: any) {
+			type: LipthusSchema.Types.Mixed,
+			get: function (this: any, val: any) {
 				if (this.name && getDefinition(this.name)[0] === 'bdf')
 					return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
 				
@@ -56,8 +56,5 @@ export interface Config extends Document {
 }
 
 export interface ConfigModel extends Model<Config> {
-	
-	// noinspection JSUnusedLocalSymbols
-	log(req: LipthusRequest, query: any): Promise<any>;
-	
+
 }

@@ -7,18 +7,13 @@ export class AjaxGlobalMethods {
 	
 	main() {
 		const req = this.req;
-		const config = req.site.config;
 		
 		return req.ml.langUserNames()
 			.then((ln: {[code: string]: string}) => ({
 				sitename: req.site + '',
 				languages: ln,
 				user: req.user && req.user.baseInfo() || undefined,
-				registerMethods: {
-					site: config.site_credentials,
-					google: config.googleApiKey && !!config.googleSecret,
-					facebook: !!config.fb_app_id
-				}
+				registerMethods: req.site.registerMethods
 			}));
 	}
 	

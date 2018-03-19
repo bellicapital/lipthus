@@ -9,7 +9,6 @@ import * as bodyParser from "body-parser";
 import * as cookieParser from "cookie-parser";
 import * as os from "os";
 import * as device from "express-device";
-import {Config} from "./config";
 import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
@@ -17,6 +16,7 @@ import {session} from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
+import {Config} from "./config";
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -55,7 +55,7 @@ export class Site extends EventEmitter {
 	public tmpdir: string;
 	public secret: string;
 	public mailer: any;
-	public config: any;
+	public config: Config;
 	public protocol = 'http';
 	public externalProtocol = 'https';
 	public staticHost = '';
@@ -70,6 +70,7 @@ export class Site extends EventEmitter {
 	public langUrls: any;
 	public translator: any;
 	public store?: any;
+	public registerMethods: any = {};
 	private _notifier: any;
 	
 	/**
@@ -124,6 +125,8 @@ export class Site extends EventEmitter {
 		this.db = new LipthusDb(this.dbParams(), this);
 		this.dbs[this.db.name] = this.db;
 		
+		this.config = new Config(this);
+		
 		this.connect();
 	}
 	
@@ -158,8 +161,8 @@ export class Site extends EventEmitter {
 		
 		this.mailer = new Mailer(this.conf.mail, this);
 		
-		Config(this)
-			.then((config: any) => {
+		this.config.load()
+			.then((config: Config) => {
 				this.config = config;
 				this.protocol = config.protocol;
 				this.externalProtocol = process.env.NODE_ENV !== 'development' ? config.external_protocol : 'http';
@@ -186,6 +189,12 @@ export class Site extends EventEmitter {
 						.changeValue('host', this.domainName)
 						.catch(console.error.bind(console));
 				}
+				
+				this.registerMethods = {
+					site: config.site_credentials,
+					google: config.googleApiKey && !!config.googleSecret,
+					facebook: !!config.fb_app_id
+				};
 				
 				return checkVersions(this);
 			})
@@ -535,7 +544,10 @@ export class Site extends EventEmitter {
 	}
 	
 	logo(width: number, height: number) {
-		return this.config.sitelogo ? this.config.sitelogo.info(width || 340, height || 48) : {
+		if (this.config.sitelogo)
+			return this.config.sitelogo!.info(width || 340, height || 48);
+		
+		return {
 			uri: '/cms/img/logo.png',
 			width: 340,
 			height: 48

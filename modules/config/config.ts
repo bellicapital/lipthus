@@ -1,18 +1,41 @@
 import {ConfigVarInstance} from "./configvar";
 import {Site} from "../site";
+import {BinDataImage} from "../bdi";
+import {MultilangText} from "../schema-types/mltext";
+import {ConfigModel} from "../../schemas/config";
 
 export class Config {
 	[key: string]: any;
 	
-	constructor(site: Site) {
+	adminmail?: string;
+	external_protocol = 'https';
+	fb_app_id?: string;
+	googleApiKey?: string;
+	googleSecret?: string;
+	host = '';
+	language = 'es';
+	port?: number;
+	protocol = 'http';
+	site_credentials?: boolean;
+	sitelogo?: BinDataImage;
+	sitename?: string;
+	siteversion?: string;
+	slogan?: MultilangText;
+	startpage = 'home';
+	static_host?: string;
+	version?: string;
+	webmastermail?: string;
+	model?: ConfigModel;
+	
+	constructor(public site: Site) {
 		this.groups = {};
 		this.configs = {};
-		this.site = site;
-		this.model = site.db.model('config');
 	}
 	
 	load() {
-		return this.model.find()
+		this.model = this.site.db.model('config');
+		
+		return this.model!.find()
 			.then((obj: Array<any>) => {
 				const indb = {};
 				const keys = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
@@ -39,7 +62,7 @@ export class Config {
 						this.configs[key] = ConfigVarInstance(g, this.site);
 						
 						if (!indb[key]) {
-							indb[key] = new this.model({name: key, value: this.configs[key].value});
+							indb[key] = new this.model!({name: key, value: this.configs[key].value});
 							indb[key].save();
 							this.configs[key]._id = indb[key]._id;
 						}
@@ -53,7 +76,7 @@ export class Config {
 					});
 				});
 				
-				this.model.on('itemChange', (item: any) => {
+				this.model!.on('itemChange', (item: any) => {
 					this.configs[item.name].setValue(item.value);
 				});
 				
@@ -62,11 +85,10 @@ export class Config {
 	}
 	
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update: any, cb = (v: any) => {
-	}) {
+	get(k: string, update: any, cb = (v: any) => {}) {
 		
 		if (update) {
-			this.model.findOne({name: k}, (err: Error, obj: any) => {
+			this.model!.findOne({name: k}, (err: Error, obj: any) => {
 				if (err) return cb(err);
 				
 				if (!obj) return cb({error: 'Config ' + k + ' not found'});
@@ -85,7 +107,7 @@ export class Config {
 		}
 	}
 	
-	set(k: string, v: any, ns: boolean | null, save: boolean) {
+	set(k: string, v: any, ns?: string | boolean | null, save?: boolean): any {
 		if (ns === true) {
 			ns = null;
 			save = true;
@@ -108,7 +130,7 @@ export class Config {
 		
 		update[key] = v;
 		
-		return this.model.update(
+		return this.model!.update(
 			{name: this.configs[k].name},
 			update,
 			{upsert: true}

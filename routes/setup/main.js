@@ -10,11 +10,7 @@ const Admin = {
 			sitename: req.site + '',
 			language: config.language,
 			user: req.user && req.user.baseInfo() || undefined,
-			registerMethods: {
-				site: config.site_credentials,
-				google: config.googleApiKey && !!config.googleSecret,
-				facebook: !!config.fb_app_id
-			}
+			registerMethods: req.site.registerMethods
 		};
 
 		return req.ml.langUserNames()

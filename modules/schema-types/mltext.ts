@@ -88,7 +88,7 @@ const handleArray = function (this: any, val: Array<any>) {
 };
 
 export class MultilangText {
-	constructor(obj: any, public collection: any, public path: string, public _id: Types.ObjectId, public site: Site) {
+	constructor(public obj: any, public collection: any, public path: string, public _id: Types.ObjectId, public site: Site) {
 		if (obj) {
 			if (obj.undefined) {	// tmp solution. jj - No sé porqué, pero aparecen
 				debug('lang code not valid: {undefined: ' + obj.undefined + '}');
@@ -102,13 +102,14 @@ export class MultilangText {
 			Object.defineProperties(this, {
 				model: {get: () => site.db[collection.name]}
 			});
-		
-		// if(path === 'options')
-		// 	l(this.path)
+	}
+	
+	toJSON() {
+		return this.obj;
 	}
 	
 	getLang(lang: any, alt: string) {
-		return this[lang] || (alt && this[alt]) || this[defaultLang] || '';
+		return this.obj[lang] || (alt && this.obj[alt]) || this.obj[defaultLang] || '';
 	}
 	
 	/**
@@ -121,21 +122,21 @@ export class MultilangText {
 			if (!lang)
 				return ko(new Error('no lang provided'));
 			
-			if (this[lang]) {
+			if (this.obj[lang]) {
 				// jj - 24/11/16
 				// solución temporal a un error pasado en las traducciones
 				// eliminar en unos meses
 				
-				if (this[lang].constructor.name === 'Array' && this[lang][0].translatedText)
-					this.updateLang(lang, this[lang][0].translatedText);
+				if (this.obj[lang].constructor.name === 'Array' && this.obj[lang][0].translatedText)
+					this.updateLang(lang, this.obj[lang][0].translatedText);
 				
 				// end tmp solution
 				
-				return ok(this[lang]);
+				return ok(this.obj[lang]);
 			}
 			
 			const from = this.site.config.language;
-			const src = this[from];
+			const src = this.obj[from];
 			
 			if (!src)
 				return ok();
@@ -156,7 +157,7 @@ export class MultilangText {
 	}
 	
 	updateLang(lang: string, data: any) {
-		this[lang] = data;
+		this[lang] = this.obj[lang] = data;
 		
 		if (!this._id)
 			console.error(new Error('MultilangText no updated. No _id provided. Data: ' + data));
