@@ -1,8 +1,8 @@
 extends ../../base
 
 block body
-	#post-page.ui-page(data-role="page",data-theme="b")
-		.ui-header(data-role="header", data-position="fixed")
+	#post-page.ui-page(data-role="page" data-theme="b")
+		.ui-header(data-role="header"  data-position="fixed")
 			a.ui-btn-left.ui-link.ui-btn.ui-icon-back.ui-btn-icon-left.ui-shadow.ui-corner-all(
 				href="/blogger/" + schema
 			) Hecho
@@ -24,7 +24,7 @@ block body
 				ul(data-role="listview", data-inset="true")
 					li.ui-field-contain
 						label=LC._ACTIVE
-						input(name="active", type="checkbox", data-role="flipswitch", checked=!!post.active, disabled=user.level<4)
+						input(name="active" data-type="boolean" type="checkbox" data-role="flipswitch" checked=!!post.active disabled=user.level<4)
 						label(style="width:auto;margin-left:120px;margin-right:12px") Fecha publicación:
 						.ui-input-text.ui-body-inherit.ui-corner-all.ui-shadow-inset(style="width:auto")
 							input(

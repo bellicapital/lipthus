@@ -92,13 +92,13 @@ MobileForm.prototype.validate = function(cb){
 		if(this.type === 'radio' || this.type === 'checkbox'){
 			if(checked[this.name])
 				return;
-			
+
 			val = !!$f.find('[name="' + this.name + '"]:checked').size();
-			
+
 			checked[this.name] = true;
 		} else
 			val = $(this).val() !== '';
-		
+
 		if(!val){
 			required = this.name;
 
@@ -219,7 +219,7 @@ MobileForm.prototype.set = function(obj){
 				if(v){
 					if($field.data().type === 'boolean')
 						v = [true];
-					
+
 					$field.val(v).checkboxradio('refresh');
 				}
 				break;
@@ -313,11 +313,11 @@ MobileForm.prototype.setupFields = function(){
 			self.types[this.name] = 'datepicker';
 
 			var opt = $.extend({}, this.dataset);
-			
+
 			opt.onSelect = function(date, ui){
 				$(this).trigger('change');
 			};
-			
+
 			$field.date(opt);
 
 			if(this.value && !this.dataset.dateFormat){
@@ -328,7 +328,7 @@ MobileForm.prototype.setupFields = function(){
 			}
 		} else if(this.dataset.role === 'signature'){
 			self.types[this.name] = this.dataset.role;
-			
+
 			$(this).signature();
 		} else {
 			self.types[this.name] = this.dataset.role || this.type;
@@ -382,23 +382,23 @@ MobileForm.prototype.sortUpdate = function(field, cb){
 			keys: []
 		},
 		re = new RegExp('\\/' + field.name + '\\.(\\d+)');
-	
+
 	$gal.children().each(function(){
 		var path = $(this).data('thumb').path;
-		
+
 		if(!path) return false;
-		
+
 		var m = path.match(re);
-		
+
 		if(!m) return false;
-	
+
 		data.keys.push(m[1]);
 	});
-	
+
 	if(data.keys.length !== $gal.children().size())
 		return $.error(field.name + ' not sortable');
-	
-	
+
+
 	$.ajax({
 		url: self.url + '/sortfield',
 		data: data,
@@ -509,7 +509,7 @@ $.contentReady(function(){
 	$mf.on('sortupdate', 'input[type="file"]', function(){
 		mf.sortUpdate(this);
 	});
-	
+
 	// evita que se muestre un calendario al cargar la página. jj 21/5/15 - jqm 1.4.5
 	$('head').append('<style>#ui-datepicker-div{display:none}</style>');
 });

@@ -464,7 +464,7 @@ export class Site extends EventEmitter {
 		};
 		
 		app.use('/s', express.static(this.dir + '/public', staticOpt));
-		app.use('/cms', express.static(path.dirname(__dirname) + '/public', staticOpt));
+		app.use('/cms', express.static(this.lipthusDir + '/public', staticOpt));
 		app.use('/pc', require('jj-proxy-cache'));
 		app.use('/css', require('../lib/css'));
 		app.use('/js', require('../lib/js'));
