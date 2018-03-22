@@ -314,30 +314,9 @@ export class Site extends EventEmitter {
 	}
 	
 	sendMail(opt: any, throwError?: boolean) {
-		return this.db.emaillog
+		return this.db.mailsent
 			.create({email: opt})
-			.then((email: any) => {
-				if (process.env.NODE_ENV !== 'production') {
-					// this.mailer.checkOptions(opt);
-					
-					// email.email.attachments = opt.attachments;
-					
-					email.result = 'No se ha enviado este email a '
-						+ opt.to
-						+ ' por estar en modo desarrollo\n'
-						+ this.mainUrl()
-						+ '/email-log?id=' + email.id;
-					
-					debug(email.result);
-					
-					return email;
-				}
-				
-				return this.mailer.send(opt)
-					.then((result: any) => email.set('result', result))
-					.catch((err: Error) => email.set('error', err));
-			})
-			.then((email: any) => email.save())
+			.then((email: any) => email.send())
 			.then((email: any) => {
 				this.emit('mailsent', email);
 				

@@ -1,10 +1,12 @@
 import {LipthusRequest, LipthusResponse} from "../../index";
 import {NextFunction} from "express";
+import * as mail from "./mail-sent";
 
 const methods = Object.assign({},
 	require('./main'),
 	require('./item'),
-	require('./config')
+	require('./config'),
+	mail
 );
 
 export function Setup(req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
