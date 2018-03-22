@@ -90,7 +90,7 @@ export function getSchema() {
 			return ret;
 		},
 		getName: function (this: any, usereal?: boolean) {
-			return usereal ? this.name || this.uname : this.uname || this.name;
+			return (usereal ? this.name || this.uname : this.uname || this.name) || '';
 		},
 		/**
 		 * @returns {boolean}
