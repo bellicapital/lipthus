@@ -144,7 +144,7 @@ export function getSchema() {
 		},
 		fromOAuth2: function (this: any, p: any) {
 			const obj = {
-				name: p.displayName,
+				name: p.displayName || this.uname,
 				given_name: p.name.givenName,
 				family_name: p.name.familyName,
 				picture: p.image.url,
