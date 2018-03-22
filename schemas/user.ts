@@ -194,6 +194,7 @@ export function getSchema() {
 				if (!u)
 					u = new this({
 						email: params.email,
+						uname: params.email,
 						level: 1
 					});
 				
