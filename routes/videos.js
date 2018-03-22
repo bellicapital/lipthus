@@ -35,6 +35,9 @@ module.exports = function(req, res, next){
 			if(!file)
 				return next();
 
+			if (file.error)
+				throw file.error.status || file.error;
+
 			if(!ext)
 				return res.redirect('/videos/' + (dbname !== req.site.db.name ? dbname + '.' : '') + id + '/' + file.filename);
 

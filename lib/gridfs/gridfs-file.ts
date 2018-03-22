@@ -653,6 +653,9 @@ export class GridFSFile {
 }
 
 class GridFSFileNotFoundError extends Error {
+	
+	public status = 404;
+	
 	constructor(msg: string) {
 		super(msg);
 	}

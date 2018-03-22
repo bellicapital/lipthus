@@ -17,6 +17,7 @@ import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
+import {canonicalhost} from '../lib/canonicalhost';
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -430,7 +431,7 @@ export class Site extends EventEmitter {
 		app.locals.basedir = '/';
 		
 		app.use(require('./logger-req'));
-		app.use(require('../lib/canonicalhost'));
+		app.use(canonicalhost);
 		app.use(favicons(this.dir + '/public/img/icons'));
 		
 		if (process.env.NODE_ENV === 'development') {
