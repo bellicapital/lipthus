@@ -212,10 +212,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 					});
 				})
 				.catch((err: any) => {
-					if (err.code === 'ENOENT')
-						debug('No plugins dir for ', dir);
-					else
+					if (err.code !== 'ENOENT')
 						console.error(err);
+					// else
+					// 	debug('No plugins dir for ', dir);
 				}) // catch plugin directory doesn't exists
 			);
 	}

@@ -18,6 +18,7 @@ import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
 import {canonicalhost} from '../lib/canonicalhost';
+import {LipthusLogger} from "./logger";
 
 const debug = Debug('site:site');
 const auth = require('./auth');
@@ -31,7 +32,6 @@ const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
 const HtmlPage = require('./htmlpage');
-const logger = require('./logger');
 const fs = require('mz/fs');
 const Ng = require('./ng2');
 const notFoundMin = require("../routes/notfoundmin");
@@ -506,7 +506,7 @@ export class Site extends EventEmitter {
 				app.use(flash());
 				app.use(HtmlPage.middleware);
 				app.use(session(this));
-				logger.init(app);
+				LipthusLogger.init(app);
 				app.use(require('./cmjspanel'));
 				app.use(sitemap(this));
 				facebook(app);

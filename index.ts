@@ -8,6 +8,8 @@ import {ApplicationRequestHandler} from "./interfaces/global.interface";
 import {TmpModel} from "./schemas/tmp";
 import {SearchModel} from "./schemas/search";
 import {UploadedFile} from "./interfaces/uploaded-file";
+import {LipthusError} from "./classes/lipthus-error";
+import {LipthusLogger} from "./modules/logger";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -57,7 +59,7 @@ export interface LipthusRequest extends express.Request {
 	notifyError: (err: any) => void;
 	ml: any;
 	device: any;
-	logger: any;
+	logger: LipthusLogger;
 	db: LipthusDb;
 	site: Site;
 	app: LipthusApplication;
@@ -72,6 +74,7 @@ export interface LipthusRequest extends express.Request {
 	getUser: () => Promise<User>;
 	files?: Array<UploadedFile>;
 	security: any;
+	logError: (err: LipthusError) => Promise<any>;
 	/**
 	 * @deprecated
 	 */
