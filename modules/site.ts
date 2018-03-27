@@ -2,7 +2,7 @@ import {NextFunction} from "express";
 import {EventEmitter} from "events";
 import {Hooks} from "../interfaces/global.interface";
 import * as Debug from "debug";
-import {LipthusDb} from "./db";
+import {LipthusDb} from "../index";
 import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
@@ -584,7 +584,7 @@ export class Site extends EventEmitter {
 			if (!res.statusCode || res.statusCode === 200)
 				res.statusCode = 404;
 			
-			req.logger.logNotFound();
+			req.logger.logNotFound().then();
 			
 			(res as any).htmlPage.triggerNotFound(res.statusCode, min);
 		});

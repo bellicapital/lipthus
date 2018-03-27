@@ -95,3 +95,4 @@ export interface LipthusApplication extends express.Application {
 }
 
 export {LipthusError} from './classes/lipthus-error';
+export {LipthusDocument} from './interfaces/lipthus-document';

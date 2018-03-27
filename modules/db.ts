@@ -8,6 +8,7 @@ import * as Debug from "debug";
 import * as path from "path";
 import {EventEmitter} from "events";
 import {GridFS} from "./../lib";
+import {SchemaScript} from "../interfaces/schema-script";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -93,8 +94,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		
 		this.fs = new GridFS(ndb, 'fs');
 		
+		this._conn.lipthusDb = this;
+		
 		Object.defineProperties(this._conn, {
-			eucaDb: {value: this},
+			eucaDb: {value: this}, // deprecated
 			site: {value: this.site},
 			app: {value: this.app}
 		});
@@ -181,7 +184,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 							if (stat.isDirectory())
 								return;
 							
-							const s = require(fpath);
+							const s: SchemaScript | any = require(fpath);
 							const name = s.name;
 							
 							if (typeof s === 'function') {
