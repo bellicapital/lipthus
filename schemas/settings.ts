@@ -28,7 +28,7 @@ namespace LipthusSettings {
 	
 	export class SettingMethods {
 		
-		getValue(this: any, lang: string) {
+		getValue(this: any, lang?: string) {
 			//noinspection JSUnresolvedVariable
 			switch (this.type) {
 				case 'ml':
@@ -52,8 +52,8 @@ namespace LipthusSettings {
 	}
 	
 	export class SettingStatics {
-		getValues(this: any, lang: string, query?: any) {
-			const ret = {};
+		getValues(this: any, lang?: string, query?: any) {
+			const ret: any = {};
 			
 			return this.find(query)
 				.then((settings: Array<any>) => Promise.all(
