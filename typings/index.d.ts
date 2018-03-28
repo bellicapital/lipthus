@@ -1,3 +1,8 @@
+export {Setting, SettingModel} from "../schemas/settings";
+export {LipthusCache, LipthusCacheModel} from "../schemas/cache";
+export {Tmp, TmpModel} from "../schemas/tmp";
+export {Search, SearchModel} from "../schemas/search";
+export {User, UserModel} from "../schemas/user";
 
 declare global {
 	
@@ -57,3 +62,8 @@ export interface ObjectArray {
 	key: string;
 	value: any;
 }
+
+export interface KeyValue {
+	[s: string]: any;
+}
+

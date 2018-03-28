@@ -26,7 +26,7 @@ namespace LipthusSettings {
 		identifier: 'name'
 	});
 	
-	export class SettingsMethods {
+	export class SettingMethods {
 		
 		getValue(this: any, lang: string) {
 			//noinspection JSUnresolvedVariable
@@ -77,18 +77,17 @@ namespace LipthusSettings {
 		}
 	}
 	
-	const methods: any = SettingsMethods.prototype;
+	const methods: any = SettingMethods.prototype;
 	Object.getOwnPropertyNames(methods).filter(pn => pn !== 'constructor').forEach(k => s.methods[k] = methods[k]);
 	
-	const statics: any = SettingsMethods.prototype;
+	const statics: any = SettingStatics.prototype;
 	Object.getOwnPropertyNames(statics).filter(pn => pn !== 'constructor').forEach(k => s.statics[k] = statics[k]);
-	
 	
 	export function getSchema() {
 		return s;
 	}
 	
-	export interface Setting extends Document, SettingsMethods {
+	export interface Setting extends Document, SettingMethods {
 	}
 	
 	export interface SettingModel extends Model<Setting>, SettingStatics {

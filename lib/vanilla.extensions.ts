@@ -1,4 +1,4 @@
-import {ObjectArray} from "../typings/global";
+import {ObjectArray} from "../typings";
 
 
 function leadZero(n: number, s = 2) {

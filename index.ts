@@ -10,6 +10,8 @@ import {SearchModel} from "./schemas/search";
 import {UploadedFile} from "./interfaces/uploaded-file";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
+import {LipthusCacheModel} from "./schemas/cache";
+import {SettingModel} from "./schemas/settings";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -47,7 +49,9 @@ export {Router, NextFunction} from 'express';
 export declare class LipthusDb extends Db_ {
 	search?: SearchModel;
 	tmp: TmpModel;
-	user?: UserModel;
+	user: UserModel;
+	settings: SettingModel;
+	cache: LipthusCacheModel;
 }
 export {User};
 export interface LipthusRequest extends express.Request {
