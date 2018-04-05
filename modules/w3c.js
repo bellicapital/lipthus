@@ -5,7 +5,7 @@ const os = require('os');
 const md5 = require('md5');
 const w3cjs = require('w3cjs');
 const debug = require('debug')('site:w3c');
-const urlContent = require('./utils').urlContent;
+const {util} = require('./util');
 const tmpdir = os.tmpdir() + '/w3cv/';
 
 fs.mkdir(tmpdir).catch(err => {
@@ -16,7 +16,9 @@ fs.mkdir(tmpdir).catch(err => {
 const w3c = {
 	results: {},
 
-	getUrl: (uri) => this.req.site.externalProtocol + '://' + this.req.headers.host + uri,
+	getUrl(uri) {
+		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri
+	},
 
 	get(uri, sec) {
 		const file = w3c.getUrl.call(this, uri);
@@ -32,12 +34,14 @@ const w3c = {
 			});
 	},
 
-	ajaxErrorCount: (uri) => w3c.get(this.req, uri, 30).then(r => ({count: r.errors})),
+	ajaxErrorCount(uri) {
+		return w3c.get.call(this, uri, 30).then(r => ({count: r.errors}));
+	},
 
 	validate(uri) {
 		debug('validating', uri);
 
-		return urlContent(uri)
+		return util.urlContent(uri)
 			.then(str => new Promise((ok, ko) => {
 				w3cjs.validate({
 					input: str,

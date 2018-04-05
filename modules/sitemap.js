@@ -18,7 +18,7 @@ class SiteMap {
 			routes[a] = b;
 		}
 
-		Object.extend(this.routes, routes);
+		Object.assign(this.routes, routes);
 	}
 
 	getSitemap(req){

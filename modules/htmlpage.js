@@ -1,6 +1,6 @@
 "use strict";
 
-const HeadManager = require('./htmlheadmanager');
+const {HeadManager} = require('./htmlheadmanager');
 const pug = require('pug');
 const fs = require('mz/fs');
 const debug = require('debug')('site:htmlpage');
@@ -32,7 +32,7 @@ class HtmlPage{
 		this.view = null;
 		this.noCache = true;
 		this.locals = this.res.locals;
-		this.locals.justContent = !!(req.xhr || req.get('HTTP_X_EUCA') === 'content');
+		this.locals.justContent = (req.xhr || req.get('HTTP_X_EUCA') === 'content');
 		this.key = req.path === '/' ? '' : req.path.match(/[^/]+/)[0];
 		this.deviceType = req.device.type;
 		this.openGraph = {};
@@ -91,7 +91,7 @@ class HtmlPage{
 
 	set(opt) {
 		if (opt)
-			Object.extend(this, opt);
+			Object.assign(this, opt);
 
 		return this;
 	}
@@ -192,7 +192,7 @@ class HtmlPage{
 			.then(this.setMetaKeywords.bind(this))
 			.then(this.setMetaDescription.bind(this))
 			.then(() => {
-				Object.extend(this.locals, {
+				Object.assign(this.locals, {
 					LC: this.req.ml.all,
 					lang: this.lang,
 					langs: this.req.ml.langs
@@ -267,14 +267,14 @@ class HtmlPage{
 			.then(this.init.bind(this))
 			.then(this.load.bind(this))
 			.then(() => {
-				locals = Object.extend({
+				locals = Object.assign({
 					page: this.key,
 					metas: this.head.metas,
 					hreflangs: this.head.hreflangs,
 					user: this.req.user
 				}, locals);
 
-				Object.extend(this.locals, locals);
+				Object.assign(this.locals, locals);
 
 				this.addOpenGraphMetas();
 
@@ -311,7 +311,7 @@ class HtmlPage{
 		this.res.status(st);
 
 		if (min && sts.indexOf(st) !== -1)
-			return this.res.headersSent || this.res.render(this.req.cmsDir + '/views/status/' + st);
+			return this.res.headersSent || this.res.render(this.req.site.lipthusDir + '/views/status/' + st);
 
 		const req = this.req;
 
@@ -348,7 +348,7 @@ class HtmlPage{
 			let html = this.html;
 
 			if(!html.match(/^\s*</))
-				html = pug.compile(html, {filename: this.req.app.get('views')[0] + '/' + this.key})(Object.extend(res.locals, this.req.app.locals));
+				html = pug.compile(html, {filename: this.req.app.get('views')[0] + '/' + this.key})(Object.assign(res.locals, this.req.app.locals));
 
 			return res.send(html)
 		}
@@ -726,11 +726,6 @@ class HtmlPage{
 		});
 	}
 
-	photoswipe(skin) {
-		this.head.photoswipe(skin);
-		return this;
-	}
-
 	setNoCache () {
 		if (!this.res.headersSent)
 			this.res.set({
@@ -754,11 +749,11 @@ class HtmlPage{
 
 HtmlPage.middleware = function(req, res, next){
 	let ret;
-	
+
 	Object.defineProperty(res, 'htmlPage', {get: function(){
 		if(!ret)
 			ret = new HtmlPage(req, res, next);
-		
+
 		return ret;
 	}});
 

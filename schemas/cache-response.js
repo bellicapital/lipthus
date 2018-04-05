@@ -13,7 +13,7 @@ module.exports = function cacheResponse(Schema){
 		created: true,
 		lastMod: true
 	});
-	
+
 	s.index({
 		uri: 1,
 		device: 1,
@@ -26,7 +26,7 @@ module.exports = function cacheResponse(Schema){
 		clear: function(){
 			return new Promise((ok, ko) => {
 				this.db.collection(this.schema.options.collection).drop(err => {
-					err && err.message != 'ns not found' ? ko(err) : ok();
+					err && err.message !== 'ns not found' ? ko(err) : ok();
 				});
 			});
 		}

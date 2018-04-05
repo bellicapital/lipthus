@@ -4,8 +4,7 @@ const fs = require('mz/fs');
 const os = require('os');
 const md5 = require('md5');
 const debug = require('debug')('site:heads');
-const sitemap = require('../../modules/sitemap');
-const urlContent = require('../../modules/utils').urlContent;
+const urlContent = require('../../modules/util').urlContent;
 const tmpdir = os.tmpdir() + '/heads/';
 
 fs.mkdir(tmpdir).catch(err => {

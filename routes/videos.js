@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require('path');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
+const {GridFSFile} = require('../lib');
 const mongoose = require('mongoose');
 
 module.exports = function(req, res, next){
@@ -35,6 +35,9 @@ module.exports = function(req, res, next){
 			if(!file)
 				return next();
 
+			if (file.error)
+				throw file.error.status || file.error;
+
 			if(!ext)
 				return res.redirect('/videos/' + (dbname !== req.site.db.name ? dbname + '.' : '') + id + '/' + file.filename);
 
@@ -62,7 +65,7 @@ module.exports = function(req, res, next){
 					webm: 'http://' + req.headers.host + file.versions.webm
 				};
 
-				return res.render(req.cmsDir + '/views/videotag');
+				return res.render(req.site.lipthusDir + '/views/videotag');
 			} else if(/^f_\d+_/.test(ext)){//frames
 				const parsed = /^f_(\d+)_(\d*)x?(\d*)(k?)/.exec(ext);
 				const frame = parseInt(parsed[1]);

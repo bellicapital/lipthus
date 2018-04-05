@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const mongoose = require('mongoose');
+const {BinDataFile} = require('../modules');
 const multimedia = require('multimedia-helper');
 const debug = require('debug')('site:upload');
 
@@ -88,7 +89,7 @@ class ReqFile {
 				maxheight: this.req.site.config.imgmaxheight
 			};
 
-			require('../modules/bdi').fromFile(this.file, opt)
+			BinDataFile.fromFile(this.file, opt)
 				.then(bdf => {
 					let key = bdf.getKey();
 					let namespace = this.field;
@@ -96,7 +97,7 @@ class ReqFile {
 					if (['BdfList', 'Fs'].indexOf(this.schemaTypeName()) !== -1)
 						namespace += '.' + key;
 
-					let options = {};
+					const options = {};
 
 					let endImageUpload = () => {
 						let update = {$set: {}};
@@ -180,20 +181,21 @@ class ReqFile {
 
 				return multimedia(this.file.path)
 					.then(metadata => {
-						if (metadata)
+						if (metadata) {
 							fileOptions.metadata = metadata;
+							Object.assign(fileOptions, metadata);
+						}
 					});
 			})
 			.then(() => gsFile.update(fileOptions))
 			.then(() => {
-				let update = {$set: {}};
-				let options = {};
+				const update = {$set: {}};
 
 				namespace = this.field + '.' + gsFile.getKey();
 
 				update.$set[namespace] = gsFile._id;
 
-				return this.model.findOneAndUpdate(this.query, update, options);
+				return this.model.findOneAndUpdate(this.query, update);
 			})
 			.then(() => {
 				if (this.itemid)

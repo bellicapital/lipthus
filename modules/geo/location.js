@@ -6,7 +6,7 @@ class EucaLocation {
 		if (!opt)
 			opt = {};
 
-		Object.extend(this, opt);
+		Object.assign(this, opt);
 
 		if (!opt.address_components)
 			this.address_components = opt.address_components = [];

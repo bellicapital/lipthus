@@ -81,14 +81,6 @@ class Subscriptor {
 		} else
 			query['subscriptions.' + dbname + '.' + model + '.' + type] = value;
 
-		let cb;
-
-		if(typeof onlyUsers === 'function') {
-			console.warn('subscriptor.getSubscriptors callback is @deprecated. Use Promise');
-			cb = onlyUsers;
-			onlyUsers = false;
-		}
-
 		const promises = [];
 
 		promises.push(
@@ -114,11 +106,7 @@ class Subscriptor {
 			);
 
 		return Promise.all(promises)
-			.then(() => {
-				const ret = Object.values(byEmail);
-				cb && cb.call(this, null, ret);
-				return ret;
-			});
+			.then(() => Object.values(byEmail));
 	}
 
 	manageComments() {
@@ -173,16 +161,16 @@ class Subscriptor {
 	}
 
 	subscribeModel(name, db) {
-		debug('subscribe to %s in %s', name, db);
+		debug('subscribe to ' + name + ' in ' + db.name);
 
 		const itemScript = this.getItemScript(name);
 
 		db = db || this.app.site.db;
 
-		if(!this.models[db])
-			this.models[db] = {};
+		if(!this.models[db.name])
+			this.models[db.name] = {};
 
-		this.models[db][name] = {
+		this.models[db.name][name] = {
 			title: db[name].modelName,
 			itemScript: itemScript
 		};
@@ -264,12 +252,12 @@ class Subscriptor {
 							if (user.subscriptions.constructor.name !== 'Object')
 								user.subscriptions = subscriptions;
 							else
-								user.subscriptions = Object.extend(user.subscriptions, subscriptions);
+								user.subscriptions = Object.assign(user.subscriptions, subscriptions);
 
 							user.subscriptionUrl = pending.url;
-							
+
 							user.markModified('subscriptions');
-							
+
 							return user.save();
 						}
 

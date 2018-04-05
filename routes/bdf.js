@@ -1,7 +1,7 @@
 "use strict";
 
-const Bdf = require('../modules/bdf');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
+const {BinDataFile} = require('../modules');
+const {GridFSFile} = require('../lib');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = function(req, res, next){
@@ -10,7 +10,7 @@ module.exports = function(req, res, next){
 
 	if(!collection){
 		if(colname.indexOf('.')>0){
-			const m = colname.match(/(^[^\.]+)\.(.+)$/);
+			const m = colname.match(/(^[^.]+)\.(.+)$/);
 			const dbname = m[1];
 
 			colname = m[2];
@@ -18,7 +18,7 @@ module.exports = function(req, res, next){
 			collection = req.site.dbs[dbname][colname];
 		} else {
 			const dbs = req.site.dbs;
-			
+
 			Object.values(dbs).forEach(db => {
 				if(db[colname])
 					collection = db[colname];
@@ -33,16 +33,16 @@ module.exports = function(req, res, next){
 		.findOneField(req.params.id, req.params.field)
 		.then(obj => {
 			if(!obj)
-				return res.status(404).render(req.cmsDir + '/views/status/404');
+				return res.status(404).render(req.site.lipthusDir + '/views/status/404');
 
 			if(typeof obj === 'string')
-				obj = Bdf.fromString(obj, {
+				obj = BinDataFile.fromString(obj, {
 					collection: colname,
 					id: new ObjectId(req.params.id),
 					field: req.params.field
 				});
-			else if(!(obj instanceof Bdf) && !(obj instanceof GridFSFile))
-				obj = Bdf.fromMongo(obj);
+			else if(!(obj instanceof BinDataFile) && !(obj instanceof GridFSFile))
+				obj = BinDataFile.fromMongo(obj);
 
 			if(!obj)
 				return res.status(404).end();
@@ -82,13 +82,13 @@ module.exports = function(req, res, next){
 			if(r){
 				opt.crop = !!r[3];
 
-				Object.extend(opt, {
+				Object.assign(opt, {
 					width: parseInt(r[1]),
 					height: parseInt(r[2]),
 					nwm: r[4]
 				});
 			} else if(/^[a-f0-9]+$/i.test(req.params.p)){
-				Object.extend(opt, {
+				Object.assign(opt, {
 					width: obj.width,
 					height: obj.height,
 					nwm: req.params.p

@@ -1,7 +1,6 @@
 "use strict";
 
-const mongoose  = require('mongoose');
-const DBRef = require('../../lib/dbref');
+const {LipthusSchema, DBRef} = require("../../lib");
 
 /**
  * Used in payment
@@ -15,7 +14,7 @@ class ShopItem {
 		if (d.constructor.name === 'EmbeddedDocument')
 			d = d._doc;
 
-		Object.extend(this, d);
+		Object.assign(this, d);
 
 		this.price = parseInt(this.price) || 0;
 
@@ -154,7 +153,7 @@ class ShopItemExtra {
 		};
 	}
 
-	data4save(req) {
+	data4save() {
 		return {
 			key: this.key,
 			value: this.value,
@@ -163,7 +162,7 @@ class ShopItemExtra {
 	}
 }
 
-ShopItemExtra.schema = new mongoose.EucaSchema({
+ShopItemExtra.schema = new LipthusSchema({
 	key: String,
 	value: String,
 	price: Number
@@ -172,7 +171,7 @@ ShopItemExtra.schema = new mongoose.EucaSchema({
 //	_id: false
 });
 
-ShopItem.schema = new mongoose.EucaSchema({
+ShopItem.schema = new LipthusSchema({
 	quantity: {type: Number, default: 1},
 	description: {},
 	ref: DBRef.schema,

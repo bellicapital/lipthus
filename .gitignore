@@ -3,9 +3,9 @@ node_modules
 .idea
 .settings
 .project
+dist
 pakmanaged.js
 !Icon
-nbproject/
-bower_components
+nbproject
 npm-debug.log
 dsresponse_log.json

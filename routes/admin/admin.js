@@ -45,7 +45,6 @@ module.exports = function(req, res, next){
 					'admin/admin_menu.js',
 					'admin/admin_facebook.js',
 					'admin/admin_maintenance.js',
-					'admin/admin_helocheck.js',
 					'admin/admin_wss.js',
 					'admin/admin_errors.js',
 					'admin/admin_notfound.js'])

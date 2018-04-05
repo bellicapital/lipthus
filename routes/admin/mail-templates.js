@@ -14,23 +14,23 @@ module.exports = function(req, res, next){
 		q.w = 960;
 	if(!q.h)
 		q.h = 460;
-	
+
 	if(id && !ObjectId.isValid(id))
 		return res.send('El id no es válido');
-	
+
 	//si no hay id, carga el último item
-	
+
 	res.locals.tpls = [
 		'newItem',
 		'itemActivated',
 		'confirm-subscription'
 	];
-	
+
 	res.locals.items = {};
 	res.locals.q= q;
 	res.locals.lang = lang;
 	res.locals.availableLangs = req.site.availableLangs;
-	
+
 	req.db.dynobject.getKeys().forEach(k => {
 		res.locals.items[k] = req.db.schemas[k].options.subscriptions;
 	});
@@ -39,15 +39,15 @@ module.exports = function(req, res, next){
 		if(v && v.mailTemplates)
 			res.locals.items[k] = true;
 	});
-	
+
 	if(!schema)
 		return res.render('admin/mail-templates');
-	
+
 	let query;
-	
+
 	if(id)
 		query = {_id: ObjectId(id)};
-	
+
 	req.db[schema]
 		.findOne(query)
 		.sort({natural: -1})
@@ -121,8 +121,8 @@ module.exports = function(req, res, next){
 						subscriptor
 							.getItemOptions(schema, item)
 							.then(itemOpt => {
-								Object.extend(options, itemOpt);
-	
+								Object.assign(options, itemOpt);
+
 								cb();
 							})
 							.catch(next);

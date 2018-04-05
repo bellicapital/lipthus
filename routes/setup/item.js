@@ -1,6 +1,6 @@
 "use strict";
 
-const Bdi = require('../../modules/bdi');
+const {BinDataImage} = require('../../modules');
 
 module.exports = {
 	updateItem(req) {
@@ -16,7 +16,6 @@ module.exports = {
 		switch(model.schema.getTypename(field)){
 			case 'BdfList':
 				return setImage(model, id, key, value);
-				break;
 			case 'MlCheckboxes':
 			case 'MlSelector':
 				native = true;
@@ -52,7 +51,7 @@ module.exports = {
 };
 
 const setImage = (model, id, key, img) => {
-	return Bdi.fromFrontEnd(img, {
+	return BinDataImage.fromFrontEnd(img, {
 		collection: "dynobjects.escorts",
 		id: id,
 		field: key

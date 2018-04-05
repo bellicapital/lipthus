@@ -5,7 +5,7 @@ class Image {
 		this.width;
 		this.height;
 
-		Object.extend(this, file);
+		Object.assign(this, file);
 	}
 
 	fitCalc(max_width, max_height, crop) {

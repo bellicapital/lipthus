@@ -1,11 +1,9 @@
-/* global module, process */
-
 "use strict";
 
 const optimage = require('../lib/optimage');
 const fs = require('fs');
 const Mime = require('mime');
-const BinDataImage = require('../modules/bdi');
+const {BinDataImage} = require('../modules');
 
 module.exports = function(req, res, next){
 	const opt = {
@@ -26,7 +24,7 @@ module.exports = function(req, res, next){
 			.then(cached => cached ||
 				optimage(file)
 					.then(r =>
-						req.db.cache.create(Object.extend(opt, {
+						req.db.cache.create(Object.assign(opt, {
 							contentType: Mime.lookup(opt.name),
 							MongoBinData: r,
 							size: r.length

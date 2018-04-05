@@ -1,6 +1,6 @@
 "use strict";
 
-const GridFSFile = require('../lib/gridfs').GridFSFile;
+const {GridFSFile} = require('../lib');
 
 module.exports = function fsfiles(Schema){
 	const s = new Schema({
@@ -29,7 +29,7 @@ module.exports = function fsfiles(Schema){
 		created: true,
 		submitter: true
 	});
-	
+
 	s.statics = {
 		check: function(repair){
 			const ret = {
@@ -141,21 +141,21 @@ module.exports = function fsfiles(Schema){
 				});
 		}
 	};
-	
+
 	s.methods = {
 		getItems: function(fields){
 			if(!this.items || !this.items.length)
 				return Promise.resolve([]);
-			
+
 			let db;
 			const thisdb = this.db.eucaDb;
 			const dbs = this.db.eucaDb.site.dbs;
 			const items = this.get('items');
 			const ret = [];
-			
+
 			const p = items.map(item => {
 				item = item.toObject();
-				
+
 				db = item.db ? dbs[item.db] : thisdb;
 
 				return db[item.namespace.replace('dynobjects.', '')]
@@ -170,7 +170,7 @@ module.exports = function fsfiles(Schema){
 			this.fsFile((err, file) => {
 				if(err)
 					return cb(err);
-				
+
 //				file.unlink(function(err){
 //					if(err)
 //						return cb(err);
@@ -184,29 +184,29 @@ module.exports = function fsfiles(Schema){
 		},
 		getItemFields: function(cb){
 			const ret = [];
-			
+
 			if(!this.items || !this.items.length)
 				return cb(null, ret);
-			
+
 			const dbs = this.db.eucaDb.site.dbs;
 			const dbname = this.db.name;
 			let error;
-			
+
 			this.items.forEach(item => {
 				item = item.toObject();
-				
+
 				const db = dbs[item.db || dbname];
-				
+
 				if(!db)
 					return (error = new Error('Db ' + item.db + ' not found'));
-				
+
 				const schema = db.schemas[item.namespace.replace('dynobjects.', '')];
-				
+
 				if(!schema)
 					return (error = new Error('Schema ' + schema + ' not found'));
-				
+
 				const fields = schema.fileFields();
-				
+
 				if(!fields)
 					return (error = new Error('Field ' + item.field + ' not found'));
 			});
@@ -233,6 +233,6 @@ module.exports = function fsfiles(Schema){
 			return this.db.collection('fs.chunks').count({files_id: this._id});
 		}
 	};
-	
+
 	return s;
 };

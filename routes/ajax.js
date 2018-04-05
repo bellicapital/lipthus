@@ -1,6 +1,6 @@
 "use strict";
 
-const AjaxGlobalMethods = require('../modules/ajax-global-methods');
+const {AjaxGlobalMethods} = require('../modules/ajax-global-methods');
 
 class AjaxProcess extends AjaxGlobalMethods{
 	constructor(req) {

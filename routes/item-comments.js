@@ -1,15 +1,13 @@
 "use strict";
 
+const fs = require('mz/fs');
 const ObjectId = require('mongoose').mongo.ObjectId;
 
 module.exports = (req, res, next) => {
 	const customScript = req.site.dir + '/routes/item-comments.js';
-	const fs = req.app.nodeModule('mz/fs');
 
 	fs.access(customScript)
-		.then(a => {
-			require(customScript)(req, res, next);
-		})
+		.then(() => require(customScript)(req, res, next))
 		.catch(err => {
 			if(err.code !== 'ENOENT')
 				return next(err);

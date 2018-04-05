@@ -1,5 +1,9 @@
 "use strict";
 
+const {Setup} = require("./setup");
+
+const {userPage} = require("./user");
+
 const fs = require('fs');
 const os = require('os');
 const Router = require('express').Router;
@@ -12,7 +16,6 @@ const video = require('./video');
 const videos = require('./videos');
 const embed = require('./embed');
 const ajax = require('./ajax');
-const setup = require('./setup');
 const upload = require('./upload');
 const form = require('./form');
 const multipart = multer({ dest: os.tmpdir() }).any();
@@ -30,7 +33,7 @@ const uLevelMiddleware = level => (req, res, next) => {
 module.exports = function(app){
 	const router = Router({strict: true});
 
-	router.post('/ngsetup/:method', uLevelMiddleware(2), setup);
+	router.post('/ngsetup/:method', uLevelMiddleware(2), Setup);
 	router.get('/bdf/:col/:id/:field/:p/:name', bdf);
 	router.get('/bdf/:col/:id/:field/:name', bdf);
 	router.get('/bdf/:col/:id/:field', bdf);
@@ -54,7 +57,7 @@ module.exports = function(app){
 	router.get('/form/:schema/:itemid/get', form);
 	router.all('/form/:schema/:cmd', form);
 	router.get('/info/:method', require('./info'));
-	router.all('/users/:uid', require('./user'));
+	router.all('/users/:uid', userPage);
 	router.all('/subscriptions/:action', require('./subscriptions'));
 	router.get('/users/:uid/subscriptions', require('./user-subscriptions'));
 
@@ -62,7 +65,7 @@ module.exports = function(app){
 
 	const dir = app.get('dir');
 	router.all('/unsubscribe', require(fs.existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
-	
+
 	router.all('/videouploader', multipart, require('./videouploader'));
 	router.get('/resimg/:p', require('./resimg'));
 	router.get('/optimg/:fn', require('./optimg'));
@@ -76,8 +79,6 @@ module.exports = function(app){
 	router.get('/comments/:col', require('./comments-mng'));
 	router.post('/comments/:col', require('./comments-mng-post'));
 	router.get('/item-comments/:schema/:itemid', require('./item-comments'));
-	router.get(/^\/bower\/([^\/]+)\/(.+)$/, require('./bower'));
-	router.all('/_test', require('./_test'));
 	router.get('/logout', require('./logout'));
 	// require('./login')(app);
 

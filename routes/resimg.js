@@ -1,8 +1,6 @@
 "use strict";
 
-const Bdf = require('../modules/bdf');
-const $ = require('../modules/utils');
-const merge = require('merge-descriptors');
+const {BinDataFile} = require('../modules');
 const gm = require('gm').subClass({imageMagick: true});
 const fs = require('fs');
 
@@ -29,12 +27,12 @@ module.exports = function(req, res, next){
 		crop: !!r[3],
 		name: r[4]
 	};
-	
+
 	const file = req.site.dir + '/public/img/' + opt.name;
-	
+
 	if(!fs.existsSync(file))
 		return next();
-	
+
 	opt.mtime = fs.statSync(file).mtime;
 
 	function checkSize(){
@@ -58,9 +56,9 @@ module.exports = function(req, res, next){
 		.then(() => req.db.cache.findOne(opt))
 		.then(cached => {
 			if(cached)
-				return Bdf.fromMongo(cached).send(req, res);
+				return BinDataFile.fromMongo(cached).send(req, res);
 
-			return Bdf.fromFile(file)
+			return BinDataFile.fromFile(file)
 				.then(bdf => {
 					const mime = require('mime').lookup(file);
 
@@ -76,12 +74,12 @@ module.exports = function(req, res, next){
 							return next(new Error(err.message));
 
 						req.db.cache
-							.create(Object.extend({
+							.create(Object.assign({
 								contentType: mime,
 								MongoBinData: buffer,
 								srcmd5: bdf.md5
 							}, opt))
-							.then(cached => Bdf.fromMongo(cached).send(req, res))
+							.then(cached => BinDataFile.fromMongo(cached).send(req, res))
 							.catch(next);
 					});
 				});

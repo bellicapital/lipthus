@@ -1,7 +1,7 @@
 "use strict";
 
 const ShopItem = require('../modules/shopping/shopitem');
-const DBRef = require('../lib/dbref');
+const {DBRef} = require('../lib');
 const Sermepa = require('sermepa');
 const debug = require('debug')('site:payment');
 
@@ -95,7 +95,7 @@ module.exports = function payment(Schema){
 
 		if(!merchantCode){
 			merchantCode = this.db.eucaDb.site.config.pay.merchantCode;
-			
+
 			this.set('merchant_code', merchantCode);
 		}
 
@@ -109,14 +109,14 @@ module.exports = function payment(Schema){
 				return console.error(new Error('no req provided'));
 
 			const ret = this.toJSON();
-			
+
 			if(formatted){
 				ret.amount = ret.amount.shopFormat();
 				ret.deliveryAmount = ret.deliveryAmount.shopFormat();
 			}
-			
+
 			delete ret.__v;
-			
+
 			this.items.forEach((item, idx) => ret.items[idx] = item.getInfo(req, formatted));
 
 			return ret;
@@ -134,7 +134,7 @@ module.exports = function payment(Schema){
 		cardParams: function(cb){
 			if (this.status === 'approved')
 				return cb();
-			
+
 			this.paytype = 'creditcard';
 
 			this.merchantOrder(true, err => {
@@ -170,7 +170,7 @@ module.exports = function payment(Schema){
 				debug('pay fields', fields);
 
 				const sermepa = new Sermepa(fields);
-				
+
 				this.log.push({
 					type: 'request',
 					date: new Date(),
@@ -178,7 +178,7 @@ module.exports = function payment(Schema){
 					url: pp.url,
 					params: fields
 				});
-				
+
 				const params = sermepa.createFormParameters(this.signature);
 
 				this.save(err => cb(err, params, fields));
@@ -203,7 +203,7 @@ module.exports = function payment(Schema){
 		},
 		setCancel: function (cb){
 			this.set('status', 'canceled');
-			
+
 			this.save(cb);
 		},
 		statusName: function(lang){

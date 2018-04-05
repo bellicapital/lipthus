@@ -1,16 +1,14 @@
 "use strict";
 
-const Bdf = require('../modules/bdf');
-const GridFSFile = require('../lib/gridfs').GridFSFile;
-const $ = require('../modules/utils');
-const ObjectId = require('mongoose').Types.ObjectId;
+const {BinDataFile} = require('../modules');
+const {ObjectId} = require('mongoose').Types;
 const gm = require( 'gm' );
 
 module.exports = function(req, res, next){
 	req.db.fs.findById(req.params.id)
 		.then(obj => {
 			if(!obj)
-				return res.status(404).render(req.cmsDir + '/views/status/404');
+				return res.status(404).render(req.site.lipthusDir + '/views/status/404');
 
 			const opt = {
 				'ref.id': new ObjectId(req.params.id),
@@ -54,7 +52,7 @@ module.exports = function(req, res, next){
 					.findOne({name: name})
 					.then(cached => {
 						if (cached)
-							return Bdf.fromMongo(cached).send(req, res);
+							return BinDataFile.fromMongo(cached).send(req, res);
 
 						gm(opt.width, opt.height, 'aliceblue')
 							.setFormat('png')
@@ -74,7 +72,7 @@ module.exports = function(req, res, next){
 										name: name,
 										MongoBinData: buffer
 									})
-										.then(cached => Bdf.fromMongo(cached).send(req, res));
+										.then(cached => BinDataFile.fromMongo(cached).send(req, res));
 								}
 							);
 					})

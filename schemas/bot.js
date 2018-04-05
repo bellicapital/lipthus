@@ -1,13 +1,15 @@
-
 "use strict";
 
+const {LipthusSchema} = require('../lib');
+
 const res = [
-	/compatible;\s(.+);.*(http[^\)]+)/i,
-	/^([^\s]+)\s*.*(http[^\)\\]+)/i
+	/compatible;\s(.+);.*(http[^)]+)/i,
+	/^([^\s]+)\s*.*(http[^)\\]+)/i
 ];
 
-module.exports = function bot(Schema){
-	const s = new Schema({
+module.exports = function bot(){
+
+	const s = new LipthusSchema({
 		title: String,
 		url: String,
 		agents: [String],
