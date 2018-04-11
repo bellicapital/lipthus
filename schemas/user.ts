@@ -7,7 +7,7 @@ const ShoppingCart = require('../modules/shopping/shoppingcart');
 
 namespace LipthusUser {
 	export const name = 'user';
-	
+
 	export function getSchema() {
 		const s = new LipthusSchema({
 			uname: {type: String, size: 20, maxlength: 25, index: {unique: true}},
@@ -58,20 +58,20 @@ namespace LipthusUser {
 			collection: 'user',
 			created: true
 		});
-		
+
 		/**
 		 * encripta password antes de ser guardado
 		 * @param {function} next
 		 */
-		s.pre('save', function (this: any, next) {
+		s.pre('save', function (this: any, next: () => void) {
 			if (!this.isModified('pass'))
 				return next();
-			
+
 			this.pass = md5(this.pass);
-			
+
 			next();
 		});
-		
+
 		s.methods = {
 			baseInfo: function (this: any, includeEmail = false) {
 				const ret: any = {
@@ -84,10 +84,10 @@ namespace LipthusUser {
 					'picture': this.getImage('square'),
 					'fbid': this.facebook && this.facebook.id
 				};
-				
+
 				if (includeEmail)
 					ret.email = this.email;
-				
+
 				return ret;
 			},
 			getName: function (this: any, usereal?: boolean) {
@@ -101,40 +101,40 @@ namespace LipthusUser {
 			},
 			getImage: function (this: any, type = 'normal', height?: number | string) {
 				let q = '?';
-				
+
 				if (height)
 					q += 'width=' + type + '&height=' + height;
 				else
 					q += 'type=' + type;
-				
+
 				if (this.facebook && this.facebook.username)
 					return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
-				
+
 				if (this.picture)
 					return this.picture;
-				
+
 				return this.image ? this.image + q : undefined;
 			},
 			subscribe2Item: function (this: any, ref: any) {
 				if (ref.toJSON)
 					ref = ref.toJSON();
-				
+
 				const colname = ref.namespace.replace('dynobjects.', '');
-				
+
 				if (!this.subscriptions)
 					this.subscriptions = {};
-				
+
 				if (!this.subscriptions[ref.db])
 					this.subscriptions[ref.db] = {};
-				
+
 				if (!this.subscriptions[ref.db][colname])
 					this.subscriptions[ref.db][colname] = {};
-				
+
 				if (!this.subscriptions[ref.db][colname].items)
 					this.subscriptions[ref.db][colname].items = [];
-				
+
 				this.subscriptions[ref.db][colname].items.push(ref.$id);
-				
+
 				this.save();
 			},
 			getLink: function (this: any) {
@@ -157,9 +157,9 @@ namespace LipthusUser {
 					mailok: true,
 					oauth_data: {}
 				};
-				
+
 				const data = Object.assign({}, p);
-				
+
 				delete data.displayName;
 				delete data.name;
 				delete data.email;
@@ -168,27 +168,27 @@ namespace LipthusUser {
 				delete data.language;
 				delete data.gender;
 				delete data.url;
-				
+
 				obj.oauth_data = data;
-				
+
 				return this.set(obj).save();
 			}
 		};
-		
+
 		s.statics.findAndGetValues
 			= s.statics.findAndGetValues4Show
 			= function (this: any, req: LipthusRequest, query: any, fields: any, options: any) {
-			
+
 			return this
 				.find(query, fields, options)
 				.then((result: Array<any>) => {
 					const values: Array<any> = [];
-					
+
 					return Promise.all(result.map(item => item.getValues(req).then((v: any) => values.push(v))))
 						.then(() => values);
 				});
 		};
-		
+
 		s.statics.fromOAuth2 = function (this: any, params: any) {
 			return this.findOne({email: params.email})
 				.then((u: User) => {
@@ -198,14 +198,14 @@ namespace LipthusUser {
 							uname: params.email,
 							level: 1
 						});
-					
+
 					return u.fromOAuth2(params);
 				});
 		};
-		
+
 		return s;
 	}
-	
+
 	export interface User extends Document {
 		key: string;
 		uname: string;
@@ -218,36 +218,36 @@ namespace LipthusUser {
 		address: any;
 		devices: Array<any>;
 		subscriptions: any;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		fromOAuth2(params: any): Promise<any>;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		getImage(width: number, height?: number): string;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		subscribe2Item(ref: any): Promise<any>;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		getName(usereal?: boolean): string;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		baseInfo(includeEmail?: boolean): any;
 	}
-	
+
 	export interface UserModel extends Model<User> {
-		
+
 		// noinspection JSUnusedLocalSymbols
 		fromOAuth2(params: any): Promise<any>;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		findAndGetValues(params: any): Promise<any>;
-		
+
 		// noinspection JSUnusedLocalSymbols
 		findAndGetValues4Show(params: any): Promise<any>;
-		
+
 	}
-	
+
 }
 
 export = LipthusUser;

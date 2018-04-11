@@ -6,7 +6,7 @@ const Types = LipthusSchema.Types;
 
 
 class DoSchema extends LipthusSchema {
-	
+
 	/**
 	 *
 	 * @param {object} obj
@@ -15,24 +15,24 @@ class DoSchema extends LipthusSchema {
 	 */
 	constructor(obj: any, options: any = {}) {
 		super(obj, options);
-		
+
 		this.statics = _statics;
 		this.methods = {};
-		
+
 		Object.keys(_methods).forEach(m => {
 			this.methods[m] = _methods[m];
 		});
-		
+
 		if (!this.options.toJSON)
 			this.options.toJSON = {};
-		
+
 		// specify the transform schema option to remove the children virtual
 		this.options.toJSON.transform = (doc: any, ret: any) => {
 			// remove the children of every document before returning the result
 			delete ret.parents;
 			delete ret.children;
 			delete ret.__v;
-			
+
 			this.eachPath((k: string, path: any) => {
 				switch (path.options.type) {
 					case LipthusSchemaTypes.MlSelector:
@@ -42,7 +42,7 @@ class DoSchema extends LipthusSchema {
 				}
 			});
 		};
-		
+
 		this.post('save', postSave);
 		this.pre('remove', preRemove);
 		this.virtual('dbRef').get(function (this: any) {
@@ -53,31 +53,38 @@ class DoSchema extends LipthusSchema {
 			};
 		});
 	}
-	
+
 	static fromModel(obj: any) {
-		const def: any = {};
-		
+		const def: any = {
+			rating: {type: Number, index: 1, default: 2.5},
+			ratingCount: Number,
+			parents: [{}],
+			children: [{}],
+			submitter: {type: LipthusSchemaTypes.ObjectId, ref: 'user'},
+			parent: {type: LipthusSchemaTypes.ObjectId, ref: 'fsfiles' }
+		};
+
 		if (!obj.name)
 			obj.name = obj.colname;
-		
+
 		if (!obj.colname)
 			obj.colname = obj.name.replace(/s?$/, 's').replace(/ys$/, 'ies');
-		
+
 		Object.keys(obj.dynvars).forEach(k => {
 			const dv: any = obj.dynvars[k];
 			const p: any = {origType: dv.type};
-			
+
 			['caption', 'required', 'list', 'formtype', 'options'].forEach(key => {
 				if (dv[key])
 					p[key] = dv[key];
 			});
-			
+
 			if (dv.value)
 				p.default = dv.value;
-			
+
 			if (dv.multilang)
 				p.multilang = true;
-			
+
 			//noinspection FallThroughInSwitchStatementJS
 			switch (dv.type) {
 				case 'url':
@@ -88,7 +95,7 @@ class DoSchema extends LipthusSchema {
 				case 'text':
 				case 'textarea':
 					p.type = dv.multilang ? LipthusSchemaTypes.Multilang : String;
-					
+
 					if (dv.multilang)
 						p.translatable = dv.translatable === undefined ? true : dv.translatable;
 					break;
@@ -114,7 +121,7 @@ class DoSchema extends LipthusSchema {
 				case 'datetime':
 				case 'time':
 					p.type = Date;
-					
+
 					if (dv.value === 'now')
 						p.default = Date.now;
 					break;
@@ -126,6 +133,7 @@ class DoSchema extends LipthusSchema {
 				case 'image':
 					p.type = LipthusSchemaTypes.BdfList;
 					p.multi = dv.multi;
+					// noinspection PointlessBooleanExpressionJS
 					p.noWatermark = !!dv.noWatermark;
 					break;
 				case 'selector':
@@ -162,11 +170,11 @@ class DoSchema extends LipthusSchema {
 					break;
 				case 'refid':
 					p.ref = dv.schema || dv.colname;
-					p.index = true;
-					
+					p.index = 1;
+
 					if (dv.db)
 						p.refdb = dv.db; // cross db (todo)
-				
+
 				case 'user':
 				case 'id':
 					p.type = LipthusSchemaTypes.ObjectId;
@@ -179,18 +187,13 @@ class DoSchema extends LipthusSchema {
 				default:
 					console.error('Var type "' + dv.type + '" not defined. Dynobject->' + obj.colname + '->' + k);
 			}
-			
+
 			if (dv.index)
-				p.index = dv.index;
-			
+				p.index = dv.index === true ? 1 : dv.index;
+
 			def[k] = p;
 		});
-		
-		def.rating = {type: Number, index: true, default: 2.5};
-		def.ratingCount = Number;
-		def.parents = [{}];
-		def.children = [{}];
-		
+
 		const schema = new DoSchema(def, {
 			identifier: obj.identifier || 'title',
 			descIdentifier: obj.descIdentifier || 'description',
@@ -198,8 +201,6 @@ class DoSchema extends LipthusSchema {
 			collection: 'dynobjects.' + obj.colname,
 			lastMod: true,
 			created: true,
-			submitter: true,
-			modifier: true,
 			removed: true,
 			lastActivated: true,
 			title: obj.title,
@@ -211,10 +212,10 @@ class DoSchema extends LipthusSchema {
 			logUpdates: obj.logUpdates,
 			list_order: obj.list_order
 		});
-		
+
 		schema.index({'parents.$ref': 1});
 		schema.index({'parents.$id': 1});
-		
+
 		this[obj.name] = schema;
 	}
 }
@@ -225,46 +226,46 @@ const postSave = function (this: any, doc: any) {
 	// puede ser un subdocumento
 	if (!this.db)
 		return;
-	
+
 	if (!doc.parents)
 		return;
-	
+
 	doc.parents.forEach((dbref: any) => {
 		if (!dbref.db)
 			dbref.db = this.db.name;
-		
+
 		const parentModel = this.db.models[dbref.namespace.replace('dynobjects.', '')];
-		
+
 		if (!parentModel)
 			return;
-		
+
 		this.db.eucaDb.deReference(dbref)
 			.then((parent: any) => {
 				if (!parent)
 					return;
-				
+
 				parent = parentModel(parent);
-				
+
 				let found = false;
-				
+
 				parent.children.forEach((child: any) => {
 					if (child.oid + '' === doc._id + '') {
 						found = true;
-						
+
 						return false;
 					}
 				});
-				
+
 				if (!found) {
 					parent.children.push(doc.getDBRef());
-					
+
 					Promise.resolve(parent.update({children: parent.children})).catch(err => {
 						throw err;
 					});
 				}
 			});
 	});
-	
+
 	// TODO: check children
 };
 
@@ -272,21 +273,21 @@ module.exports = DoSchema;
 
 const preRemove = function (this: any, next: () => {}) {
 	const id = this.id;
-	
+
 	this.loadFiles().then((ff: Array<any>) => {
 		if (!ff.length)
 			return next();
-		
+
 		let count = 0;
-		
+
 		ff.forEach(f => {
 			f.items.forEach((item: any, idx: number) => {
 				if (item.oid.toString() === id)
 					f.items.splice(idx, 1);
 			});
-			
+
 			const func = f.items.length ? 'save' : 'remove';
-			
+
 			f[func](() => {
 				if (++count === ff.length)
 					next();

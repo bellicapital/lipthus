@@ -11,13 +11,13 @@ module.exports = function translated(Schema){
 		itemid: {type: Schema.Types.ObjectId, required: true},
 		field: {type: String, required: true},
 		uid: {type: Schema.Types.ObjectId, required: true, ref: 'user'},
-		words: Number
+		words: Number,
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
+		modifier: {type: Schema.Types.ObjectId, ref: 'user'}
 	}, {
 		collection: 'translated',
 		created: true,
-		modified: true,
-		submitter: true,
-		modifier: true
+		modified: true
 	});
 
 	s.index({col: 1, itemid: 1, field: 1, to: 1}, {unique: true, dropDups: true});
@@ -36,7 +36,7 @@ module.exports = function translated(Schema){
 		getFieldCountById: function(query, cb){
 			if(typeof query === 'string')
 				query = {to: query};
-			
+
 			this.find(query, function(err, r){
 				if(err)
 					return cb(err);
@@ -45,16 +45,16 @@ module.exports = function translated(Schema){
 
 				r.forEach(function(t){
 					const k = t.dbname + '.' + t.colname;
-					
+
 					if(!ret[k])
 						ret[k] = {};
 
 					if(!ret[k][t.itemid])
 						ret[k][t.itemid] = 0;
-					
+
 					++ret[k][t.itemid];
 				});
-				
+
 				cb(null, ret);
 			});
 		},
@@ -67,7 +67,7 @@ module.exports = function translated(Schema){
 
 				r.forEach(function(t){
 					const k = t.dbname + '.' + t.colname;
-					
+
 					if(!ret[k])
 						ret[k] = {};
 
@@ -119,51 +119,51 @@ module.exports = function translated(Schema){
 		wordsByMonth: function(query){
 			return this.find(query, 'created words to').then(r => {
 				const ret = {};
-				
+
 				r.forEach(function(t){
 					const year = t.created.getFullYear();
 					const month = t.created.getMonth();
 					const key = year + '-' + month;
-					
+
 					if(!ret[key])
 						ret[key] = {
 							month: month,
 							key: key,
 							langs: {}
 						};
-					
+
 					if(!ret[key].langs[t.to])
 						ret[key].langs[t.to] = t.words;
 					else
 						ret[key].langs[t.to] += t.words;
 				});
-				
+
 				const ret2 = Object.values(ret);
-				
+
 				ret2.sort(function(a, b){
 					return a.key < b.key ? -1 : 1;
 				});
-				
+
 				return ret2;
 			});
 		},
 		//solucion temporar para actualizar con contadores de palabras
 		setWC: function(){
 			const site = this.db.eucaDb.site;
-			
+
 			this.find(function(err, r){
 				if(err)
 					return cb(err);
-				
+
 				const cache = {};
-				
+
 				r.forEach(t => {
 					const field = t.field + '.' + site.config.language;
 					const key = t.itemid + '.' + field;
-					
+
 					if(typeof cache[key] === 'number')
 						return t.set('words', cache[key]).save();
-					
+
 					site.dbs[t.dbname][t.colname]
 						.findOneField(t.itemid, t.field + '.' + site.config.language)
 						.then(srctext => {
@@ -174,7 +174,7 @@ module.exports = function translated(Schema){
 			});
 		}
 	};
-	
-	
+
+
 	return s;
 };

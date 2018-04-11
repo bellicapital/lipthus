@@ -15,6 +15,11 @@ const commands = [
 		install: 'graphicsmagick'
 	},
 	{
+		k: "magick",
+		uri: 'https://www.imagemagick.org/',
+		install: 'imagemagick'
+	},
+	{
 		k: "avconv",
 		uri: 'https://libav.org/',
 		install: 'libav'
@@ -37,14 +42,17 @@ let count = 0;
 commands.forEach((cmd: any) => {
 	exec("which " + cmd.k, (err: Error) => {
 		if (err) {
-			let msg = cmd.k + " not installed\n\t" + cmd.uri;
-			
-			if (install)
-				msg += "\n\tTry: " + install.replace('%s', cmd.install || cmd.k);
-			
-			throw new Error(msg);
+			if (install) {
+				const cmdStr = install.replace('%s', cmd.install || cmd.k);
+
+				exec(cmdStr, (err2: Error) => {
+					if (err2)
+						throw err2;
+				});
+			} else
+				throw new Error(cmd.k + " not installed\n\t" + cmd.uri);
 		}
-		
+
 		if (++count === commands.length)
 			debug('status: ok');
 	});

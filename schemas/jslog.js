@@ -4,15 +4,15 @@ module.exports = function jslog(Schema){
 		url: String,
 		lineNumber: Number,
 		column: Number,
-		context: String
+		context: String,
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'}
 	}, {
 		collection: 'logger.clientjs',
 		capped: {size: 4096, max: 100},
 		versionKey: false,
-		created: true,
-		submitter: true
+		created: true
 	});
-	
+
 	s.statics = {
 		logError: function(errorMsg, url, lineNumber, column, context, cb){
 			this.create({
@@ -24,6 +24,6 @@ module.exports = function jslog(Schema){
 			}, cb);
 		}
 	};
-	
+
 	return s;
 };

@@ -7,16 +7,16 @@ module.exports = function vote(Schema){
 	const s = new Schema({
 		item: DBRef.schema,
 		iplocation: {},
-		device: {}
+		device: {},
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'}
 	}, {
 		collection: 'votes',
-		created: true,
-		submitter: true
+		created: true
 	});
-	
+
 	s.index({'item.$ref': 1});
 	s.index({'item.$id': 1});
-	
+
 	s.statics = {
 		log: function(req, item){
 			return this.create({
@@ -27,6 +27,6 @@ module.exports = function vote(Schema){
 			});
 		}
 	};
-	
+
 	return s;
 };

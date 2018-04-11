@@ -40,6 +40,8 @@ module.exports = function comment(Schema) {
 		url: String,
 		lang: String,
 		answers: [Answer],
+		modifier: {type: Schema.Types.ObjectId, ref: 'user'},
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
 		extra: Schema.Types.Mixed
 	}, {
 		/*
@@ -50,9 +52,9 @@ module.exports = function comment(Schema) {
 		 */
 		usePushEach: true,
 		collection: 'comments',
-		submitter: true,
+		// submitter: true,
+		// modifier: true,
 		lastMod: true,
-		modifier: true,
 		created: true
 	});
 

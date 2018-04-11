@@ -7,17 +7,17 @@ module.exports = function uri(Schema){
 		title: Schema.Types.Multilang,
 		description: Schema.Types.Multilang,
 		h1: Schema.Types.Multilang,
-		p: Schema.Types.Multilang
+		p: Schema.Types.Multilang,
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
+		modifier: {type: Schema.Types.ObjectId, ref: 'user'}
 	}, {
 		collection: 'uris',
 		created: true,
-		modifier: true,
-		submitter: true,
 		lastMod: true
 	});
 
 	s.index({uri: 1, type: 1});
-	
+
 	s.statics.getByUri = function(req, uri, replacers, cb){
 		this.findOne({uri: uri}, function(err, uri){
 			if(err || !uri)
@@ -50,6 +50,6 @@ module.exports = function uri(Schema){
 			});
 		});
 	};
-	
+
 	return s;
 };

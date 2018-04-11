@@ -23,11 +23,11 @@ module.exports = function fsfiles(Schema){
 			webm: {type: Schema.Types.ObjectId, ref: 'fsfiles' }
 		},
 		thumb: {},
+		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
 		parent: {type: Schema.Types.ObjectId, ref: 'fsfiles' }
 	}, {
 		collection: 'fs.files',
-		created: true,
-		submitter: true
+		created: true
 	});
 
 	s.statics = {

@@ -25,18 +25,19 @@ if (!process.env.TMPDIR)
 if ((process.env.TMPDIR as string).substr(-1) !== '/')
 	process.env.TMPDIR += '/';
 
-process.on('warning', (warning) => {
+process.on('warning', (warning: any) => {
 	console.warn(warning.name);
 	console.warn(warning.message);
 	console.warn(warning.stack);
 });
 
-process.on('unhandledRejection', (reason, p) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
+process.on('unhandledRejection', (reason: any, p: any) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
+// noinspection JSUnusedGlobalSymbols
 export function lipthusSite(dir: string, options: any): Promise<Site> {
 	return new Promise((ok, ko) => {
 		const site = new Site(dir, options);
-		
+
 		site.on('ready', () => ok(site));
 		site.on('error', ko);
 	});
@@ -93,10 +94,11 @@ export interface LipthusResponse extends express.Response {
 export interface LipthusApplication extends express.Application {
 	use: ApplicationRequestHandler<this>;
 	db: LipthusDb;
-	
+
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;
 }
 
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusDocument} from './interfaces/lipthus-document';
+export const nodeModule = (key: string) => require(key);
