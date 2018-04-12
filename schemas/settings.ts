@@ -2,7 +2,6 @@ import {BinDataFile, MultilangText} from "../modules";
 import {LipthusSchema} from "../lib";
 import {Document, Model} from "mongoose";
 
-
 namespace LipthusSettings {
 	export const name = 'settings';
 	const s = new LipthusSchema({
@@ -17,13 +16,9 @@ namespace LipthusSettings {
 
 				return val;
 			}
-		},
-		modifier: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
-		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'}
+		}
 	}, {
 		collection: 'settings',
-		created: true,
-		lastMod: true,
 		identifier: 'name'
 	});
 
