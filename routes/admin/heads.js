@@ -4,7 +4,7 @@ const fs = require('mz/fs');
 const os = require('os');
 const md5 = require('md5');
 const debug = require('debug')('site:heads');
-const urlContent = require('../../modules/util').urlContent;
+const {util} = require('../../modules/util');
 const tmpdir = os.tmpdir() + '/heads/';
 
 fs.mkdir(tmpdir).catch(err => {
@@ -47,7 +47,7 @@ const getHeads = uri => {
 			if(cached && (cached.time > Date.now() - 600 * 1000))//10 min
 				return cached;
 
-			return urlContent(uri)
+			return util.urlContent(uri)
 				.then(str => {
 					const t = str.match(titleRe);
 					const d = str.match(descRe);
