@@ -60,10 +60,8 @@ module.exports = function(req, res, next){
 					wm = null;
 			}
 
-			if(!req.params.p && !wm){
-				obj.send(req, res);
-				return;
-			}
+			if(!req.params.p && !wm)
+				return obj.send(req, res);
 
 			const r = /^(\d+)x(\d+)k?([01]?)m?(.*)$/.exec(req.params.p);
 			const opt = {
@@ -124,7 +122,7 @@ module.exports = function(req, res, next){
 			if(!opt.width && !opt.wm)
 				return obj.send(req, res);
 
-			obj.send(req, res, opt, next);
+			return obj.send(req, res, opt);
 		})
 		.catch(next);
 };
