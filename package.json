@@ -12,7 +12,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/eucalipthus/lipthus.git"
+		"url": "https://github.com/bellicapital/lipthus.git"
 	},
 	"author": {
 		"name": "Juanjo Tortosa",
@@ -26,7 +26,7 @@
 		"web": "null",
 		"url": "null"
 	},
-	"homepage": "https://github.com/eucalipthus/lipthus",
+	"homepage": "https://github.com/bellicapital/lipthus",
 	"typings": "dist/index.d",
 	"main": "dist/index",
 	"dependencies": {
