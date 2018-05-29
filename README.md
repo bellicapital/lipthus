@@ -1,4 +1,4 @@
-## What's cmjs
+## What's lipthus
 
 cmjs is a content managing system
 
