@@ -21,9 +21,9 @@ export class BinDataFile {
 	public key: string;
 	public md5: string;
 	public weight: number;
-	
+
 	constructor(data: any, colRef?: any) {
-		
+
 		this.name = data.name;
 		this.uploadDate = ensureDate(data.uploadDate);
 		this.mtime = ensureDate(data.mtime);
@@ -33,16 +33,16 @@ export class BinDataFile {
 		this.key = data.key;
 		this.md5 = data.md5;
 		this.weight = data.weight || 0;
-		
+
 		if (colRef)
 			this.setColRef(colRef);
 	}
-	
+
 	setColRef(colRef: any) {
 		if (colRef)
 			Object.defineProperty(this, 'colRef', {value: colRef});
 	}
-	
+
 	info() {
 		const ret: any = new DbfInfo({
 			name: this.name,
@@ -54,84 +54,84 @@ export class BinDataFile {
 			size: this.size,
 			key: this.getKey()
 		});
-		
+
 		ret.uri = ret.path + this.uriName();
-		
+
 		return ret;
 	}
-	
+
 	//noinspection JSUnusedGlobalSymbols
 	toJSON() {
 		return this.info();
 	}
-	
+
 	getPath() {
 		return this.colRef ? '/bdf/' + this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/' : null;
 	}
-	
+
 	getUri() {
 		return this.colRef ? this.getPath() + this.uriName() : null;
 	}
-	
+
 	uriName(ext?: string) {
 		const curext = path.extname(this.name);
 		const bn = path.basename(this.name, curext);
-		
+
 		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curext);
 	}
-	
+
 	formDataValue() {
 		return this.name;
 	}
-	
+
 	send(req: any, res: any) {
 		if (!this.MongoBinData)
 			return Promise.reject(new Error('MongoBinData is empty'));
-		
+
 		const data = this.MongoBinData.buffer;
-		
+
 		if (this.contentType)
 			res.type(this.contentType);
-		
+
 		res.set('Expires', new Date().addDays(60).toUTCString());
-		
+
 		if (this.mtime)
 			res.set('Last-modified', this.mtime.toUTCString());
-		
+
 		return res.send(data);
 	}
-	
+
 	getKey() {
 		if (!this.key)
 			this.key = this.uploadDate.getTime().toString();
-		
+
 		return this.key;
 	}
-	
+
 	toString() {
 		return 'data:' + this.contentType + ';base64,' + this.MongoBinData.toString('base64');
 	}
-	
+
 	static fromMongo(mongo: any, colRef?: any) {
 		if (!mongo)
 			return mongo;
-		
+
 		if (mongo.toObject)
 			mongo = mongo.toObject();
-		
+
 		return /^image\/.*$/.test(mongo.contentType)
 			? new BinDataImage(mongo, colRef)
 			: new BinDataFile(mongo, colRef);
 	}
-	
+
 	static fromString(str: string, colRef: any, datetime = new Date()) {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
-		
+
 		if (!r)
 			return;
-		
+
 		const ext = r[1].split('/')[1];
-		const buffer = new Buffer(r[3], r[2]);
+		const buffer = Buffer.from(r[3], r[2]);
 		const obj = {
 			contentType: r[1],
 			size: buffer.length,
@@ -141,18 +141,18 @@ export class BinDataFile {
 			name: 'str-' + datetime.getTime() + '.' + ext,
 			MongoBinData: new Binary(buffer)
 		};
-		
+
 		let ret;
-		
+
 		if (/^image\/.*$/.test(obj.contentType)) {
 			ret = new BinDataImage(obj, colRef);
 			ret.getDimentions();
 		} else
 			ret = new BinDataFile(obj, colRef);
-		
+
 		return ret;
 	}
-	
+
 	/**
 	 *
 	 * @param param
@@ -162,18 +162,18 @@ export class BinDataFile {
 	 */
 	static fromFile(param: string | UploadedFile, opt = {}) {
 		const p: UploadedFile = typeof param === 'string' ? {path: param} as UploadedFile : param;
-		
+
 		if (!p.mimetype)
 			p.mimetype = p.type || Mime.getType(p.name || p.path);
-		
+
 		return fs
 			.readFile(p.path)
 			.then((buffer: Buffer) => {
 				p.buffer = buffer;
-				
+
 				if (p.mtime)
 					return;
-				
+
 				// incrusta mtime si no se ha aportado desde el cliente
 				return fs
 					.stat(p.path)
@@ -186,14 +186,14 @@ export class BinDataFile {
 				buffer: p.buffer
 			}, opt));
 	}
-	
+
 	// noinspection JSUnusedGlobalSymbols
 	static fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
 		return new Promise((ok, ko) => {
 			request({url: url, encoding: null}, (err: Error, res: any, body: any) => {
 				if (err)
 					return ko(err);
-				
+
 				ok(BinDataFile.fromBuffer({
 					originalname: path.basename(url),
 					mimetype: res.headers['content-type'],
@@ -203,7 +203,7 @@ export class BinDataFile {
 			});
 		});
 	}
-	
+
 	static fromBuffer(p: any, opt?: any) {
 		const obj = {
 			name: p.originalname,
@@ -214,10 +214,10 @@ export class BinDataFile {
 			md5: md5(p.buffer),
 			MongoBinData: new Binary(p.buffer)
 		};
-		
+
 		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj);
 	}
-	
+
 	//noinspection JSUnusedGlobalSymbols
 	/**
 	 * Use Bdf.fromString
@@ -232,10 +232,10 @@ export class BinDataFile {
 	 */
 	static fromData(img: string, width: number, height: number, colRef: any, datetime = new Date()) {
 		console.warn('@deprecated', 'Bdf.fromData');
-		
+
 		if (!/^data:(image\/\w+);base64,/.test(img))
 			return new Error('wrong data');
-		
+
 		const isImageResult = /^data:(image\/\w+);base64,/.exec(img);
 		const contentType = isImageResult && isImageResult[1];
 		const data = img.replace(/^data:image\/\w+;base64,/, "");
@@ -249,10 +249,10 @@ export class BinDataFile {
 			md5: md5(data),
 			width: width,
 			height: height,
-			MongoBinData: new Binary(new Buffer(data, 'base64'))
+			MongoBinData: new Binary(Buffer.from(data, 'base64'))
 		}, colRef);
 	}
-	
+
 	//noinspection JSUnusedGlobalSymbols
 	static isBdf(o: any) {
 		return !!o.MongoBinData;
@@ -272,7 +272,7 @@ export interface DbfInfoParams {
 }
 
 export class DbfInfo implements DbfInfoParams {
-	
+
 	path: string | null;
 	name: string;
 	md5?: string;
@@ -282,7 +282,7 @@ export class DbfInfo implements DbfInfoParams {
 	mtime: Date;
 	size: number;
 	key: string;
-	
+
 	constructor(p: DbfInfoParams) {
 		this.path = p.path;
 		this.name = p.name;
@@ -303,9 +303,9 @@ export default BinDataFile;
 function ensureDate(date: any): Date {
 	if (date instanceof Date)
 		return date;
-	
+
 	if (!date)
 		return new Date();
-	
+
 	return new Date(date);
 }

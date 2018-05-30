@@ -44,7 +44,7 @@ class Cache {
 	}
 
 	static setResponse(res, body, expireMinutes) {
-		res.cached.MongoBinData = new Buffer(body);
+		res.cached.MongoBinData = Buffer.from(body);
 		res.cached.expires = Date.now() + expireMinutes * 60000;
 
 		const ct = res.get('Content-Type');
