@@ -61,7 +61,7 @@ module.exports = (app, cb) => {
 			"  \u001b[36m info  -\u001b[0m Server listening on %s in %s mode. %s",
 			dest,
 			app.get('env'),
-			(secure ? 'https:' : 'http:') + app.site.langUrl()
+			config.external_protocol + ':' + app.site.langUrl()
 		);
 
 		useSocket && fs.existsSync(dest) && fs.chmodSync(dest, '777');
