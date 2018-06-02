@@ -3,9 +3,6 @@ import {Site} from "../site";
 import {BinDataImage} from "../bdi";
 import {MultilangText} from "../schema-types/mltext";
 import {ConfigModel} from "../../schemas/config";
-import * as Debug from "debug";
-
-const debug = Debug('site:config');
 
 export class Config {
 	[key: string]: any;
@@ -49,12 +46,10 @@ export class Config {
 
 				configs.general.configs.version[2] = this.site.cmsPackage.version;
 
-				const pendingKeys: Array<string> = [];
-				console.log(111);
 				Object.each(configs, (group_name, group) => {
 					this.groups[group_name] = {title: group.title, configs: {}};
-					console.log(group_name, 222);
-					Object.each(group.configs, (key, c) => {console.log(key, 333);
+
+					Object.each(group.configs, (key, c) => {
 						const g: any = {group: group_name, name: key};
 
 						Object.each(c, (k, v) => g[keys[k]] = v);
@@ -67,15 +62,8 @@ export class Config {
 						this.configs[key] = ConfigVarInstance(g, this.site);
 
 						if (!indb[key]) {
-							console.log('config ' + key + ' does not exists. Creating...');
-							debug('config ' + key + ' does not exists. Creating...');
-
-							indb[key] = new this.model!();
-
-							indb[key].set({name: key, value: this.configs[key].value})
-
-							pendingKeys.push(key);
-
+							indb[key] = new this.model!({name: key, value: this.configs[key].value});
+							indb[key].save();
 							this.configs[key]._id = indb[key]._id;
 						}
 
@@ -92,16 +80,7 @@ export class Config {
 					this.configs[item.name].setValue(item.value);
 				});
 
-				return pendingKeys.reduce((p, key) =>
-					p.then(() =>
-						indb[key].save()
-							.catch((err: Error) => {
-								err.message = 'Error storing config ' + key + ' - ' + err.message;
-
-								Promise.reject(err);
-							})
-					)
-				, Promise.resolve());
+				return this.check().then(() => this);
 			});
 	}
 
