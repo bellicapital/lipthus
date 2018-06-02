@@ -106,7 +106,7 @@ export class LipthusSchema extends Schema {
 			}
 		});
 
-		this.pre('save', function (this: any, next) {
+		this.pre('save', function (this: any, next: any) {
 			this._changed = this.modifiedPaths();
 			this._isNew = this.isNew;
 			next();

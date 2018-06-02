@@ -34,7 +34,7 @@ process.on('warning', (warning: any) => {
 process.on('unhandledRejection', (reason: any, p: any) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
 // noinspection JSUnusedGlobalSymbols
-export function lipthusSite(dir: string, options: any): Promise<Site> {
+export function lipthusSite(dir: string, options?: any): Promise<Site> {
 	return new Promise((ok, ko) => {
 		const site = new Site(dir, options);
 

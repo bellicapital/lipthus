@@ -4,7 +4,7 @@ const path = require('path');
 const merge = require('merge-descriptors');
 const exec = require('child_process').exec;
 
-module.exports = function lang(Schema){
+module.exports = function lang(Schema, site){
 	const exclude = {
 		_id: false,
 		_mod: false,
@@ -131,7 +131,7 @@ module.exports = function lang(Schema){
 
 				console.log('Inserting lang collection default values');
 
-				exec('mongorestore -d ' + dbname + ' -c lang ' + path.resolve(__dirname, '../configs/lang.bson'), function(err, stdout, stderr){
+				exec('mongorestore -d ' + dbname + ' -c lang ' + site.lipthusDir + '/configs/lang.bson', function(err, stdout, stderr){
 					cb && cb(err || stderr && new Error(stderr), stdout);
 
 					console.log(stdout, stderr);
