@@ -10,7 +10,7 @@ function getDefinition(key: string) {
 		console.warn('Config ' + key + ' not defined');
 		return [];
 	}
-	
+
 	return definitions[groupsByKey[key]].configs[key];
 }
 
@@ -20,10 +20,10 @@ export const name = 'config';
 export function getSchema(site: Site) {
 	if (!definitions) {
 		definitions = require(site.lipthusDir + '/configs/configs');
-		
+
 		Object.each(definitions, (group, d) => Object.each(d.configs, key => groupsByKey[key] = group));
 	}
-	
+
 	const s = new LipthusSchema({
 		name: {type: String, unique: true},
 		value: {
@@ -31,12 +31,12 @@ export function getSchema(site: Site) {
 			get: function (this: any, val: any) {
 				if (this.name && getDefinition(this.name)[0] === 'bdf')
 					return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
-				
+
 				return val;
 			}
 		}
 	}, {collection: 'config'});
-	
+
 	/**
 	 * @param key
 	 * @param value
@@ -46,13 +46,15 @@ export function getSchema(site: Site) {
 		return this.update({name: key}, {$set: {value: value}})
 			.then(() => this.db.eucaDb.site.config[key] = value);
 	};
-	
+
 	return s;
 }
 
 export interface Config extends Document {
 	query: string;
 	created?: Date;
+	name: string;
+	value: any;
 }
 
 export interface ConfigModel extends Model<Config> {

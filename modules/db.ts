@@ -175,7 +175,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 			.then((schemas: Array<any>) =>
 					Promise.all(schemas.map(file => {
 						// avoid ts definition files
-						if (file.match(/\.d\.ts$/))
+						if (file.match(/\.d\.ts$/) || !file.match(/.+\.[tj]s/))
 							return;
 
 						const fpath = dir + '/' + file;
