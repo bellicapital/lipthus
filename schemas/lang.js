@@ -1,6 +1,5 @@
 "use strict";
 
-const path = require('path');
 const merge = require('merge-descriptors');
 const exec = require('child_process').exec;
 

@@ -2,7 +2,12 @@ import {ConfigVarInstance} from "./configvar";
 import {Site} from "../site";
 import {BinDataImage} from "../bdi";
 import {MultilangText} from "../schema-types/mltext";
-import {ConfigModel} from "../../schemas/config";
+import {ConfigModel, Config as ConfigD} from "../../schemas/config";
+import * as Debug from "debug";
+
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const debug = Debug('site:config');
 
 export class Config {
 	[key: string]: any;
@@ -25,7 +30,7 @@ export class Config {
 	static_host?: string;
 	version?: string;
 	webmastermail?: string;
-	model?: ConfigModel;
+	model: ConfigModel | any = {};
 
 	constructor(public site: Site) {
 		this.groups = {};
@@ -35,12 +40,13 @@ export class Config {
 	load() {
 		this.model = this.site.db.model('config');
 
-		return this.model!.find()
-			.then((obj: Array<any>) => {
-				const indb = {};
-				const keys = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
+		return this.checkDefaults()
+			.then(() => this.model.find())
+			.then((obj: Array<ConfigD> | any) => {
+				const indb: any = {};
+				const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
 
-				obj.forEach(c => indb[c.get('name')] = c);
+				obj.forEach((c: ConfigD) => indb[c.get('name')] = c);
 
 				const configs = require(this.site.lipthusDir + '/configs/configs');
 
@@ -62,7 +68,7 @@ export class Config {
 						this.configs[key] = ConfigVarInstance(g, this.site);
 
 						if (!indb[key]) {
-							indb[key] = new this.model!({name: key, value: this.configs[key].value});
+							indb[key] = new this.model({name: key, value: this.configs[key].value});
 							indb[key].save();
 							this.configs[key]._id = indb[key]._id;
 						}
@@ -76,19 +82,19 @@ export class Config {
 					});
 				});
 
-				this.model!.on('itemChange', (item: any) => {
+				this.model.on('itemChange', (item: any) => {
 					this.configs[item.name].setValue(item.value);
 				});
-
-				return this.check().then(() => this);
-			});
+			})
+			.then(() => this.check());
 	}
 
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update: any, cb = (v: any) => {}) {
+	get(k: string, update: any, cb = (v: any) => {
+	}) {
 
 		if (update) {
-			this.model!.findOne({name: k}, (err: Error, obj: any) => {
+			this.model.findOne({name: k}, (err: Error, obj: any) => {
 				if (err) return cb(err);
 
 				if (!obj) return cb({error: 'Config ' + k + ' not found'});
@@ -130,7 +136,7 @@ export class Config {
 
 		update[key] = v;
 
-		return this.model!.update(
+		return this.model.update(
 			{name: this.configs[k].name},
 			update,
 			{upsert: true}
@@ -165,5 +171,27 @@ export class Config {
 
 			return ok();
 		});
+	}
+
+	checkDefaults() {
+		return this.model.count({})
+			.then((c: number) => {
+				if (c)
+					return;
+
+				debug('Inserting config collection default values');
+
+				return exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson')
+					.then((r: { stdout: string, stderr: string }) =>
+						this.model.count({})
+							.then((c2: number) => {
+								if (c2)
+									return;
+
+								if (r.stderr)
+									throw new Error(r.stderr);
+							})
+					);
+			});
 	}
 }
