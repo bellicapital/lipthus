@@ -45,7 +45,7 @@ debug.log = console.log.bind(console);
 export class Site extends EventEmitter {
 
 	public lipthusDir: string;
-	public lipthusBuildDir: string;
+	public lipthusBuildDir = path.dirname(__dirname);
 	public package: any;
 	public cmsPackage: any;
 	public conf: any;
@@ -80,7 +80,6 @@ export class Site extends EventEmitter {
 	constructor(public dir: string, private _hooks: Hooks = {pre: {}, post: {}}) {
 		super();
 
-		this.lipthusBuildDir = path.dirname(__dirname);
 		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
 		// noinspection JSDeprecatedSymbols
 		this.cmsDir = this.lipthusDir;
