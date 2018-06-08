@@ -483,7 +483,6 @@ export class Site extends EventEmitter {
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);
 
-		app.use(security.spamBlocker);
 		app.use(require('./g-page-speed'));
 		app.use(require('./client')(app));
 
