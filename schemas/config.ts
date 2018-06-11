@@ -3,7 +3,7 @@ import {BinDataFile, Site} from '../modules';
 import {Document, Model} from "mongoose";
 
 let definitions: any;
-const groupsByKey = {};
+const groupsByKey: any = {};
 
 function getDefinition(key: string) {
 	if (!definitions[groupsByKey[key]]) {
@@ -21,7 +21,7 @@ export function getSchema(site: Site) {
 	if (!definitions) {
 		definitions = require(site.lipthusDir + '/configs/configs');
 
-		Object.each(definitions, (group, d) => Object.each(d.configs, key => groupsByKey[key] = group));
+		Object.keys(definitions).forEach((group) => Object.keys(definitions[group].configs).forEach(key => groupsByKey[key] = group));
 	}
 
 	const s = new LipthusSchema({
@@ -29,7 +29,7 @@ export function getSchema(site: Site) {
 		value: {
 			type: LipthusSchema.Types.Mixed,
 			get: function (this: any, val: any) {
-				if (this.name && getDefinition(this.name)[0] === 'bdf')
+				if (this.name && getDefinition(this.get('name'))[0] === 'bdf')
 					return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
 
 				return val;

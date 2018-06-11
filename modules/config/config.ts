@@ -61,7 +61,7 @@ export class Config {
 						Object.each(c, (k, v) => g[keys[k]] = v);
 
 						if (indb[key]) {
-							g.value = indb[key].value;
+							g.value = indb[key].get('value');
 							g._id = indb[key]._id;
 						}
 

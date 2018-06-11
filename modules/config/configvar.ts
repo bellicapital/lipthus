@@ -89,6 +89,10 @@ class WatermarkConfigVar extends ConfigVar {
 
 class LangConfigVar extends ConfigVar {
 	public formtype = 'selector';
+
+	setValue(v: any) {
+		this.value = v;
+	}
 	
 	get4Edit(req: LipthusRequest) {
 		return super.get4Edit(req)

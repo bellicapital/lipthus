@@ -95,13 +95,11 @@ export class MultilangText {
 				debug('lang code not valid: {undefined: ' + obj.undefined + '}');
 				delete obj.undefined;
 			}
-
-			Object.assign(this, obj);
 		}
 
 		if (site)
 			Object.defineProperties(this, {
-				model: {get: () => site.db[collection.name]}
+				model: {get: () => site.db[collection.name]},
 			});
 	}
 
@@ -112,6 +110,10 @@ export class MultilangText {
 	getLang(lang: any, alt: string) {
 		return this.obj[lang] || (alt && this.obj[alt]) || this.obj[defaultLang] || '';
 	}
+
+	// setLang(lang: string, value: string) {
+	// 	this.obj[lang] = value;
+	// }
 
 	/**
 	 *
@@ -158,7 +160,7 @@ export class MultilangText {
 	}
 
 	updateLang(lang: string, data: any) {
-		this[lang] = this.obj[lang] = data;
+		this.obj[lang] = data;
 
 		if (!this._id)
 			console.error(new Error('MultilangText no updated. No _id provided. Data: ' + data));
@@ -176,7 +178,7 @@ export class MultilangText {
 	}
 
 	toString() {
-		return this[defaultLang] || '';
+		return this.obj[defaultLang] || '';
 	}
 }
 
