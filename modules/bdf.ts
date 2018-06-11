@@ -1,8 +1,7 @@
-"use strict";
-
 import {UploadedFile} from "../interfaces/uploaded-file";
+import {promisify} from 'util';
 
-const fs = require('mz/fs');
+const fs = require('fs');
 const path = require('path');
 const Mime = require('mime');
 const md5 = require('md5');
@@ -166,8 +165,7 @@ export class BinDataFile {
 		if (!p.mimetype)
 			p.mimetype = p.type || Mime.getType(p.name || p.path);
 
-		return fs
-			.readFile(p.path)
+		return promisify(fs.readFile)(p.path)
 			.then((buffer: Buffer) => {
 				p.buffer = buffer;
 
@@ -175,8 +173,7 @@ export class BinDataFile {
 					return;
 
 				// incrusta mtime si no se ha aportado desde el cliente
-				return fs
-					.stat(p.path)
+				return promisify(fs.stat)(p.path)
 					.then((stats: any) => p.mtime = stats.mtime);
 			})
 			.then(() => BinDataFile.fromBuffer({
