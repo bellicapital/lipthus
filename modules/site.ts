@@ -513,9 +513,9 @@ export class Site extends EventEmitter {
 				if ('production' === app.get('env') && this.conf.cache)
 					app.use(require('./cache')(this.conf.cache));
 
-				app.use((req, res, next) => {
-					(res as any).timer.end('cmjs');
-					(res as any).timer.start('page');
+				app.use((req: LipthusRequest, res: any, next: NextFunction) => {
+					res.timer.end('cmjs');
+					res.timer.start('page');
 					next();
 				});
 			});
@@ -571,7 +571,7 @@ export class Site extends EventEmitter {
 	}
 
 	routeNotFound() {
-		this.app.use((req: LipthusRequest, res) => {
+		this.app.use((req: LipthusRequest, res: LipthusResponse) => {
 			const min = !req.ml
 				|| req.xhr
 				|| req.device.type === 'bot'

@@ -19,11 +19,11 @@ const commands = [
 	// 	uri: 'https://www.imagemagick.org/',
 	// 	install: 'imagemagick'
 	// },
-	{
-		k: "avconv",
-		uri: 'https://libav.org/',
-		install: 'libav'
-	}
+	// {
+	// 	k: "avconv",
+	// 	uri: 'https://libav.org/',
+	// 	install: 'libav'
+	// }
 	// 			,{
 	// 				k: "gd",
 	// 				uri: 'http://www.boutell.com/gd/',
@@ -32,7 +32,7 @@ const commands = [
 ];
 
 let installers = {
-	ubuntu: 'sudo apt-get install %s',
+	ubuntu: 'sudo apt install %s',
 	darwin: 'brew install %s'
 };
 

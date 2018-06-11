@@ -88,7 +88,7 @@
 		"multimedia-helper": "^1.0.8",
 		"mz": "^2.7.0",
 		"node-gcm": "^1.0.2",
-		"nodemailer": "^4.6.5",
+		"nodemailer": "^4.6.6",
 		"nodemailer-ses-transport": "^1.5.0",
 		"passport": "^0.4.0",
 		"passport-facebook-token": "^3.3.0",
