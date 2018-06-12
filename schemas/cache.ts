@@ -1,8 +1,10 @@
 import { LipthusSchema } from "../lib";
-import {Document, Model} from "mongoose";
+import {Model} from "mongoose";
+import {LipthusDocument} from "../interfaces/lipthus-document";
 
 export const name = "cache";
 
+// noinspection JSUnusedGlobalSymbols
 export function getSchema() {
 	const s = new LipthusSchema(
 		{
@@ -38,7 +40,7 @@ export function getSchema() {
 	return s;
 }
 
-export interface LipthusCache extends Document {
+export interface LipthusCache extends LipthusDocument {
 	name: string;
 	expires: Date;
 	contentType: string;

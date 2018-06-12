@@ -1,11 +1,11 @@
-"use strict";
+import {NextFunction, Router} from "express";
+import {LipthusRequest, LipthusResponse} from "../index";
+import {CssResponse} from "../interfaces/global.interface";
 
-const express = require('express');
-
-const send = (req, res, next) => {
+const send = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	res.set('Expires', new Date().addDays(60).toUTCString());
 
-	switch(req.params.ext) {
+	switch (req.params.ext) {
 		case 'css':
 			res.type('css').set('X-SourceMap', req.lessSourceMap + '.map');
 			break;
@@ -19,9 +19,9 @@ const send = (req, res, next) => {
 	res.send(req.cssResponse[req.params.ext]);
 };
 
-const combined = (req, res, next) => {
-	const parts = req.params.combined.split('+');
-	const files = [];
+const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
+	const parts: Array<string> = req.params.combined.split('+');
+	const files: Array<string> = [];
 	const dirs = {
 		d: req.site.dir,
 		g: req.site.lipthusDir
@@ -35,14 +35,14 @@ const combined = (req, res, next) => {
 		c: 'car/'
 	};
 
-	if(!parts.length)
+	if (!parts.length)
 		return next();
 
 	parts.some((part, idx) => {
 		const m = part.match(/([dg])(\w)-(.+)$/);
 
-		if(!m){
-			next();//-> not found
+		if (!m) {
+			next(); // -> not found
 
 			return true;
 		}
@@ -51,14 +51,16 @@ const combined = (req, res, next) => {
 
 		files.push(dirs[m[1]] + '/public/css/' + devicesDir[m[2]] + m[3] + '.less');
 
-		if(idx === parts.length - 1)
+		if (idx === parts.length - 1)
 			req.db.cacheless.getCachedFiles(files, req.lessSourceMap)
-				.then(r => req.cssResponse = r)
+				.then((r: CssResponse) => req.cssResponse = r)
 				.then(() => next(), next);
+
+		return false;
 	});
 };
 
-const single = (req, res, next) => {
+const single = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	const deviceRoute = req.params.device !== 'g' ? req.params.device + '/' : '';
 	const locations = {
 		d: req.site.dir,
@@ -68,7 +70,7 @@ const single = (req, res, next) => {
 	const loc = locations[req.params.loc] + '/public/css/' + deviceRoute;
 	let compress = false;
 
-	if(key.indexOf('.min') > 0){
+	if (key.indexOf('.min') > 0) {
 		key = key.replace('.min', '');
 		compress = true;
 	}
@@ -77,10 +79,10 @@ const single = (req, res, next) => {
 
 	req.db.cacheless
 		.getCachedFile(loc + key + '.less', compress)
-		.then(r => req.cssResponse = r)
+		.then((r: CssResponse) => req.cssResponse = r)
 		.then(() => next(), next);
 };
 
-module.exports = express.Router({strict: true})
-	.get('/:loc/:device/:key.:ext', single, send)
-	.get('/:combined.:mtime.:ext', combined, send);
+export = Router({strict: true})
+	.get('/:loc/:device/:key.:ext', single as any, send as any)
+	.get('/:combined.:mtime.:ext', combined as any, send as any);

@@ -19,3 +19,9 @@ export interface KeyString {
 export interface KeyAny {
 	[s: string]: any;
 }
+
+export interface CssResponse {
+	css: string;
+	map: string;
+	imports: Array<string>;
+}

@@ -4,7 +4,7 @@ import './modules/functions';
 import {LipthusDb as Db_, Site} from "./modules";
 import {User, UserModel} from "./schemas/user";
 import * as express from "express";
-import {ApplicationRequestHandler} from "./interfaces/global.interface";
+import {ApplicationRequestHandler, CssResponse} from "./interfaces/global.interface";
 import {TmpModel} from "./schemas/tmp";
 import {SearchModel} from "./schemas/search";
 import {UploadedFile} from "./interfaces/uploaded-file";
@@ -12,7 +12,6 @@ import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
 import {LipthusCacheModel} from "./schemas/cache";
 import {SettingModel} from "./schemas/settings";
-// import {ApplicationRequestHandler} from "express-serve-static-core";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -81,6 +80,8 @@ export interface LipthusRequest extends express.Request {
 	files?: Array<UploadedFile>;
 	security: any;
 	logError: (err: LipthusError) => Promise<any>;
+	lessSourceMap: string;
+	cssResponse: CssResponse;
 	/**
 	 * @deprecated
 	 */
