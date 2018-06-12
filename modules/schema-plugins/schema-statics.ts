@@ -1,5 +1,6 @@
 import {Types} from "mongoose";
 import {LipthusSchema} from "../../lib";
+import {KeyAny} from "../../interfaces/global.interface";
 
 export function schemaGlobalStatics(schema: LipthusSchema) {
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
@@ -149,7 +150,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 	schema.statics.updateItemField = function (this: any, id: Types.ObjectId | string, key: string, value: any, cb: any) {
 		console.log('@deprecated schema.statics.updateItemField');
 		
-		const update = {};
+		const update: KeyAny = {};
 		update[key] = value;
 		
 		return this.update({_id: id}, update, (err: Error, numberAffected: number) => cb(err, {status: !!numberAffected}));
@@ -245,7 +246,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 			return this
 				.find(query, identifier)
 				.then((list: Array<any>) => {
-					const ret = {};
+					const ret: KeyAny = {};
 					
 					list.forEach(item => {
 						ret[item.id] = item[identifier];
@@ -287,11 +288,11 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 			
 			let count = 0;
 			let error: Error;
-			const ret = {};
+			const ret: {[s: string]: number} = {};
 			
 			d.push(null);
 			
-			const cQuery = {};
+			const cQuery: KeyAny = {};
 			
 			Object.each(query, (k, q) => cQuery[k] = q);
 			

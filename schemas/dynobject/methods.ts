@@ -1,5 +1,6 @@
 import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
 import {LipthusRequest} from "../../index";
+import {KeyAny} from "../../interfaces/global.interface";
 
 const Types = LipthusSchema.Types;
 
@@ -13,6 +14,7 @@ export function getThumb(this: any, width: number, height: number, crop: boolean
 }
 
 // para el video, es necesario haber ejecutado antes .loadFiles()
+// noinspection JSUnusedGlobalSymbols
 export function getImage(this: any, width: number, height: number, crop: boolean, enlarge: boolean) {
 	let src: any;
 	
@@ -22,10 +24,12 @@ export function getImage(this: any, width: number, height: number, crop: boolean
 }
 
 // para el video, es necesario haber ejecutado antes .loadFiles()
+// noinspection JSUnusedGlobalSymbols
 export function getSocialImage(this: any) {
 	return this.socialImage && this.socialImage.getThumb() || this.getImage();
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function getSocialTitle(this: any, lang: string) {
 	let ret = this[this.schema.get('identifier') || 'title'];
 	
@@ -45,6 +49,7 @@ export function getSocialTitle(this: any, lang: string) {
 	return ret.truncate(58);
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function getSocialDescription(this: any, lang: string) {
 	let ret = this[this.schema.get('descIdentifier') || 'description'];
 	
@@ -103,9 +108,9 @@ export function getChildren(this: any, filters: any, query: any, fields: any, op
 	});
 }
 
-export function _getChildren(this: any, filters: any, query = {}, fields: any, options: any, cb: (err?: Error, r?: any) => {}) {
-	const arr = {};
-	const ret = {};
+export function _getChildren(this: any, filters: any, query: KeyAny = {}, fields: any, options: any, cb: (err?: Error, r?: any) => {}) {
+	const arr: {[s: string]: Array<string>} = {};
+	const ret: KeyAny = {};
 	
 	if (!filters.length)
 		filters = this.db.models.dynobject.schema.statics.getKeys();
@@ -116,10 +121,10 @@ export function _getChildren(this: any, filters: any, query = {}, fields: any, o
 		filters.forEach((f: any, i: number) => filters[i] = f.replace('dynobjects.', ''));
 	}
 	
-	filters.forEach((f: any) => arr[f] = []);
+	filters.forEach((f: string) => arr[f] = []);
 	
 	if (this.children) {
-		Object.values(this.children).forEach(v => {
+		Object.values(this.children).forEach((v: any) => {
 			const ns = v.namespace.replace('dynobjects.', '');
 			
 			if (filters.indexOf(ns) !== -1)
@@ -163,6 +168,7 @@ export function _getChildren(this: any, filters: any, query = {}, fields: any, o
 	});
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function removeParent(this: any, colname: string, parentId: any, cb: any) {
 	if (typeof parentId === 'string')
 		parentId = new Types.ObjectId(parentId);
@@ -180,7 +186,7 @@ export function removeParent(this: any, colname: string, parentId: any, cb: any)
 			let childFound;
 			const children: Array<any> = [];
 			
-			Object.values(parent.children).forEach(v => {
+			Object.values(parent.children).forEach((v: any) => {
 				if (v.oid + '' !== thisId)
 					children.push(v);
 				else
@@ -222,7 +228,7 @@ export function addParent(this: any, colname: string, id: any | string, cb: any)
 	// Avoid posible duplicates
 	const parents: Array<any> = [];
 	
-	Object.values(this.parents).forEach(v => {
+	Object.values(this.parents).forEach((v: any) => {
 		if (!v.oid.equals(id))
 			parents.push(v);
 	});
@@ -240,6 +246,7 @@ export function addParent(this: any, colname: string, id: any | string, cb: any)
 	this.update({parents: this.parents}, cb);
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function getNodeData(this: any, req: LipthusRequest, level: number, filter: string) {
 	const lang = req.ml.lang;
 	
@@ -263,7 +270,7 @@ export function getNodeData(this: any, req: LipthusRequest, level: number, filte
 			let count = 0;
 			
 			return new Promise(ok => {
-				Object.values(r).forEach(rc => {
+				Object.values(r).forEach((rc: any) => {
 					let count2 = 0;
 					
 					if (!rc.length) {
@@ -287,11 +294,13 @@ export function getNodeData(this: any, req: LipthusRequest, level: number, filte
 		});
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function commentsCount(this: any, cb: any) {
 	return this.db.models.comment.count({'ref.$id': this._id, active: true}, cb);
 }
 
 
+// noinspection JSUnusedGlobalSymbols
 export function rate(this: any, req: any, rating: any | number) {
 	return req.ml.load('ecms-rating')
 		.then(() => {
@@ -432,7 +441,7 @@ export function getName(this: any, pathname: string, req: LipthusRequest, cb: an
 			o[val][lang] = result;
 			
 			const query = {colname: schema.options.collection.replace('dynobjects.', '')};
-			const update = {};
+			const update: KeyAny = {};
 			
 			update['dynvars.' + pathname + '.options.' + val + '.' + lang] = result;
 			

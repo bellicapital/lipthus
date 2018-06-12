@@ -216,7 +216,7 @@ class DoSchema extends LipthusSchema {
 		schema.index({'parents.$ref': 1});
 		schema.index({'parents.$id': 1});
 
-		this[obj.name] = schema;
+		(this as any)[obj.name] = schema;
 	}
 }
 

@@ -14,7 +14,7 @@ class DocValues {
 			return;
 		
 		Object.keys(values).forEach(i => {
-			this[i] = values[i];
+			(this as any)[i] = values[i];
 		});
 	}
 	
@@ -58,7 +58,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 					const v = this.get(k);
 					
 					if (v !== undefined)
-						ret[k] = v;
+						(ret as any)[k] = v;
 					
 					break;
 				
@@ -66,14 +66,14 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 					promises.push(this.getVar(k, req, forceTranslate)
 						.then((v2: any) => {
 							if (v2 !== undefined)
-								ret[k] = v2;
+								(ret as any)[k] = v2;
 						})
 					);
 			}
 		});
 		
 		if (virtuals)
-			Object.keys(this.schema.virtuals).forEach(k => k === 'id' || (ret[k] = this[k]));
+			Object.keys(this.schema.virtuals).forEach(k => k === 'id' || ((ret as any)[k] = (this as any)[k]));
 		
 		return Promise.all(promises)
 			.then(() => ret);
@@ -116,7 +116,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				if (!Array.isArray(val))
 					return Promise.resolve(val[fn](req.ml.lang));
 				
-				return Promise.all(val.map(v => v[fn](req.ml.lang)));
+				return Promise.all((val as Array<any>).map(v => v[fn](req.ml.lang)));
 			
 			case 'Bdf':
 				if (!val)
@@ -291,8 +291,8 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 	};
 	
 	schema.methods.getCaptions = function (this: any, req: LipthusRequest) {
-		const ret = {};
-		const toGet = {};
+		const ret: any = {};
+		const toGet: any = {};
 		
 		this.schema.eachPath((k: string) => {
 			ret[k] = schema.tree[k].caption;
@@ -326,7 +326,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 			.then(() => this.getValues(req))
 			.then((values: Array<any>) => this.getCaptions(req)
 				.then((captions: any) => {
-					const ret = {_id: null};
+					const ret: any = {_id: null};
 					
 					Object.each(values, (k, v) => {
 						ret[k] = {

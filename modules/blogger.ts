@@ -45,8 +45,8 @@ export class Blogger {
 	}
 	
 	getBlog(k: string) {
-		if (this[k])
-			return this[k];
+		if ((this as any)[k])
+			return (this as any)[k];
 		
 		if (!this.req.db.schemas[k])
 			return;
@@ -94,7 +94,7 @@ export class Blog {
 	}
 	
 	set(k: string, v: any) {
-		this[k] = v;
+		(this as any)[k] = v;
 		return this;
 	}
 	

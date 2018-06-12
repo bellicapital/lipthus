@@ -10,8 +10,8 @@ export class Bdf extends SchemaType {
 	constructor(public path: string, public options: any) {
 		super(path, options);
 	}
-	
-	//noinspection JSMethodCanBeStatic
+
+	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	checkRequired(val: any) {
 		return null !== val;
 	}
@@ -53,16 +53,16 @@ export class Bdf extends SchemaType {
 		};
 	}
 	
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
 	 *
 	 * @param {String} $conditional
 	 * @param {*} [value]
 	 */
-	
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			const handler = this.$conditionalHandlers[$conditional];
+			const handler = (this.$conditionalHandlers as any)[$conditional];
 			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with Bdf Type.");

@@ -1,5 +1,6 @@
 import {LipthusSchema, LipthusSchemaTypes} from '../../lib';
 import * as _ from "underscore";
+import {KeyAny} from "../../interfaces/global.interface";
 
 const DoSchema = require('./do');
 module.exports = function dynobject() {
@@ -81,7 +82,7 @@ module.exports = function dynobject() {
 				});
 		},
 		checkAll: function (req: any, cb: any) {
-			const ret = {dynobjects: {}};
+			const ret = {dynobjects: <KeyAny>{}};
 			
 			this.find((err: Error, dy: Array<any>) => {
 				let count = 0;

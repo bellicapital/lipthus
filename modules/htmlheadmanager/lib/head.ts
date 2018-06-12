@@ -73,7 +73,7 @@ export class HeadManager {
 		if (Object.keys(req.site.langUrls).length <= 1)
 			return;
 		
-		const ret = {};
+		const ret: { [s: string]: string } = {};
 		
 		if (!url) {
 			url = req.url;

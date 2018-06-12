@@ -2,6 +2,7 @@ import * as mongoose from "mongoose";
 import {Schema, SchemaType, Types, mongo} from "mongoose";
 import {GridFSFile} from "../../lib";
 import {BinDataFile} from "../bdf";
+import {KeyAny} from "../../interfaces/global.interface";
 
 const GridStore = (mongo as any).GridStore;
 
@@ -9,12 +10,12 @@ export class FsList {
 	constructor(val: any, type: string, collection: string, itemid: Types.ObjectId, path: string, dbname: string) {
 		Object.each(val, (i, v) => {
 			if (v.constructor.name === 'ObjectID') {
-				this[i] = new GridFSFile(v, new GridStore((mongoose as any).dbs[dbname]._conn.db, v, "r", {root: 'fs'}));
+				(this as any)[i] = new GridFSFile(v, new GridStore((mongoose as any).dbs[dbname]._conn.db, v, "r", {root: 'fs'}));
 				
 				if (type === 'video')
-					this[i].folder = 'videos';
+					(this as any)[i].folder = 'videos';
 			} else if (v.MongoBinData) {
-				this[i] = BinDataFile.fromMongo(v, {
+				(this as any)[i] = BinDataFile.fromMongo(v, {
 					collection: collection,
 					id: itemid,
 					field: path + '.' + i
@@ -35,7 +36,7 @@ export class FsList {
 	 */
 	getFirst() {
 		const keys = this.keys();
-		return keys[0] && this[keys[0]];
+		return keys[0] && (this as any)[keys[0]];
 	}
 	
 	size() {
@@ -62,11 +63,9 @@ export class FsList {
 	
 	//noinspection JSUnusedGlobalSymbols
 	toJSON() {
-		const ret = {};
+		const ret: KeyAny = {};
 		
-		Object.each(this, (k, v) => {
-			ret[k] = v._id;
-		});
+		Object.keys(this).forEach(k => ret[k] = (this as any)[k]._id);
 		
 		return ret;
 	}
@@ -75,7 +74,7 @@ export class FsList {
 		const ret = <any>[];
 		
 		this.keys().forEach(k => {
-			const info = this[k].info.apply(this[k], arguments);
+			const info = (this as any)[k].info.apply((this as any)[k], arguments);
 			
 			// Asegura la llave
 			info.key = k;
@@ -94,16 +93,16 @@ export class FsList {
 			return Promise.resolve(files);
 		
 		const promises = keys.map(k => {
-			if (this[k] instanceof BinDataFile) {
-				files.push(this[k]);
+			if ((this as any)[k] instanceof BinDataFile) {
+				files.push((this as any)[k]);
 			} else {
-				return this[k].load()
+				return (this as any)[k].load()
 					.then((gfsf: any) => {
 						if (gfsf)
 							files.push(gfsf);
 						else
 						// file missing. tmp solution
-							delete this[k];
+							delete (this as any)[k];
 					});
 			}
 		});
@@ -120,11 +119,11 @@ export class FsList {
 		
 		this.keys().forEach(k => {
 			const obj: any = {
-				id: this[k]._id
+				id: (this as any)[k]._id
 			};
 			
-			if (this[k].thumb)
-				obj.thumbMD5 = this[k].thumb.md5;
+			if ((this as any)[k].thumb)
+				obj.thumbMD5 = (this as any)[k].thumb.md5;
 			
 			videoval.push(k + ':' + JSON.stringify(obj));
 		});
@@ -195,9 +194,10 @@ export class Fs extends SchemaType {
 		};
 	}
 	
+	// noinspection JSUnusedGlobalSymbols
 	castForQuery ($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			const handler = this.$conditionalHandlers[$conditional];
+			const handler = (this.$conditionalHandlers as any)[$conditional];
 			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with Fs Type.");

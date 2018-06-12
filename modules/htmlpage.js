@@ -303,6 +303,7 @@ class HtmlPage{
 			.then(js => this.locals.js = js);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	triggerNotFound(st, min) {
 		st = st || 404;
 
@@ -654,6 +655,7 @@ class HtmlPage{
 		return this;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	addJSLang(a) {
 		this.head.addJSLang(a);
 

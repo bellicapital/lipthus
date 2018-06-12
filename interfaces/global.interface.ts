@@ -11,3 +11,11 @@ export interface Hooks {
 	pre: any;
 	post: any;
 }
+
+export interface KeyString {
+	[s: string]: string;
+}
+
+export interface KeyAny {
+	[s: string]: any;
+}

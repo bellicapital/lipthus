@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {LipthusRequest, LipthusResponse} from "../../../index";
+import {KeyAny} from "../../../interfaces/global.interface";
 
 const extensions = ['less', 'css'];
 
@@ -14,7 +15,7 @@ export class CssManager {
 	public jQueryUi = false;
 	public jQueryMobileVersion: string;
 	public jQueryMobileTheme?: string;
-	public scripts: any = {};
+	public scripts: { [s: string]: CssFile } = {};
 	public jQueryUiTheme = 'smoothness';
 	public staticHost: string;
 	public deviceType: string;
@@ -49,7 +50,7 @@ export class CssManager {
 			this.addjQueryMobile();
 	}
 	
-	add(src: string, opt?: any) {
+	add(src: string, opt?: any | number) {
 		if (typeof opt === 'number')
 			opt = {priority: opt};
 		else if (!opt)
@@ -85,16 +86,16 @@ export class CssManager {
 	
 	final() {
 		const ret: any = {
-				head: [],
-				inline: <Array<any>>[],
-				deferred: []
-			},
-			toCombine: any = {
-				head: [],
-				inline: <Array<any>>[],
-				deferred: []
-			}
-			, scripts = Object.values(this.scripts);
+			head: [],
+			inline: <Array<any>>[],
+			deferred: []
+		};
+		const toCombine: any = {
+			head: [],
+			inline: <Array<any>>[],
+			deferred: []
+		};
+		const scripts: Array<CssFile> = Object.values(this.scripts);
 		
 		// sort by priority
 		scripts.sort((a, b) => b.priority - a.priority);
@@ -105,7 +106,7 @@ export class CssManager {
 			if (script.path && exists(script.path))
 				return toCombine[target].push(script);
 			
-			const obj: any = {src: script.url};
+			const obj: KeyAny = {src: script.url};
 			
 			if (script.inline)
 				obj.path = script.path;
@@ -251,16 +252,38 @@ export class CssManager {
 
 
 class CssFile {
-	public inline = false;
-	public deferred = false;
-	public attributes = [];
-	public priority = 0;
+	public inline: boolean;
+	public deferred: boolean;
+	public attributes: Array<any>;
+	public priority: number;
 	public basename?: string;
 	public device?: string;
-	public isCMS?: boolean;
+	public isCMS: boolean;
+	public path?: string;
+	public mtime?: number;
+	public url?: string;
 	
 	constructor(p: any) {
-		Object.keys(p).forEach(k => this[k] = p[k]);
+		this.inline = !!p.deferred;
+		this.deferred = !!p.inline;
+		this.isCMS = !!p.isCMS;
+		this.priority = p.priority || 0;
+		this.attributes = p.attributes || [];
+
+		if (p.mtime)
+			this.mtime = p.mtime;
+
+		if (p.basename)
+			this.basename = p.basename;
+
+		if (p.device)
+			this.device = p.device;
+
+		if (p.path)
+			this.path = p.path;
+
+		if (p.url)
+			this.url = p.url;
 	}
 	
 	baseKey() {

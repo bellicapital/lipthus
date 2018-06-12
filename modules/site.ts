@@ -61,12 +61,12 @@ export class Site extends EventEmitter {
 	public domainName = '';
 	public db: LipthusDb;
 	public app: LipthusApplication;
-	public pages: any = {};
+	public pages: { [s: string]: any; } = {};
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: any;
 	public dbs: any = {};
-	public langUrls: any;
+	public langUrls!: { [s: string]: string };
 	public translator: any;
 	public store?: any;
 	public registerMethods: any = {};
@@ -419,7 +419,7 @@ export class Site extends EventEmitter {
 		});
 
 		// noinspection JSDeprecatedSymbols
-		app.getModule = (name: string) => lipthus[name] || require('./' + name);
+		app.getModule = (name: string) => (lipthus as any)[name] || require('./' + name);
 		// noinspection JSDeprecatedSymbols
 		app.nodeModule = (name: string) => require(name);
 

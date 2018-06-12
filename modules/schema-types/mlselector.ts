@@ -75,7 +75,7 @@ export class MlSelector extends SchemaType {
 	
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			const handler = this.$conditionalHandlers[$conditional];
+			const handler = (this.$conditionalHandlers as any)[$conditional];
 			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with MlSelector.");

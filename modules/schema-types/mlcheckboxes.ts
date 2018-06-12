@@ -1,13 +1,14 @@
 import {Schema, SchemaType} from "mongoose";
 import {LipthusRequest} from "../../index";
 import {LipthusDb} from "../db";
+import {KeyAny} from "../../interfaces/global.interface";
 
 
 export class MlCheckbox {
 	
 	model = {options: {collection: ''}};
 	
-	constructor(public val: any, public path: string, public options: any, public schema?: any) {
+	constructor(public val: any, public path: string, public options: KeyAny, public schema?: any) {
 	}
 
 	getVal(req: LipthusRequest, db: LipthusDb) {
@@ -21,18 +22,19 @@ export class MlCheckbox {
 				const ret: Array<string> = [];
 
 				if (this.val)
-					this.val.forEach((val: any) => ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
+					this.val.forEach((val: any) =>
+						ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
 
 				return ret;
 			});
 	}
 
-	checkLang(req: LipthusRequest, db: LipthusDb) {
+	checkLang(req: LipthusRequest, db: LipthusDb): Promise<KeyAny> {
 		const o = this.options.options;
 
 		return new Promise((ok, ko) => {
 			if (!req.ml.translateAvailable()) {
-				Object.values(o).forEach(v => {
+				Object.values(o).forEach((v: KeyAny) => {
 					if (!v[req.ml.lang])
 						v[req.ml.lang] = v[req.ml.configLang];
 				});
@@ -63,7 +65,7 @@ export class MlCheckbox {
 				result.forEach((r: string, idx: number) => o[toTranslateKeys[idx]][req.ml.lang] = r);
 
 				const query = {colname: this.model.options.collection.replace('dynobjects.', '')};
-				const update = {};
+				const update: KeyAny = {};
 
 				update['dynvars.' + this.path + '.options'] = o;
 
@@ -79,7 +81,7 @@ export class MlCheckbox {
 	}
 
 	toObject() {
-		const ret = {};
+		const ret: KeyAny = {};
 
 		if (!this.val)
 			return ret;
@@ -157,16 +159,16 @@ export class MlCheckboxes extends SchemaType {
 		return new MlCheckbox(val, this.path, this.options, scope && scope.constructor.name === 'model' && scope.schema);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
 	 *
 	 * @param {String} $conditional
 	 * @param {*} [value]
 	 */
-
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			const handler = this.$conditionalHandlers[$conditional];
+			const handler = (this.$conditionalHandlers as any)[$conditional];
 			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with MlCheckboxes.");

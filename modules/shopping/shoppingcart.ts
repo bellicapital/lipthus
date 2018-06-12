@@ -88,7 +88,7 @@ class ShoppingCart {
 			
 			Object.keys(obj).forEach(k => {
 				if (k !== 'items')
-					this[k] = obj[k];
+					(this as any)[k] = obj[k];
 			});
 			
 			if (obj.items)
@@ -301,7 +301,7 @@ class ShoppingCart {
 			items: <any> this.items.map(item => item.data4save())
 		};
 		
-		Object.keys(this).forEach(k => data[k] = this[k]);
+		Object.keys(this).forEach(k => data[k] = (this as any)[k]);
 		
 		return data;
 	}
@@ -335,7 +335,7 @@ class ShoppingCart {
 		if (name === 'deliveryAddress')
 			this.setAddress(value);
 		else {
-			this[name] = value;
+			(this as any)[name] = value;
 			this.setTotal();
 		}
 	}

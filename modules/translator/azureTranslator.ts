@@ -1,3 +1,5 @@
+import {KeyString} from "../../interfaces/global.interface";
+
 const MsTranslator = require('mstranslator');
 
 export class AzureTranslator {
@@ -101,11 +103,9 @@ export class AzureTranslator {
 				if (err2)
 					return cb(err2);
 
-				const ret = {};
+				const ret: KeyString = {};
 
-				codes.forEach(function (code, idx) {
-					ret[code] = r[idx];
-				});
+				codes.forEach((code, idx) => ret[code] = r[idx]);
 
 				cb(undefined, ret);
 			});

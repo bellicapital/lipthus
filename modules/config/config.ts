@@ -48,17 +48,18 @@ export class Config {
 
 				obj.forEach((c: ConfigD) => indb[c.get('name')] = c);
 
-				const configs = require(this.site.lipthusDir + '/configs/configs');
+				const configs: any = require(this.site.lipthusDir + '/configs/configs');
 
 				configs.general.configs.version[2] = this.site.cmsPackage.version;
 
 				Object.each(configs, (group_name, group) => {
 					this.groups[group_name] = {title: group.title, configs: {}};
 
-					Object.each(group.configs, (key, c) => {
+					Object.each(group.configs, (key: string, c: Array<any>) => {
 						const g: any = {group: group_name, name: key};
 
-						Object.each(c, (k, v) => g[keys[k]] = v);
+						c.forEach((v: any, idx) =>
+								g[keys[idx]] = v);
 
 						if (indb[key]) {
 							g.value = indb[key].get('value');
@@ -128,7 +129,7 @@ export class Config {
 		if (!save)
 			return Promise.resolve();
 
-		const update = {};
+		const update: any = {};
 		let key = 'value';
 
 		if (ns)
@@ -148,7 +149,7 @@ export class Config {
 	}
 
 	getValuesByCat(cat: string) {
-		const ret = {};
+		const ret: any = {};
 
 		Object.each(this.groups[cat].configs, (k, c) => ret[k] = c.value);
 

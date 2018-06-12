@@ -1,6 +1,8 @@
 import {Types} from "mongoose";
 import {LipthusRequest} from "../../index";
+import {KeyAny} from "../../interfaces/global.interface";
 
+// noinspection JSUnusedGlobalSymbols
 /**
  *
  * @param {object} req
@@ -44,12 +46,13 @@ export function findAndGetValues(this: any, req: LipthusRequest, query = {}, fie
 	});
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function getByParent(this: any, parentId: any, fields: any, options: any, cb: () => {}) {
 	return this.find({'parents.$id': new Types.ObjectId(parentId)}, fields, options, cb);
 }
 
 export function checkAll(this: any, req: any, cb: (err?: Error, r?: any) => {}) {
-	const ret = {};
+	const ret: {[s: string]: number} = {};
 	const dates: Array<any> = [];
 	const exclude = ['modified', 'created'];
 	
@@ -82,7 +85,7 @@ export function checkAll(this: any, req: any, cb: (err?: Error, r?: any) => {}) 
 				if (doc[d].toString() === 'Invalid Date')
 					delete doc[d];
 				
-				const update = {$set: {}};
+				const update = {$set: <KeyAny>{}};
 				
 				update.$set[d] = doc[d];
 				
@@ -94,6 +97,7 @@ export function checkAll(this: any, req: any, cb: (err?: Error, r?: any) => {}) 
 	});
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function translatableFieldList(this: any) {
 	const fields: Array<any> = [];
 	const st = this.schema.tree;
@@ -106,6 +110,7 @@ export function translatableFieldList(this: any) {
 	return fields;
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function colTitle(this: any, lang: string) {
 	return this.schema.options.title.getLang(lang);
 }

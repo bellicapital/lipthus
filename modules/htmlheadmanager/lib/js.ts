@@ -2,9 +2,10 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import {LipthusRequest, LipthusResponse} from "../../../index";
+import {KeyAny} from "../../../interfaces/global.interface";
 
 // @types/uglify-es ???
-const uglify = require("uglify-es");
+const uglify: any = require("uglify-es");
 
 export class JsManager {
 
@@ -18,8 +19,8 @@ export class JsManager {
 	public jQueryMobileVersion: string;
 	public datepicker = false;
 	public staticHost: string;
-	public scripts: any = {};
-	public vars = {js: <Array<any>>[], _lang: {}, mobileAjaxEnabled: false};
+	public scripts: { [s: string]: JsFile } = {};
+	public vars: KeyAny = {js: <Array<any>>[], _lang: <KeyAny>{}, mobileAjaxEnabled: false};
 	public lang: string;
 	public headInline = '';
 	public mobileAjaxEnabled = false;
@@ -78,12 +79,12 @@ export class JsManager {
 		return this;
 	}
 
-	addVars(vars: any) {
-		Object.keys(vars).forEach(k => this.vars[k] = vars[k]);
+	addVars(vars: KeyAny) {
+		Object.keys(vars).forEach((k: string) => this.vars[k] = vars[k]);
 	}
 
-	addLangVars(vars: any) {
-		Object.keys(vars).forEach(k => this.vars._lang[k] = vars[k]);
+	addLangVars(vars: KeyAny) {
+		Object.keys(vars).forEach((k: string) => this.vars._lang[k] = vars[k]);
 	}
 
 	final() {
@@ -105,18 +106,18 @@ export class JsManager {
 			}
 
 			const ret: any = {
-					head: [],
-					body: [],
-					headInline: this.headInline ? uglify.minify(this.headInline).code : '',
-					bodyInline: this.deferredInline ? uglify.minify(this.deferredInline).code : ''
-				},
-				scripts = [],
-				scriptsArray = Object.values(this.scripts),
-				toMinify = {
-					head: {},
-					body: {},
-					loader: {}
-				};
+				head: [],
+				body: [],
+				headInline: this.headInline ? uglify.minify(this.headInline).code : '',
+				bodyInline: this.deferredInline ? uglify.minify(this.deferredInline).code : ''
+			};
+			const scripts: Array<JsFile> = [];
+			const scriptsArray = Object.values(this.scripts);
+			const toMinify = {
+				head: <any>{},
+				body: <any>{},
+				loader: <any>{}
+			};
 
 			// sort by priority
 			scriptsArray.sort((a, b) => {
@@ -124,7 +125,7 @@ export class JsManager {
 			});
 
 			for (const s of scriptsArray) {
-				let src = s.src;
+				let src = s.src as string;
 
 				if (/^\w/.test(src) && !/^http/.test(src) && !/^\/\//.test(src)) {
 					if (exists(this.dir + src)) {
@@ -164,7 +165,7 @@ export class JsManager {
 			}
 
 			for (const s of scripts) {
-				const obj: any = {src: s.src};
+				const obj: KeyAny = {src: s.src};
 
 				if (s.mtime)
 					obj.m = s.mtime;
@@ -173,7 +174,7 @@ export class JsManager {
 					obj.async = s.async;
 
 				if (s.forceHtml) {
-					if (/^\/\w+/.test(s.src))
+					if (s.src && /^\/\w+/.test(s.src))
 						obj.src = this.staticHost + s.src;
 
 					ret[s.deferred ? 'body' : 'head'].push(obj);
@@ -234,7 +235,7 @@ export class JsManager {
 			});
 	}
 
-	minify(scripts: Array<any>, target: string, cb: any) {
+	minify(scripts: {[s: string]: JsFile}, target: string, cb: any) {
 		const ret: Array<any> = [];
 		const sources = Object.keys(scripts);
 
@@ -243,7 +244,7 @@ export class JsManager {
 
 		const cache = this.cache;
 		const combinedHash = crypto.createHash('sha1');
-		const toCombine = {};
+		const toCombine: {[s: string]: JsFile} = {};
 		const length = Object.keys(scripts).length;
 		let count = 0;
 
@@ -331,14 +332,38 @@ class JsFile {
 
 	public minify = true;
 	public combine = true;
-	public forceHtml = false;
-	public async = false;
 	public deferred = true;
-	public attributes = [];
+	public forceHtml: boolean;
+	public async = false;
+	public attributes: Array<any>;
+	public mtime?: number;
 	public priority = 0;
+	public src?: string;
+	public path?: string;
 
 	constructor(p: any) {
-		Object.keys(p).forEach(k => this[k] = p[k]);
+		if (p.minify !== undefined)
+			this.minify = p.minify;
+
+		if (p.combine !== undefined)
+			this.combine = p.combine;
+
+		if (p.deferred !== undefined)
+			this.deferred = p.deferred;
+
+		this.forceHtml = Boolean(p.forceHtml);
+		this.async = !!p.async;
+		this.attributes = p.attributes || [];
+		this.priority = p.priority || 0;
+
+		if (p.mtime)
+			this.mtime = p.mtime;
+
+		if (p.path)
+			this.path = p.path;
+
+		if (p.src)
+			this.src = p.src;
 	}
 }
 

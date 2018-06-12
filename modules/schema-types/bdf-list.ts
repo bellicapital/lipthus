@@ -1,5 +1,6 @@
 import {BinDataFile} from "../bdf";
 import {Schema, SchemaType} from "mongoose";
+import {KeyAny} from "../../interfaces/global.interface";
 
 
 export class BinDataFileList {
@@ -13,7 +14,7 @@ export class BinDataFileList {
 		if (!keys.length)
 			return;
 		
-		return Object.keys(this).map(key => this[key]).sort((a, b) => a.weight - b.weight)[0];
+		return Object.keys(this).map(key => (this as any)[key]).sort((a, b) => a.weight - b.weight)[0];
 	}
 	
 	getThumb(width: number, height: number, crop: boolean, enlarge: boolean) {
@@ -23,22 +24,23 @@ export class BinDataFileList {
 	}
 	
 	info(width: number, height: number, crop: boolean, enlarge: boolean) {
-		return Object.keys(this).map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
+		return Object.keys(this).map(key => (this as any)[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);
 	}
 	
 	toObject() {
 		const ret = <any> [];
 		const keys = Object.keys(this);
 		
-		keys.forEach(key => ret.push(this[key]));
+		keys.forEach(key => ret.push((this as any)[key]));
 		
 		return ret;
 	}
 	
+	// noinspection JSUnusedGlobalSymbols
 	formDataValue() {
 		const arr = <any> [];
 		
-		Object.keys(this).forEach(key => arr.push(key + ':' + this[key].name || this[key]));
+		Object.keys(this).forEach(key => arr.push(key + ':' + (this as any)[key].name || (this as any)[key]));
 		
 		return arr.join('|');
 	}
@@ -81,7 +83,7 @@ export class BdfList extends SchemaType {
 		// if (!init)
 		// 	return val;
 		
-		const retTmp = {};
+		const retTmp: KeyAny = {};
 		const ret = new BinDataFileList;
 		const w: Array<string> = [];
 		
@@ -105,7 +107,7 @@ export class BdfList extends SchemaType {
 		// Sort by weight
 		w.sort((a, b) => retTmp[a].weight - retTmp[b].weight);
 		
-		w.forEach(k => ret[k] = retTmp[k]);
+		w.forEach(k => (ret as any)[k] = retTmp[k]);
 		
 		return ret;
 	}
@@ -136,7 +138,7 @@ export class BdfList extends SchemaType {
 	
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
-			const handler: any = this.$conditionalHandlers[$conditional];
+			const handler: any = (this.$conditionalHandlers as any)[$conditional];
 			
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with BdfList Type.");
@@ -153,7 +155,7 @@ const handleSingle = function (this: any, val: any) {
 	return this.cast(val);
 };
 const handleExists = () => true;
-const handleArray = function (this: any, val: any) {
+const handleArray = function (this: any, val: Array<any>) {
 	return val.map((m: any) => this.cast(m));
 };
 

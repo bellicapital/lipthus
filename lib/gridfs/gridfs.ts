@@ -46,13 +46,13 @@ export class GridFS {
 	findOneField(id: string, field: string) {
 		return new Promise((ok, ko) => {
 			if (this.loaded)
-				return ok(this[field]);
+				return ok((this as any)[field]);
 			
 			this.collection((err: Error, collection: any) => {
 				if (err)
 					return ko(err);
 				
-				const fields = {};
+				const fields: {[s: string]: number} = {};
 				fields[field] = 1;
 				
 				collection.findOne({_id: Types.ObjectId(id)}, fields, (err2: Error, obj: any) => {
