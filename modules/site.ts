@@ -1,4 +1,4 @@
-import {NextFunction} from "express";
+import {NextFunction, Router} from "express";
 import {EventEmitter} from "events";
 import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString} from "../interfaces/global.interface";
 import * as Debug from "debug";
@@ -532,7 +532,7 @@ export class Site extends EventEmitter {
 
 		return this.loadLocalRoutes()
 			.then(() => {
-				const router = express.Router({strict: true});
+				const router = Router({strict: true});
 
 				if (this.config.startpage && this.pages[this.config.startpage])
 					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));
