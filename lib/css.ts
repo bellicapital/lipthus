@@ -16,17 +16,17 @@ const send = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => 
 			return next();
 	}
 
-	res.send(req.cssResponse[req.params.ext]);
+	res.send((req.cssResponse as any)[req.params.ext]);
 };
 
 const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	const parts: Array<string> = req.params.combined.split('+');
 	const files: Array<string> = [];
-	const dirs = {
+	const dirs: any = {
 		d: req.site.dir,
 		g: req.site.lipthusDir
 	};
-	const devicesDir = {
+	const devicesDir: any = {
 		g: '',
 		p: 'phone/',
 		t: 'tablet/',
@@ -62,7 +62,7 @@ const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction)
 
 const single = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	const deviceRoute = req.params.device !== 'g' ? req.params.device + '/' : '';
-	const locations = {
+	const locations: any = {
 		d: req.site.dir,
 		g: req.site.lipthusDir
 	};

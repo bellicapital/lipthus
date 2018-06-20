@@ -39,7 +39,7 @@
 		"@types/merge-descriptors": "^1.0.1",
 		"@types/mongoose": "^5.0.15",
 		"@types/mz": "0.0.32",
-		"@types/node": "^10.3.2",
+		"@types/node": "^10.3.4",
 		"@types/uglify-js": "^3.0.2",
 		"@types/underscore": "^1.8.8",
 		"accounting": "^0.4.1",

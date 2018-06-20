@@ -58,12 +58,12 @@ namespace LipthusSettings {
 				.then(() => ret);
 		}
 
-		getValue(this: any, key: string, lang: string) {
+		getValue(this: any, key: string, lang?: string) {
 			return this.findOne({name: key})
 				.then((st?: any) => st && st.getValue(lang));
 		}
 
-		setValue(this: any, key: string, value: any, type: string) {
+		setValue(this: any, key: string, value: any, type?: string) {
 			const update: any = {value: value};
 
 			if (type)
