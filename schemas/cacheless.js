@@ -16,7 +16,7 @@ module.exports = function cacheless(Schema){
 	}, {
 		collection: 'cache.less'
 	});
-	
+
 	s.statics = {
 		getCachedFile: function(file, compress){
 			return fs.stat(file)
@@ -30,15 +30,13 @@ module.exports = function cacheless(Schema){
 		},
 		getCachedFiles: function(files, basename){
 			let code = '';
-			let stat;
 			let mtime = 0;
 
 			const promises = [];
-			const errored = false;
 
 			files.forEach(file => {
 				promises.push(fs.stat(file));
-				
+
 				code += '@import "' + file + '";';
 			});
 
@@ -76,7 +74,7 @@ module.exports = function cacheless(Schema){
 			const db = this.db.eucaDb;
 			const mapUrl = opt.mapUrl;
 			const site = db.site;
-				
+
 			return db.cacheless
 				.findOne({source: src})
 				.then(cached => {
@@ -95,7 +93,8 @@ module.exports = function cacheless(Schema){
 						compress: compress,
 						globalVars: lessVars,
 						sourceMap: {sourceMapURL: mapUrl},
-						sourceMapMapInline: true
+						sourceMapMapInline: true,
+						useFileCache: false // jj · 26-6-18 - funciona ????
 					};
 
 					return less.render(opt.code, lessopt)
@@ -117,6 +116,6 @@ module.exports = function cacheless(Schema){
 				});
 		}
 	};
-	
+
 	return s;
 };
