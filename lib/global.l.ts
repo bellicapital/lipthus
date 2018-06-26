@@ -1,6 +1,6 @@
 
 
-function l (this: any): void {
+function l (this: any, ...args: any[]): void {
 	console.log.apply(this, arguments);
 
 	const orig = Error.prepareStackTrace;

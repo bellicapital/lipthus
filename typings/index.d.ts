@@ -6,7 +6,7 @@ export {User, UserModel} from "../schemas/user";
 
 declare global {
 
-	function l(...args: any[]): void;
+	// function l(...args: any[]): void;
 
 	interface Date {
 		// noinspection JSUnusedLocalSymbols
