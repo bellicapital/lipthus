@@ -1,6 +1,6 @@
 
 
-global.l = function () {
+function l (this: any): void {
 	console.log.apply(this, arguments);
 
 	const orig = Error.prepareStackTrace;
@@ -9,8 +9,10 @@ global.l = function () {
 	};
 	const err = new Error;
 	Error.captureStackTrace(err);
-	const stack_ = err.stack;
+	const stack_ = err.stack as any;
 	Error.prepareStackTrace = orig;
 
 	console.log('called at %s, line %d', stack_[1].getFileName(), stack_[1].getLineNumber());
-};
+}
+
+(global as any).l = l;

@@ -14,11 +14,11 @@ const commands = [
 		uri: 'http://www.graphicsmagick.org/',
 		install: 'graphicsmagick'
 	},
-	// {
-	// 	k: "magick",
-	// 	uri: 'https://www.imagemagick.org/',
-	// 	install: 'imagemagick'
-	// },
+	{
+		k: "magick",
+		uri: 'https://www.imagemagick.org/',
+		install: 'imagemagick'
+	},
 	// {
 	// 	k: "avconv",
 	// 	uri: 'https://libav.org/',

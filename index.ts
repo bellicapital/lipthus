@@ -1,6 +1,6 @@
 import * as Debug from 'debug';
 import './lib/vanilla.extensions';
-import './modules/functions';
+import './lib/global.l';
 import {LipthusDb as Db_, Site} from "./modules";
 import {User, UserModel} from "./schemas/user";
 import * as express from "express";
@@ -96,6 +96,7 @@ export interface LipthusResponse extends express.Response {
 export interface LipthusApplication extends express.Application {
 	use: ApplicationRequestHandler<this>;
 	db: LipthusDb;
+	site: Site;
 
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;

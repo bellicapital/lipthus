@@ -18,7 +18,7 @@ import {security} from "./security";
 import {Config} from "./config";
 import {canonicalhost} from '../lib/canonicalhost';
 import {LipthusLogger} from "./logger";
-
+import '../lib/global.l';
 const debug = Debug('site:site');
 const device = require('express-device');
 const auth = require('./auth');
@@ -143,15 +143,16 @@ export class Site extends EventEmitter {
 	// noinspection JSUnusedGlobalSymbols
 	addDb(p: any, schemasDir?: string): Promise<LipthusDb> {
 		return new Promise((ok, ko) => {
-			this.dbs[p.name] = new LipthusDb(p, this)
+			new LipthusDb(p, this)
 				.on('error', ko)
 				.on('ready', (db: LipthusDb) => {
+					this.dbs[p.name] = db;
+
 					db.addLipthusSchemas()
 						.then(() => schemasDir && db.addSchemasDir(schemasDir))
 						.then(() => ok(db), ko);
-				});
-
-			this.dbs[p.name].connect();
+				})
+				.connect();
 		});
 	}
 
@@ -195,9 +196,9 @@ export class Site extends EventEmitter {
 					google: config.googleApiKey && !!config.googleSecret,
 					facebook: !!config.fb_app_id
 				};
-
-				return checkVersions(this);
 			})
+			.then(this.hooks.bind(this, 'pre', 'checkVersion'))
+			.then(checkVersions.bind(this, this))
 			.then(this.hooks.bind(this, 'pre', 'setupApp'))
 			.then(this.setupApp.bind(this))
 			.then(this.hooks.bind(this, 'post', 'setupApp'))

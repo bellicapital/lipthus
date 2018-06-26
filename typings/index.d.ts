@@ -5,9 +5,9 @@ export {Search, SearchModel} from "../schemas/search";
 export {User, UserModel} from "../schemas/user";
 
 declare global {
-	
-	function l(): void;
-	
+
+	function l(...args: any[]): void;
+
 	interface Date {
 		// noinspection JSUnusedLocalSymbols
 		toUserDatetimeString(intl: string, sep: string): string;
@@ -23,13 +23,13 @@ declare global {
 		// noinspection JSUnusedLocalSymbols
 		hmFull(intl: string, sep: string): string;
 	}
-	
+
 	interface Number {
 		size(): string;
 		shopFormat(): string;
 		m100(): number;
 	}
-	
+
 	interface Object {
 		// noinspection JSUnusedLocalSymbols
 		some(o: any, fn: (a: string, b: any) => any): void;
@@ -48,7 +48,7 @@ declare global {
 		// noinspection JSUnusedLocalSymbols
 		values(o: any): Array<any>;
 	}
-	
+
 	interface String {
 		ucfirst(): string;
 		// noinspection JSUnusedLocalSymbols
