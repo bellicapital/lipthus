@@ -1,17 +1,13 @@
 import * as Debug from 'debug';
 import './lib/vanilla.extensions';
 import './lib/global.l';
-import {LipthusDb as Db_, Site} from "./modules";
-import {User, UserModel} from "./schemas/user";
+import {LipthusDb, Site} from "./modules";
+import {User} from "./schemas/user";
 import * as express from "express";
 import {ApplicationRequestHandler, CssResponse} from "./interfaces/global.interface";
-import {TmpModel} from "./schemas/tmp";
-import {SearchModel} from "./schemas/search";
 import {UploadedFile} from "./interfaces/uploaded-file";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
-import {LipthusCacheModel} from "./schemas/cache";
-import {SettingModel} from "./schemas/settings";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -47,13 +43,6 @@ export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
 export {Router, NextFunction} from 'express';
-export declare class LipthusDb extends Db_ {
-	search?: SearchModel;
-	tmp: TmpModel;
-	user: UserModel;
-	settings: SettingModel;
-	cache: LipthusCacheModel;
-}
 export {User};
 export interface LipthusRequest extends express.Request {
 	res: LipthusResponse;

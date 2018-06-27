@@ -6,62 +6,62 @@ const Location = require('../geo').location;
 
 
 class DocValues {
-	
+
 	public _id: any;
-	
+
 	constructor(values?: any) {
 		if (!values)
 			return;
-		
+
 		Object.keys(values).forEach(i => {
 			(this as any)[i] = values[i];
 		});
 	}
-	
+
 	get id() {
 		return this._id.toString();
 	}
 }
 
-export function schemaGlobalMethods(schema: LipthusSchema) {
-	
+export function schemaGlobalMethods(schema: LipthusSchema): void {
+
 	schema.methods.loadFiles = function (this: any) {
 		const fileFields = this.schema.fileFields();
 		let files: Array<any> = [];
-		
+
 		const promises = fileFields.map((field: string) => {
 			if (!this[field])
 				return;
-			
+
 			return this[field].loadFiles()
 				.then((_files: Array<any>) => files = files.concat(_files));
 		});
-		
+
 		return Promise.all(promises)
 			.then(() => files);
 	};
-	
+
 	schema.methods.getValues = function (this: any, req: LipthusRequest, virtuals: boolean, forceTranslate = true) {
 		const ret = new DocValues();
 		const promises: Array<Promise<any>> = [];
-		
+
 		this.schema.eachPath((k: string) => {
 			if (!this.isSelected(k))
 				return;
-			
+
 			switch (k) {
 				case '__v':
 					return;
-				
+
 				case 'children':
 				case 'parents':
 					const v = this.get(k);
-					
+
 					if (v !== undefined)
 						(ret as any)[k] = v;
-					
+
 					break;
-				
+
 				default:
 					promises.push(this.getVar(k, req, forceTranslate)
 						.then((v2: any) => {
@@ -71,14 +71,14 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 					);
 			}
 		});
-		
+
 		if (virtuals)
 			Object.keys(this.schema.virtuals).forEach(k => k === 'id' || ((ret as any)[k] = (this as any)[k]));
-		
+
 		return Promise.all(promises)
 			.then(() => ret);
 	};
-	
+
 	schema.methods.getValues4Edit = function (this: any) {
 		const ret = {
 			info: {
@@ -88,50 +88,50 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 			vars: this.jsonInfo(),
 			specialOptions: {}
 		};
-		
+
 		delete ret.vars.created;
-		
+
 		return ret;
 	};
-	
+
 	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate = true) {
 		const val = this.get(k);
-		
+
 		if (val === undefined)
 			return Promise.resolve();
-		
+
 		const opt = schema.tree[k];
 		const ret: Array<any> = [];
 		const site = this.db.eucaDb.site;
 		let info: any = null;
-		
+
 		// noinspection FallThroughInSwitchStatementJS
 		switch (schema.getTypename(k)) {
 			case 'Multilang':
 				if (!val)
 					return Promise.resolve(val);
-				
+
 				const fn = forceTranslate ? 'getLangOrTranslate' : 'getLang';
-				
+
 				if (!Array.isArray(val))
 					return Promise.resolve(val[fn](req.ml.lang));
-				
+
 				return Promise.all((val as Array<any>).map(v => v[fn](req.ml.lang)));
-			
+
 			case 'Bdf':
 				if (!val)
 					return Promise.resolve();
-				
+
 				info = val.info(req.maxImgWidth, req.maxImgHeight, req.imgCrop, req.imgnwm);
-				
+
 				info.uri = site.staticHost + info.uri;
-				
+
 				return Promise.resolve(info);
-			
+
 			case 'BdfList':
 				if (!val || !Object.keys(val).length)
 					return Promise.resolve();
-				
+
 				Object.keys(val).forEach(i => {
 					if (val[i].info) {
 						info = val[i].info(req.maxImgWidth, req.maxImgHeight);
@@ -139,40 +139,40 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 						ret.push(info);
 					}
 				});
-				
+
 				return Promise.resolve(ret);
-			
+
 			case 'Fs':
 				if (!val || !Object.keys(val).length)
 					return Promise.resolve();
-				
+
 				Object.keys(val).forEach(i => {
 					if (val[i].info) {
 						info = val[i].info();
-						
+
 						if (info instanceof Error)
 							return console.warn(info.stack);
-						
+
 						info.id = val[i]._id;
 						info.uri = site.staticHost + info.uri;
-						
+
 						if (info.versions)
 							Object.keys(info.versions).forEach(j =>
 								info.versions[j] = site.staticHost + info.versions[j]);
-						
+
 						ret.push(info);
 					}
 				});
-				
+
 				return Promise.resolve(ret.length ? ret : null);
-			
+
 			case 'MlSelector':
 			case 'MlCheckboxes':
 				return val ? val.getVal(req, this.db.eucaDb) : Promise.resolve();
-			
+
 			case 'location':
 				return Promise.resolve(new Location(val));
-			
+
 			case 'Number':
 				if (opt.origType === 'money')
 					return Promise.resolve(req.ml.money(val, opt.currency));
@@ -187,15 +187,15 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				return Promise.resolve(val);
 		}
 	};
-	
+
 	schema.methods.jsonInfo = function (this: any, width?: number, height?: number, crop?: boolean) {
 		const ret = this.toJSON();
-		
+
 		ret._id = this._id.toString();
 		ret.created = this.created || new Date(this._id.getTimestamp());
-		
+
 		delete ret.__v;
-		
+
 		this.schema.eachPath((k: string, path: any) => {
 			switch (path.options.type) {
 				case LipthusSchemaTypes.Bdf:
@@ -227,19 +227,19 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				// 		delete ret[k];
 			}
 		});
-		
+
 		return ret;
 	};
-	
+
 	schema.methods.jsonInfoIncFiles = function (this: any) {
 		return this.loadFiles().then(() => this.jsonInfo());
 	};
-	
+
 	schema.methods.setCasted = function (this: any, v: any) {
 		Object.keys(v).forEach(k => {
 			if (!schema.paths[k])
 				return console.error('Field ' + k + ' not found in schema ' + schema.options.collection);
-			
+
 			switch (this.schema.paths[k].options.type) {
 				case LipthusSchemaTypes.Bdf:
 					v[k] = BinDataFile.fromMongo(v[k], {
@@ -256,32 +256,32 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 							field: k + '.' + i
 						});
 					});
-					
+
 					break;
 				case LipthusSchemaTypes.MlSelector:
 					if (typeof v[k] === 'object')
 						v[k] = v[k].val;
 					break;
 			}
-			
+
 			this[k] = v[k];
 		});
-		
+
 		return this;
 	};
-	
+
 	schema.methods.getTitle = function (this: any, lang: string) {
 		const identifier = this.schema.options.identifier || 'title';
 		const ret = this[identifier];
-		
+
 		if (typeof ret !== 'object')
 			return ret;
-		
+
 		lang = lang || 'es';
-		
+
 		return ret[lang] || ret.es || ret[Object.keys(ret)[0]];
 	};
-	
+
 	schema.methods.getDBRef = function (this: any) {
 		return new DBRef(
 			this.schema.get('collection'),
@@ -289,14 +289,14 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 			this.db.name
 		);
 	};
-	
+
 	schema.methods.getCaptions = function (this: any, req: LipthusRequest) {
 		const ret: any = {};
 		const toGet: any = {};
-		
+
 		this.schema.eachPath((k: string) => {
 			ret[k] = schema.tree[k].caption;
-			
+
 			if (!ret[k])
 				ret[k] = k;
 			else if (req.ml.all[ret[k]])
@@ -304,35 +304,35 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 			else
 				toGet[ret[k]] = k;
 		});
-		
+
 		const keysToGet = Object.keys(toGet);
-		
+
 		if (!keysToGet.length)
 			return Promise.resolve(ret);
-		
+
 		return req.db.lang
 			.find({_k: {$in: keysToGet}}, '_k ' + req.ml.lang)
 			.then((r: Array<any>) => {
 				r.forEach(t => ret[toGet[t._k]] = t.get(req.ml.lang));
-				
+
 				return ret;
 			});
 	};
-	
+
 	schema.methods.things4show = function (this: any, req: LipthusRequest, opt?: any) {
 		opt = opt || {};
-		
+
 		return this.loadFiles()
 			.then(() => this.getValues(req))
 			.then((values: Array<any>) => this.getCaptions(req)
 				.then((captions: any) => {
 					const ret: any = {_id: null};
-					
+
 					Object.each(values, (k, v) => {
 						ret[k] = {
 							caption: captions[k]
 						};
-						
+
 						// l(k, schema.getTypename(k))
 						switch (schema.getTypename(k)) {
 							case 'BdfList':
@@ -342,7 +342,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 										v[i] = '<div class="thumb-container">'
 											+ bdfInfo.getThumb(opt.width || 150, opt.height || 150, false, true)
 												.toHtml() + '</div>');
-									
+
 									v = v.join('');
 								}
 								break;
@@ -365,10 +365,10 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 								v = v && v.toUserDatetimeString();
 								break;
 						}
-						
+
 						ret[k].value = v;
 					});
-					
+
 					return ret;
 				})
 			)
@@ -376,26 +376,26 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				// populate user fields
 				return new Promise((ok, ko) => {
 					const userFields: Array<string> = [];
-					
+
 					this.schema.eachPath((k: string, path: any) => path.options.ref === 'user' && userFields.push(k));
-					
+
 					this.populate(userFields.join(' '), 'uname', (err: Error) => {
 						if (err)
 							return ko(err);
-						
+
 						userFields.forEach(k => {
 							const user = this.get(k);
-							
+
 							if (user)
 								ret[k].value = user.htmlLink();
 						});
-						
+
 						ok(ret);
 					});
 				});
 			});
 	};
-	
+
 	/**
 	 * Ensures all multilang vars values for an specific language
 	 * @param lang
@@ -403,12 +403,12 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 	 */
 	schema.methods.ensureLang = function (this: any, lang: string) {
 		const prom: Array<string> = [];
-		
+
 		schema.eachPath((path: string, type: any) => {
 			if (type.instance === 'Multilang' && this[path] && this[path][lang])
 				prom.push(this[path].getLangOrTranslate(lang));
 		});
-		
+
 		return Promise.all(prom);
 	};
 
@@ -427,7 +427,7 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 				case 'Multilang':
 					if (schema.tree[k].constructor.name === 'Array' && obj[k]) {
 						const MlText = LipthusSchemaTypes.MultilangText;
-						
+
 						obj[k].forEach((o: any, i: number) =>
 							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site));
 					}
@@ -435,14 +435,14 @@ export function schemaGlobalMethods(schema: LipthusSchema) {
 			}
 		});
 	});
-	
+
 	if (!schema.options.toObject) schema.options.toObject = {};
-	
+
 	schema.options.toObject.transform = (doc: any, ret: any) => {
 		schema.eachPath((k, path: any) => {
 			if (!doc.isSelected(k))
 				return;
-			
+
 			switch (path.options.type) {
 				case LipthusSchemaTypes.MlSelector:
 				case LipthusSchemaTypes.MlCheckboxes:

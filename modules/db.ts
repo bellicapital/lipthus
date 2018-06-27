@@ -9,6 +9,11 @@ import * as path from "path";
 import {EventEmitter} from "events";
 import {GridFS} from "./../lib";
 import {SchemaScript} from "../interfaces/schema-script";
+import {TmpModel} from "../schemas/tmp";
+import {LipthusCacheModel} from "../schemas/cache";
+import {SearchModel} from "../schemas/search";
+import {UserModel} from "../schemas/user";
+import {SettingModel} from "../schemas/settings";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -21,22 +26,17 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
 	public name: string;
 	public connected = false;
+	public schemas: {[s: string]: LipthusSchema} = {};
+	public models: {[s: string]: any} = {};
+	public mongoose = mongoose;
 
-	constructor(options: any, site: Site) {
+	constructor(public params: any, public site: Site) {
 		super();
 
-		this.mongoose = mongoose;
-		this.schemas = {};
-		this.models = {};
-		this.name = options.name;
-		this.user = options.user;
-		this.pass = options.pass;
-		this.host = options.host;
-		this.options = options.options;
+		this.name = params.name;
 		(mongoose as any).dbs[this.name] = this;
 
 		Object.defineProperties(this, {
-			site: {value: site, configurable: true},
 			app: {value: site.app, configurable: true}
 		});
 	}
@@ -44,12 +44,12 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	connect() {
 		let uri = 'mongodb://';
 
-		if (this.user && this.pass)
-			uri += this.user + ':' + this.pass + '@';
+		if (this.params.user && this.params.pass)
+			uri += this.params.user + ':' + this.params.pass + '@';
 
-		uri += (this.host || 'localhost') + '/' + this.name;
+		uri += (this.params.host || 'localhost') + '/' + this.name;
 
-		this._conn = mongoose.createConnection(uri, this.options || {promiseLibrary: global.Promise});
+		this._conn = mongoose.createConnection(uri, this.params.options || {promiseLibrary: global.Promise});
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
@@ -121,6 +121,30 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		return this.model('dynobject');
 	}
 
+	get search(): SearchModel {
+		return this.model('search');
+	}
+
+	get tmp(): TmpModel {
+		return this.model('tmp');
+	}
+
+	get user(): UserModel {
+		return this.model('uset');
+	}
+
+	get settings(): SettingModel {
+		return this.model('settings');
+	}
+
+	get cache(): LipthusCacheModel {
+		return this.model('cache');
+	}
+
+	get cacheResponse() {
+		return this.model('cacheResponse');
+	}
+
 	model(name: string) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
@@ -154,10 +178,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		return this.models[name];
 	}
 
-	schema(name: string, schema: any) {
+	schema(name: string, schema: LipthusSchema) {
 		schema.set('name', name);
-		schema.plugin(schemaGlobalMethods); // , {name: name});
-		schema.plugin(schemaGlobalStatics);
+		schema.plugin(schemaGlobalMethods as any);
+		schema.plugin(schemaGlobalStatics as any);
 
 		// Avoid collection name mongoose pluralization and add easy access throw the schema object
 		if (!schema.options.collection)
