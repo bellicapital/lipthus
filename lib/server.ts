@@ -1,3 +1,6 @@
+import {KeyString} from "../interfaces/global.interface";
+
+
 const exec = require("child_process").exec;
 const debug = require('debug')('site:server');
 
@@ -31,7 +34,7 @@ const commands = [
 	// }
 ];
 
-let installers = {
+const installers: KeyString = {
 	ubuntu: 'sudo apt install %s',
 	darwin: 'brew install %s'
 };

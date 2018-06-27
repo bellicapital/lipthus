@@ -93,8 +93,7 @@ module.exports = function cacheless(Schema){
 						compress: compress,
 						globalVars: lessVars,
 						sourceMap: {sourceMapURL: mapUrl},
-						sourceMapMapInline: true,
-						useFileCache: false // jj · 26-6-18 - funciona ????
+						sourceMapMapInline: true
 					};
 
 					return less.render(opt.code, lessopt)
