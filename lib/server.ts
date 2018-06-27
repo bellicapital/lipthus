@@ -13,22 +13,22 @@ const commands = [
 		k: "gm",
 		uri: 'http://www.graphicsmagick.org/',
 		install: 'graphicsmagick'
-	},
-	{
-		k: "magick",
-		uri: 'https://www.imagemagick.org/',
-		install: 'imagemagick'
-	},
+	}
+	// {
+	// 	k: "magick",
+	// 	uri: 'https://www.imagemagick.org/',
+	// 	install: 'imagemagick'
+	// },
 	// {
 	// 	k: "avconv",
 	// 	uri: 'https://libav.org/',
 	// 	install: 'libav'
 	// }
-	// 			,{
-	// 				k: "gd",
-	// 				uri: 'http://www.boutell.com/gd/',
-	// 				install: process.platform === 'darwin' ? 'libgd2-xpm-dev' : 'gd'
-	// 			}
+	// ,{
+	// 	k: "gd",
+	// 	uri: 'http://www.boutell.com/gd/',
+	// 	install: process.platform === 'darwin' ? 'libgd2-xpm-dev' : 'gd'
+	// }
 ];
 
 let installers = {
