@@ -107,7 +107,7 @@ export class MultilangText {
 		return this.obj;
 	}
 
-	getLang(lang: any, alt: string) {
+	getLang(lang: string, alt?: string): string {
 		return this.obj[lang] || (alt && this.obj[alt]) || this.obj[defaultLang] || '';
 	}
 

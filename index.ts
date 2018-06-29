@@ -4,7 +4,7 @@ import './lib/global.l';
 import {LipthusDb, Site} from "./modules";
 import {User} from "./schemas/user";
 import * as express from "express";
-import {ApplicationRequestHandler, CssResponse} from "./interfaces/global.interface";
+import {ApplicationRequestHandler, CssResponse, KeyString} from "./interfaces/global.interface";
 import {UploadedFile} from "./interfaces/uploaded-file";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
@@ -43,7 +43,6 @@ export * from './modules';
 export * from './lib';
 export {Types} from 'mongoose';
 export {Router, NextFunction} from 'express';
-export {User};
 export interface LipthusRequest extends express.Request {
 	res: LipthusResponse;
 	domainName: string;
@@ -64,7 +63,7 @@ export interface LipthusRequest extends express.Request {
 	imgCrop?: boolean;
 	imgnwm?: boolean;
 	ipLocation: any;
-	nationalities: any;
+	nationalities: KeyString;
 	getUser: () => Promise<User>;
 	files?: Array<UploadedFile>;
 	security: any;
@@ -94,3 +93,9 @@ export interface LipthusApplication extends express.Application {
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusDocument} from './interfaces/lipthus-document';
 export const nodeModule = (key: string) => require(key);
+export {Setting, SettingModel} from "./schemas/settings";
+export {LipthusCache, LipthusCacheModel} from "./schemas/cache";
+export {Tmp, TmpModel} from "./schemas/tmp";
+export {Search, SearchModel} from "./schemas/search";
+export {User, UserModel} from "./schemas/user";
+export {NationalitiesModel, Nationality} from './schemas/nationalities';

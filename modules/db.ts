@@ -14,6 +14,7 @@ import {LipthusCacheModel} from "../schemas/cache";
 import {SearchModel} from "../schemas/search";
 import {UserModel} from "../schemas/user";
 import {SettingModel} from "../schemas/settings";
+import {NationalitiesModel} from "../schemas/nationalities";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -143,6 +144,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
 	get cacheResponse() {
 		return this.model('cacheResponse');
+	}
+
+	get nationalities(): NationalitiesModel {
+		return this.model('nationalities');
 	}
 
 	model(name: string) { // if (name === 'newsletter') console.trace(name)

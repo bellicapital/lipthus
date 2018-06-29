@@ -1,8 +1,4 @@
-export {Setting, SettingModel} from "../schemas/settings";
-export {LipthusCache, LipthusCacheModel} from "../schemas/cache";
-export {Tmp, TmpModel} from "../schemas/tmp";
-export {Search, SearchModel} from "../schemas/search";
-export {User, UserModel} from "../schemas/user";
+
 
 declare global {
 
@@ -10,18 +6,18 @@ declare global {
 
 	interface Date {
 		// noinspection JSUnusedLocalSymbols
-		toUserDatetimeString(intl: string, sep: string): string;
+		toUserDatetimeString(intl?: string, sep?: string): string;
 		toFormDateString(): string;
 		// noinspection JSUnusedLocalSymbols
 		addDays(days: number): any;
 		// noinspection JSUnusedLocalSymbols
-		toUserDateString(intl: string, sep: string): string;
+		toUserDateString(intl?: string, sep?: string): string;
 		toUserTimeString(): string;
 		toFormDateTimeString(): string;
 		toSpanishDatepickerString(): string;
 		hm(): string;
 		// noinspection JSUnusedLocalSymbols
-		hmFull(intl: string, sep: string): string;
+		hmFull(intl?: string, sep?: string): string;
 	}
 
 	interface Number {
