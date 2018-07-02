@@ -2,7 +2,7 @@
 
 $.debugSelector = function(){
 	var $debugSel = $('#debugSel');
-	
+
 	if($debugSel.size())
 		return $debugSel.show().focus();
 
@@ -16,7 +16,7 @@ $.debugSelector = function(){
 					location.reload();
 			});
 		});
-	
+
 	$.each([
 		'no debug | minify',
 		'no console | minify',
@@ -31,7 +31,7 @@ $.debugSelector = function(){
 	$debugSel.blur(function(){
 		$debugSel.slideUp();
 	});
-	
+
 	return $debugSel.prependTo('body').val(euca.debug).focus();
 };
 
@@ -57,9 +57,9 @@ $.jsLoaded(function(){
 	$(window).keypress(function(e){
 		if(e.shiftKey || e.altKey || e.metaKey || e.ctrlKey)
 			return;
-		
+
 		var char_ = String.fromCharCode(e.keyCode || e.charCode);
-		
+
 		if(char_ === 'ð'){
 			e.preventDefault();
 			e.stopImmediatePropagation();
@@ -68,81 +68,11 @@ $.jsLoaded(function(){
 			return false;
 		}
 		return;
-	
+
 		if(parseInt(char_,10) < 6)
 			$('#debugSel:visible').val(char_).change();
 	});
 
-	
-	/* Test image */
-	
-	var $refBgImg = $('#refBgImg');
-	
-	if($refBgImg.size()){
-		$refBgImg.appendTo('#container');
-		
-		$('body').css('min-height', $refBgImg.height()); //evita aparición y desaparión del scroll
-		
-		var top = /refBgImgTop=(\d+)/.exec(document.cookie);
-		top = top ? top[1] + 'px' : 0;
-		
-		var left = /refBgImgLeft=(\d+)/.exec(document.cookie);
-		left = left ? left[1] + 'px' : 0;
-		
-		var $c = $('<div class="ui-widget-content">')
-			.appendTo('body')
-			.css({
-				position: 'absolute',
-				padding: '8px',
-				top: top,
-				left: left,
-				zIndex: 3,
-				boxShadow: '3px 3px 3px #888'
-			})
-			.draggable({
-				cursor: 'move',
-				stop: function(e,ui){
-					document.cookie = 'refBgImgTop=' + ui.position.top;
-					document.cookie = 'refBgImgLeft=' + ui.position.left;
-				}
-			});
-		
-		$c.append('<span class="ui-icon ui-icon-arrow-4" style="margin:2px"></span><hr/>');
-		
-		var $checkbox=  $('<input type="checkbox" style="margin: 3px;"/>')
-			.appendTo($c)
-			.click(function(){
-				$refBgImg.toggle();
-				document.cookie = 'refBgImgShow=' + $refBgImg.is(':visible');
-			});
-			
-		$c.append('<hr/>');
-
-		var val = /refBgImg=(\d+)/.exec(document.cookie);
-		val = val ? parseInt(val[1]) : 0;
-		
-		$refBgImg.css({
-			opacity: val / 100,
-			zIndex: 1
-		});
-		
-		if(/refBgImgShow=true/.exec(document.cookie))
-			$checkbox.click();
-		
-		$('<div></div>').appendTo($c).height(200).css({
-			marginLeft: '4px'
-		}).slider({
-			orientation: "vertical",
-			value: val,
-			slide: function(e,ui){
-				$refBgImg.css('opacity', ui.value / 100);
-				document.cookie = 'refBgImg=' + ui.value;
-				
-				if(!ui.value || !$refBgImg.is(':visible'))
-					$checkbox.click();
-			}
-		});
-	}
 
 	//Debug console
 	var $form = $('#error-tabs form');
@@ -167,10 +97,10 @@ $.jsLoaded(function(){
 			$c.html() && $c.slideDown();
 		}
 	});
-	
+
 	if($.fn.button)
 		$('#logger_close').button('option', 'icons', {primary: 'ui-icon-power'}).button('option', 'text', false);
-	
+
 	if($('#euca-errors > *').size())
 		$('#logger_errors').click();
 });

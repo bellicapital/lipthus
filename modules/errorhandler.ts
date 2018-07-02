@@ -58,7 +58,7 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 		err.status = 500;
 
 	res.status(err.status);
-	console.log(LipthusLogger);
+
 	(req.logger || new LipthusLogger(req)).logError(err).then(() => {
 		console.error("Exception at " + req.originalUrl);
 		console.error(err);
