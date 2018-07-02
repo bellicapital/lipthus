@@ -1,9 +1,10 @@
 {
 	"name": "lipthus",
-	"version": "1.4.23",
+	"version": "1.4.21",
 	"private": true,
 	"scripts": {
 		"start": "node app",
+		"postinstall": "npm run build",
 		"build": "npm run tsc && npm run copyfiles && npm run checkserver",
 		"tsc": "tsc",
 		"copyfiles": "copyfiles package.json modules/*.js modules/**/*.js routes/*.js routes/**/*.js schemas/*.js dist",
