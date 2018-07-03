@@ -1,7 +1,6 @@
 "use strict";
 
 const fs = require('mz/fs');
-console.trace(888)
 
 class Angular2{
 
@@ -43,7 +42,7 @@ class Angular2{
 			.catch(next);
 	}
 
-	static serve(app, route, path){l(route, path)
+	static serve(app, route, path){
 		return new Angular2(app, route, path).init();
 	}
 }

@@ -1,7 +1,6 @@
 "use strict";
 
 const fs = require('mz/fs');
-console.trace(888)
 
 class Angular2{
 
