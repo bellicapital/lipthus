@@ -90,7 +90,7 @@ class Site extends events_1.EventEmitter {
         if (prod)
             file += '.prod';
         try {
-            ret = require(file);
+            ret = require(file).environment;
         }
         catch (err) {
             if (!process.env.port)

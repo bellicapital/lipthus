@@ -1,6 +1,6 @@
 {
 	"name": "lipthus",
-	"version": "1.4.23",
+	"version": "1.5.0",
 	"private": true,
 	"scripts": {
 		"start": "node app",

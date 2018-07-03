@@ -131,7 +131,7 @@ export class Site extends EventEmitter {
 			file += '.prod';
 
 		try {
-			ret = require(file);
+			ret = require(file).environment;
 		} catch (err) {
 			if (!process.env.port)
 				process.env.port = process.env.npm_package_config_port;

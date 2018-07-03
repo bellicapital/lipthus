@@ -50,7 +50,7 @@ module.exports = (app) => {
 
 	const useSocket = app.enabled('socket');
 	const environment = app.get('environment');
-	const target = environment.useSocket ? app.get('tmpDir') + app.db.name + '.sock' : environment.port;
+	const target = environment.useSocket ? '/tmp/' + app.site.key + '.sock' : environment.port;
 
 	useSocket && fs.existsSync(target) && fs.unlinkSync(target);
 
