@@ -25,3 +25,21 @@ export interface CssResponse {
 	map: string;
 	imports: Array<string>;
 }
+
+export interface DbParams {
+	name: string;
+	user?: string;
+	pass?: string;
+	host?: string;
+	options?: any;
+}
+
+export interface EnvironmentParams {
+
+	production: boolean;
+	db?: DbParams;
+	port?: number;
+	useSocket?: boolean;
+	mail?: any;
+	domain?: string;
+}

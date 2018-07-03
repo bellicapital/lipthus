@@ -1,6 +1,6 @@
 import {NextFunction} from "express";
 import {EventEmitter} from "events";
-import {Hooks} from "../interfaces/global.interface";
+import {DbParams, EnvironmentParams, Hooks} from "../interfaces/global.interface";
 import * as Debug from "debug";
 import {LipthusDb} from "./db";
 import * as express from "express";
@@ -19,7 +19,6 @@ import {Config} from "./config";
 import {canonicalhost} from '../lib/canonicalhost';
 import {LipthusLogger} from "./logger";
 import '../lib/global.l';
-import {EnvironmentParams} from "../interfaces/environment-params";
 
 const debug = Debug('site:site');
 const device = require('express-device');
@@ -65,7 +64,7 @@ export class Site extends EventEmitter {
 	public pages: { [s: string]: any; } = {};
 	public plugins: any = {};
 	public _lessVars: any;
-	public dbconf: any;
+	public dbconf: DbParams;
 	public dbs: any = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
@@ -107,14 +106,13 @@ export class Site extends EventEmitter {
 		if (this.tmpDir.substr(-1) !== '/')
 			this.tmpDir += '/';
 
-		// TODO: personalizar
-		this.secret = 'euca ' + this.conf.db;
-
 		this.app = express() as any;
 
-		this.db = new LipthusDb(this.dbParams(), this);
-		this.dbs[this.db.name] = this.db;
 		this.environment = this.getEnvironment();
+		this.dbconf = this.environment.db!;
+		this.db = new LipthusDb(this.dbconf, this);
+		this.dbs[this.db.name] = this.db;
+		this.secret = 'lipthus ' + this.dbconf.name;
 
 		this.config = new Config(this);
 
@@ -130,20 +128,19 @@ export class Site extends EventEmitter {
 		if (prod)
 			file += '.prod';
 
-		try {
-			ret = require(file).environment;
-		} catch (err) {
-			if (!process.env.port)
-				process.env.port = process.env.npm_package_config_port;
+		ret = require(file).environment;
 
-			ret = {
-				production: prod
-			};
+		if (fs.existsSync(this.dir + '/custom-conf')) {
+			const customConf = require(this.dir + '/custom-conf');
 
-			if (prod)
-				ret.useSocket = true;
-			else
-				ret.port = parseInt('' + process.env.port, 10);
+			if (customConf.db)
+				ret.db = customConf.db;
+
+			if (customConf.mail)
+				ret.mail = customConf.mail;
+
+			if (prod && customConf.domain)
+				ret.domain = customConf.domain;
 		}
 
 		return ret;
@@ -314,20 +311,6 @@ export class Site extends EventEmitter {
 			ret += ':' + this.environment.port;
 
 		return ret;
-	}
-
-	dbParams() {
-		this.dbconf = this.package.config.db || this.conf.db || {name: this.key};
-
-		if (typeof this.dbconf === 'string')
-			this.dbconf = {name: this.dbconf};
-
-		return {
-			name: this.dbconf.name,
-			user: this.dbconf.user,
-			pass: this.dbconf.pass,
-			host: this.dbconf.host || 'localhost'
-		};
 	}
 
 	sendMail(opt: any, throwError?: boolean) {

@@ -8,9 +8,10 @@ import { SearchModel } from "../schemas/search";
 import { UserModel } from "../schemas/user";
 import { SettingModel } from "../schemas/settings";
 import { NationalitiesModel } from "../schemas/nationalities";
+import { DbParams } from "../interfaces/global.interface";
 declare const LipthusDb_base: new () => any;
 export declare class LipthusDb extends LipthusDb_base {
-    params: any;
+    params: DbParams;
     site: Site;
     name: string;
     connected: boolean;
@@ -21,7 +22,7 @@ export declare class LipthusDb extends LipthusDb_base {
         [s: string]: any;
     };
     mongoose: typeof mongoose;
-    constructor(params: any, site: Site);
+    constructor(params: DbParams, site: Site);
     connect(): void;
     addLipthusSchemas(): any;
     onConnError(e: any): void;

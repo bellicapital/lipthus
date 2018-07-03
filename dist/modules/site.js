@@ -74,12 +74,12 @@ class Site extends events_1.EventEmitter {
         this.tmpDir = os.tmpdir();
         if (this.tmpDir.substr(-1) !== '/')
             this.tmpDir += '/';
-        // TODO: personalizar
-        this.secret = 'euca ' + this.conf.db;
         this.app = express();
-        this.db = new db_1.LipthusDb(this.dbParams(), this);
-        this.dbs[this.db.name] = this.db;
         this.environment = this.getEnvironment();
+        this.dbconf = this.environment.db;
+        this.db = new db_1.LipthusDb(this.dbconf, this);
+        this.dbs[this.db.name] = this.db;
+        this.secret = 'lipthus ' + this.dbconf.name;
         this.config = new config_1.Config(this);
         this.connect();
     }
@@ -89,19 +89,15 @@ class Site extends events_1.EventEmitter {
         let file = this.dir + '/environments/environment';
         if (prod)
             file += '.prod';
-        try {
-            ret = require(file).environment;
-        }
-        catch (err) {
-            if (!process.env.port)
-                process.env.port = process.env.npm_package_config_port;
-            ret = {
-                production: prod
-            };
-            if (prod)
-                ret.useSocket = true;
-            else
-                ret.port = parseInt('' + process.env.port, 10);
+        ret = require(file).environment;
+        if (fs.existsSync(this.dir + '/custom-conf')) {
+            const customConf = require(this.dir + '/custom-conf');
+            if (customConf.db)
+                ret.db = customConf.db;
+            if (customConf.mail)
+                ret.mail = customConf.mail;
+            if (prod && customConf.domain)
+                ret.domain = customConf.domain;
         }
         return ret;
     }
@@ -235,17 +231,6 @@ class Site extends events_1.EventEmitter {
         if (!omitePort && this.environment.port && !ret.match(/:/))
             ret += ':' + this.environment.port;
         return ret;
-    }
-    dbParams() {
-        this.dbconf = this.package.config.db || this.conf.db || { name: this.key };
-        if (typeof this.dbconf === 'string')
-            this.dbconf = { name: this.dbconf };
-        return {
-            name: this.dbconf.name,
-            user: this.dbconf.user,
-            pass: this.dbconf.pass,
-            host: this.dbconf.host || 'localhost'
-        };
     }
     sendMail(opt, throwError) {
         return this.db.mailsent

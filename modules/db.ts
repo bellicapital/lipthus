@@ -15,6 +15,7 @@ import {SearchModel} from "../schemas/search";
 import {UserModel} from "../schemas/user";
 import {SettingModel} from "../schemas/settings";
 import {NationalitiesModel} from "../schemas/nationalities";
+import {DbParams} from "../interfaces/global.interface";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -31,7 +32,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	public models: {[s: string]: any} = {};
 	public mongoose = mongoose;
 
-	constructor(public params: any, public site: Site) {
+	constructor(public params: DbParams, public site: Site) {
 		super();
 
 		this.name = params.name;

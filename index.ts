@@ -99,3 +99,4 @@ export {Tmp, TmpModel} from "./schemas/tmp";
 export {Search, SearchModel} from "./schemas/search";
 export {User, UserModel} from "./schemas/user";
 export {NationalitiesModel, Nationality} from './schemas/nationalities';
+export {EnvironmentParams, DbParams} from './interfaces/global.interface';

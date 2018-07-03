@@ -453,9 +453,9 @@ module.exports = function(app){
 
 			if(site.conf.urls){
 				if('function' === typeof site.conf.urls){
-					Object.keys(site.langs).forEach(code => {
-						site.langUrls[code] = site.conf.urls(code);
-					});
+					Object.keys(site.langs).forEach(code =>
+						site.langUrls[code] = site.conf.urls(code)
+					);
 				} else
 					site.langUrls = site.conf.urls;
 			} else if(site.config.lang_subdomains){

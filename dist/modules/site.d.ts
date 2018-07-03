@@ -1,11 +1,10 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
-import { Hooks } from "../interfaces/global.interface";
+import { DbParams, EnvironmentParams, Hooks } from "../interfaces/global.interface";
 import { LipthusDb } from "./db";
 import { LipthusApplication } from "../index";
 import { Config } from "./config";
 import '../lib/global.l';
-import { EnvironmentParams } from "../interfaces/environment-params";
 export declare class Site extends EventEmitter {
     dir: string;
     private _hooks;
@@ -30,7 +29,7 @@ export declare class Site extends EventEmitter {
     };
     plugins: any;
     _lessVars: any;
-    dbconf: any;
+    dbconf: DbParams;
     dbs: any;
     langUrls: {
         [s: string]: string;
@@ -56,12 +55,6 @@ export declare class Site extends EventEmitter {
     finish(): any;
     lessVars(): any;
     mainUrl(lang?: string, omitePort?: boolean): string;
-    dbParams(): {
-        name: any;
-        user: any;
-        pass: any;
-        host: any;
-    };
     sendMail(opt: any, throwError?: boolean): any;
     createApp(): void;
     setupApp(): any;
