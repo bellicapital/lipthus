@@ -1,10 +1,11 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { Hooks } from "../interfaces/global.interface";
-import { LipthusDb } from "../index";
+import { LipthusDb } from "./db";
 import { LipthusApplication } from "../index";
 import { Config } from "./config";
 import '../lib/global.l';
+import { EnvironmentParams } from "../interfaces/environment-params";
 export declare class Site extends EventEmitter {
     dir: string;
     private _hooks;
@@ -14,8 +15,7 @@ export declare class Site extends EventEmitter {
     cmsPackage: any;
     conf: any;
     key: string;
-    port: number;
-    tmpdir: string;
+    tmpDir: string;
     secret: string;
     mailer: any;
     config: Config;
@@ -38,12 +38,14 @@ export declare class Site extends EventEmitter {
     translator: any;
     store?: any;
     registerMethods: any;
+    environment: EnvironmentParams;
     private _notifier;
     /**
      * @deprecated
      */
     cmsDir: string;
     constructor(dir: string, _hooks?: Hooks);
+    getEnvironment(): EnvironmentParams;
     connect(): void;
     addDb(p: any, schemasDir?: string): Promise<LipthusDb>;
     init(): any;

@@ -3,7 +3,7 @@
 const fs = require('fs');
 const WebSocketServer = require('ws').Server;
 
-module.exports = (app, cb) => {
+module.exports = (app) => {
 	const config = app.site.config;
 	const secure = config.protocol === 'https';
 	let server;
@@ -39,7 +39,8 @@ module.exports = (app, cb) => {
 			cert: fs.readFileSync(ssl.cert)
 		}, app);
 	} else {
-		if(config.external_protocol === 'https' || app.get('conf').trustProxy)
+		// noinspection JSUnresolvedVariable
+		if (config.external_protocol === 'https' || app.get('conf').trustProxy)
 			app.enable('trust proxy');
 
 		server = require('http').createServer(app);
@@ -48,68 +49,69 @@ module.exports = (app, cb) => {
 	Object.defineProperty(app, 'server', {get: () =>  server});
 
 	const useSocket = app.enabled('socket');
-	const dest = useSocket ? '/tmp/' + app.db.name + '.sock' : app.get('port');
+	const environment = app.get('environment');
+	const target = environment.useSocket ? app.get('tmpDir') + app.db.name + '.sock' : environment.port;
 
-	useSocket && fs.existsSync(dest) && fs.unlinkSync(dest);
+	useSocket && fs.existsSync(target) && fs.unlinkSync(target);
 
-	server.listen(dest);
+	return new Promise((ok, ko) => {
+		server.listen(target);
 
-	server.on('error', e => console.error(e));
+		server.on('error', ko);
 
-	server.on('listening', () => {
-		console.log(
-			"  \u001b[36m info  -\u001b[0m Server listening on %s in %s mode. %s",
-			dest,
-			app.get('env'),
-			config.external_protocol + ':' + app.site.langUrl()
-		);
+		server.on('listening', () => {
+			console.log(
+				"  \u001b[36m info  -\u001b[0m Server listening on %s in %s mode. %s",
+				target,
+				app.get('env'),
+				config.external_protocol + ':' + app.site.langUrl()
+			);
 
-		useSocket && fs.existsSync(dest) && fs.chmodSync(dest, '777');
+			useSocket && fs.existsSync(target) && fs.chmodSync(target, '777');
 
-		const wss = new WebSocketServer({server: server});
+			const wss = new WebSocketServer({server: server});
 
-		wss.on("connection", (ws, req) =>{
-			ws.created = new Date();
-			ws.upgradeReq = req;
+			wss.on("connection", (ws, req) => {
+				ws.created = new Date();
+				ws.upgradeReq = req;
 
-			ws.json = json => ws.send(JSON.stringify(json));
+				ws.json = json => ws.send(JSON.stringify(json));
 
-			ws.json({info: 'ws connected'});
+				ws.json({info: 'ws connected'});
 
-			ws.on('message', m => {
-				try{
-					m = JSON.parse(m);
-					ws.emit('json', m);
-				} catch(e){}
-			});
-		});
-
-		wss.broadcast = (data, path) => {
-			wss.clients.forEach(client => {
-				if(!path || client.upgradeReq.url === path)
-					client.send(JSON.stringify(data), err => err && console.error(err));
-			});
-		};
-
-		wss.getClients = path => {
-			const ret = [];
-
-			wss.clients.forEach(client => {
-				if(client.upgradeReq.url.match(path))
-					ret.push(client);
+				ws.on('message', m => {
+					try {
+						m = JSON.parse(m);
+						ws.emit('json', m);
+					} catch (e) {
+					}
+				});
 			});
 
-			return ret;
-		};
+			wss.broadcast = (data, path) => {
+				wss.clients.forEach(client => {
+					if (!path || client.upgradeReq.url === path)
+						client.send(JSON.stringify(data), err => err && console.error(err));
+				});
+			};
 
-		Object.defineProperty(app, 'wss', {get: () => wss});
+			wss.getClients = path => {
+				const ret = [];
 
-		if(!cb)
-			return;
+				wss.clients.forEach(client => {
+					if (client.upgradeReq.url.match(path))
+						ret.push(client);
+				});
 
-		cb.call(server, {
-			port: app.get('port'),
-			mode: app.get('env')
+				return ret;
+			};
+
+			Object.defineProperty(app, 'wss', {get: () => wss});
+
+			return {
+				port: target,
+				mode: app.get('env')
+			};
 		});
 	});
 };

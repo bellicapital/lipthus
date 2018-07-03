@@ -2,7 +2,7 @@ import {NextFunction} from "express";
 import {EventEmitter} from "events";
 import {Hooks} from "../interfaces/global.interface";
 import * as Debug from "debug";
-import {LipthusDb} from "../index";
+import {LipthusDb} from "./db";
 import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
@@ -19,6 +19,8 @@ import {Config} from "./config";
 import {canonicalhost} from '../lib/canonicalhost';
 import {LipthusLogger} from "./logger";
 import '../lib/global.l';
+import {EnvironmentParams} from "../interfaces/environment-params";
+
 const debug = Debug('site:site');
 const device = require('express-device');
 const auth = require('./auth');
@@ -50,8 +52,7 @@ export class Site extends EventEmitter {
 	public cmsPackage: any;
 	public conf: any;
 	public key: string;
-	public port: number;
-	public tmpdir: string;
+	public tmpDir: string;
 	public secret: string;
 	public mailer: any;
 	public config: Config;
@@ -70,6 +71,7 @@ export class Site extends EventEmitter {
 	public translator: any;
 	public store?: any;
 	public registerMethods: any = {};
+	public environment: EnvironmentParams;
 	private _notifier: any;
 
 	/**
@@ -100,20 +102,10 @@ export class Site extends EventEmitter {
 		}
 
 		this.key = this.package.name;
+		this.tmpDir = os.tmpdir();
 
-		if (!process.env.port)
-			process.env.port =
-				(!isNaN(+process.argv[2]) && process.argv[2]) ||
-				this.conf.port ||
-				this.package.config.port ||
-				process.env.npm_package_config_port;
-
-		this.port = parseInt('' + process.env.port, 10);
-
-		this.tmpdir = os.tmpdir();
-
-		if (this.tmpdir.substr(-1) !== '/')
-			this.tmpdir += '/';
+		if (this.tmpDir.substr(-1) !== '/')
+			this.tmpDir += '/';
 
 		// TODO: personalizar
 		this.secret = 'euca ' + this.conf.db;
@@ -122,10 +114,39 @@ export class Site extends EventEmitter {
 
 		this.db = new LipthusDb(this.dbParams(), this);
 		this.dbs[this.db.name] = this.db;
+		this.environment = this.getEnvironment();
 
 		this.config = new Config(this);
 
 		this.connect();
+	}
+
+	getEnvironment() {
+		let ret: EnvironmentParams;
+		const prod = process.env.NODE_ENV === 'production';
+
+		let file = this.dir + '/environments/environment';
+
+		if (prod)
+			file += '.prod';
+
+		try {
+			ret = require(file);
+		} catch (err) {
+			if (!process.env.port)
+				process.env.port = process.env.npm_package_config_port;
+
+			ret = {
+				production: prod
+			};
+
+			if (prod)
+				ret.useSocket = true;
+			else
+				ret.port = parseInt('' + process.env.port, 10);
+		}
+
+		return ret;
 	}
 
 	connect() {
@@ -173,23 +194,13 @@ export class Site extends EventEmitter {
 
 				this.domainName = config.host;
 
-				if (!config.port) {
-					this.port = this.port || 3000;
-
-					this.db.config
-						.changeValue('port', this.port)
-						.catch(console.error.bind(console));
-				} else if (!this.port) {
-					this.port = config.port;
-				}
-
-				if (!this.domainName) {
-					this.domainName = 'localhost:' + this.port;
-
-					this.db.config
-						.changeValue('host', this.domainName)
-						.catch(console.error.bind(console));
-				}
+				// if (!this.domainName) {
+				// 	this.domainName = 'localhost:' + this.port;
+                //
+				// 	this.db.config
+				// 		.changeValue('host', this.domainName)
+				// 		.catch(console.error.bind(console));
+				// }
 
 				this.registerMethods = {
 					site: config.site_credentials,
@@ -214,7 +225,7 @@ export class Site extends EventEmitter {
 			.then(() => this.emit('ready'));
 	}
 
-	get notifier () {
+	get notifier() {
 		if (!this._notifier)
 			this._notifier = new Notifier(this);
 
@@ -222,7 +233,12 @@ export class Site extends EventEmitter {
 	}
 
 	hooks(hook: string, method: string) {
-		const fn = (this._hooks as any)[hook][method];
+		const hooks = (this._hooks as any);
+
+		if (!hooks[hook])
+			hooks[hook] = {};
+
+		const fn = hooks[hook][method];
 
 		if (!fn)
 			return Promise.resolve();
@@ -294,8 +310,8 @@ export class Site extends EventEmitter {
 	mainUrl(lang?: string, omitePort?: boolean) {
 		let ret = this.externalProtocol + ':' + this.langUrl(lang);
 
-		if (!omitePort && !ret.match(/:/))
-			ret += ':' + this.port;
+		if (!omitePort && this.environment.port && !ret.match(/:/))
+			ret += ':' + this.environment.port;
 
 		return ret;
 	}
@@ -341,7 +357,9 @@ export class Site extends EventEmitter {
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
 			.set('csrf', csrf)
-			.set('conf', this.conf);
+			.set('conf', this.conf)
+			.set('environment', this.environment)
+			.set('tmpDir', this.tmpDir);
 
 		app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 			if (req.url === '/__test__')
@@ -467,7 +485,6 @@ export class Site extends EventEmitter {
 
 	setupApp() {
 		const app = this.app;
-		const production = app.get('env') === 'production';
 
 		Object.defineProperties(app, {
 			db: {value: this.db},
@@ -476,10 +493,8 @@ export class Site extends EventEmitter {
 
 		Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
 
-		if (production)
+		if (this.environment.useSocket)
 			app.enable('socket');
-		else
-			app.set('port', this.port);
 
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);

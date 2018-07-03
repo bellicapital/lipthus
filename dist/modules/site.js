@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const Debug = require("debug");
-const index_1 = require("../index");
+const db_1 = require("./db");
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -71,23 +71,39 @@ class Site extends events_1.EventEmitter {
             }
         }
         this.key = this.package.name;
-        if (!process.env.port)
-            process.env.port =
-                (!isNaN(+process.argv[2]) && process.argv[2]) ||
-                    this.conf.port ||
-                    this.package.config.port ||
-                    process.env.npm_package_config_port;
-        this.port = parseInt('' + process.env.port, 10);
-        this.tmpdir = os.tmpdir();
-        if (this.tmpdir.substr(-1) !== '/')
-            this.tmpdir += '/';
+        this.tmpDir = os.tmpdir();
+        if (this.tmpDir.substr(-1) !== '/')
+            this.tmpDir += '/';
         // TODO: personalizar
         this.secret = 'euca ' + this.conf.db;
         this.app = express();
-        this.db = new index_1.LipthusDb(this.dbParams(), this);
+        this.db = new db_1.LipthusDb(this.dbParams(), this);
         this.dbs[this.db.name] = this.db;
+        this.environment = this.getEnvironment();
         this.config = new config_1.Config(this);
         this.connect();
+    }
+    getEnvironment() {
+        let ret;
+        const prod = process.env.NODE_ENV === 'production';
+        let file = this.dir + '/environments/environment';
+        if (prod)
+            file += '.prod';
+        try {
+            ret = require(file);
+        }
+        catch (err) {
+            if (!process.env.port)
+                process.env.port = process.env.npm_package_config_port;
+            ret = {
+                production: prod
+            };
+            if (prod)
+                ret.useSocket = true;
+            else
+                ret.port = parseInt('' + process.env.port, 10);
+        }
+        return ret;
     }
     connect() {
         this.db
@@ -103,7 +119,7 @@ class Site extends events_1.EventEmitter {
     // noinspection JSUnusedGlobalSymbols
     addDb(p, schemasDir) {
         return new Promise((ok, ko) => {
-            new index_1.LipthusDb(p, this)
+            new db_1.LipthusDb(p, this)
                 .on('error', ko)
                 .on('ready', (db) => {
                 this.dbs[p.name] = db;
@@ -125,21 +141,13 @@ class Site extends events_1.EventEmitter {
             if (config.static_host)
                 this.staticHost = this.externalProtocol + '://' + config.static_host;
             this.domainName = config.host;
-            if (!config.port) {
-                this.port = this.port || 3000;
-                this.db.config
-                    .changeValue('port', this.port)
-                    .catch(console.error.bind(console));
-            }
-            else if (!this.port) {
-                this.port = config.port;
-            }
-            if (!this.domainName) {
-                this.domainName = 'localhost:' + this.port;
-                this.db.config
-                    .changeValue('host', this.domainName)
-                    .catch(console.error.bind(console));
-            }
+            // if (!this.domainName) {
+            // 	this.domainName = 'localhost:' + this.port;
+            //
+            // 	this.db.config
+            // 		.changeValue('host', this.domainName)
+            // 		.catch(console.error.bind(console));
+            // }
             this.registerMethods = {
                 site: config.site_credentials,
                 google: config.googleApiKey && !!config.googleSecret,
@@ -168,7 +176,10 @@ class Site extends events_1.EventEmitter {
         return this._notifier;
     }
     hooks(hook, method) {
-        const fn = this._hooks[hook][method];
+        const hooks = this._hooks;
+        if (!hooks[hook])
+            hooks[hook] = {};
+        const fn = hooks[hook][method];
         if (!fn)
             return Promise.resolve();
         debug('site hook ' + hook + ' ' + method + ' ' + fn.name);
@@ -221,8 +232,8 @@ class Site extends events_1.EventEmitter {
     }
     mainUrl(lang, omitePort) {
         let ret = this.externalProtocol + ':' + this.langUrl(lang);
-        if (!omitePort && !ret.match(/:/))
-            ret += ':' + this.port;
+        if (!omitePort && this.environment.port && !ret.match(/:/))
+            ret += ':' + this.environment.port;
         return ret;
     }
     dbParams() {
@@ -258,7 +269,9 @@ class Site extends events_1.EventEmitter {
             .set('version', this.package.version)
             .set('x-powered-by', false)
             .set('csrf', csrf)
-            .set('conf', this.conf);
+            .set('conf', this.conf)
+            .set('environment', this.environment)
+            .set('tmpDir', this.tmpDir);
         app.use((req, res, next) => {
             if (req.url === '/__test__')
                 return res.send('Connection: ' + this.db.connected);
@@ -354,16 +367,13 @@ class Site extends events_1.EventEmitter {
     }
     setupApp() {
         const app = this.app;
-        const production = app.get('env') === 'production';
         Object.defineProperties(app, {
             db: { value: this.db },
             dbs: { value: this.dbs }
         });
         Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
-        if (production)
+        if (this.environment.useSocket)
             app.enable('socket');
-        else
-            app.set('port', this.port);
         app.set('protocol', this.protocol);
         app.set('externalProtocol', this.externalProtocol);
         app.use(require('./g-page-speed'));
