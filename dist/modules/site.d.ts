@@ -63,7 +63,7 @@ export declare class Site extends EventEmitter {
     setRoutes(): any;
     loadLocalRoutes(): any;
     routeNotFound(): void;
-    listen(): Promise<{}>;
+    listen(): any;
     langUrl(langcode?: string): string;
     translate(src: string, from: string, to: string, cb: (err: Error, r: any) => void, srclog: string): void;
 }

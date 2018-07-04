@@ -130,7 +130,7 @@ export class Site extends EventEmitter {
 
 		ret = require(file).environment;
 
-		if (fs.existsSync(this.dir + '/custom-conf')) {
+		if (fs.existsSync(this.dir + '/custom-conf.json')) {
 			const customConf = require(this.dir + '/custom-conf');
 
 			if (customConf.db)
@@ -588,13 +588,10 @@ export class Site extends EventEmitter {
 	}
 
 	listen() {
-		return new Promise(ok => {
-			listen(this.app, (r: any) => {
+		return listen(this.app)
+			.then((r: any) => {
 				this.emit('listen', r);
-
-				ok();
 			});
-		});
 	}
 
 	langUrl(langcode?: string) {

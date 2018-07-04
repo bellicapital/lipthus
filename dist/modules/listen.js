@@ -108,10 +108,10 @@ module.exports = (app) => {
 
 			Object.defineProperty(app, 'wss', {get: () => wss});
 
-			return {
+			ok({
 				port: target,
 				mode: app.get('env')
-			};
+			});
 		});
 	});
 };

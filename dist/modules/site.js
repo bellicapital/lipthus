@@ -90,7 +90,7 @@ class Site extends events_1.EventEmitter {
         if (prod)
             file += '.prod';
         ret = require(file).environment;
-        if (fs.existsSync(this.dir + '/custom-conf')) {
+        if (fs.existsSync(this.dir + '/custom-conf.json')) {
             const customConf = require(this.dir + '/custom-conf');
             if (customConf.db)
                 ret.db = customConf.db;
@@ -442,11 +442,10 @@ class Site extends events_1.EventEmitter {
         });
     }
     listen() {
-        return new Promise(ok => {
-            listen(this.app, (r) => {
-                this.emit('listen', r);
-                ok();
-            });
+        return listen(this.app)
+            .then((r) => {
+            l(222);
+            this.emit('listen', r);
         });
     }
     langUrl(langcode) {
