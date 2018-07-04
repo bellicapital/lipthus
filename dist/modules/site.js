@@ -444,7 +444,6 @@ class Site extends events_1.EventEmitter {
     listen() {
         return listen(this.app)
             .then((r) => {
-            l(222);
             this.emit('listen', r);
         });
     }
