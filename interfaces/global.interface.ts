@@ -39,7 +39,7 @@ export interface EnvironmentParams {
 	production: boolean;
 	db?: DbParams;
 	port?: number;
-	useSocket?: boolean;
+	socket?: boolean;
 	mail?: any;
 	domain?: string;
 }

@@ -48,11 +48,10 @@ module.exports = (app) => {
 
 	Object.defineProperty(app, 'server', {get: () =>  server});
 
-	const useSocket = app.enabled('socket');
 	const environment = app.get('environment');
-	const target = environment.useSocket ? '/tmp/' + app.site.key + '.sock' : environment.port;
+	const target = environment.socket ? '/tmp/' + environment.socket + '.sock' : environment.port;
 
-	useSocket && fs.existsSync(target) && fs.unlinkSync(target);
+	environment.socket && fs.existsSync(target) && fs.unlinkSync(target);
 
 	return new Promise((ok, ko) => {
 		server.listen(target);
@@ -67,7 +66,7 @@ module.exports = (app) => {
 				config.external_protocol + ':' + app.site.langUrl()
 			);
 
-			useSocket && fs.existsSync(target) && fs.chmodSync(target, '777');
+			environment.socket && fs.existsSync(target) && fs.chmodSync(target, '777');
 
 			const wss = new WebSocketServer({server: server});
 

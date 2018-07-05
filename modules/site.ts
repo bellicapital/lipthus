@@ -119,8 +119,13 @@ export class Site extends EventEmitter {
 		this.connect();
 	}
 
-	getEnvironment() {
-		let ret: EnvironmentParams;
+	getEnvironment(): EnvironmentParams {
+		if (fs.existsSync(this.dir + '/custom-conf.json')) {
+			const ret = require(this.dir + '/custom-conf');
+
+			return ret.include ? require(this.dir + '/' + ret.include) : ret;
+		}
+
 		const prod = process.env.NODE_ENV === 'production';
 
 		let file = this.dir + '/environments/environment';
@@ -128,22 +133,7 @@ export class Site extends EventEmitter {
 		if (prod)
 			file += '.prod';
 
-		ret = require(file).environment;
-
-		if (fs.existsSync(this.dir + '/custom-conf.json')) {
-			const customConf = require(this.dir + '/custom-conf');
-
-			if (customConf.db)
-				ret.db = customConf.db;
-
-			if (customConf.mail)
-				ret.mail = customConf.mail;
-
-			if (prod && customConf.domain)
-				ret.domain = customConf.domain;
-		}
-
-		return ret;
+		return require(file).environment;
 	}
 
 	connect() {
@@ -475,9 +465,6 @@ export class Site extends EventEmitter {
 		});
 
 		Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
-
-		if (this.environment.useSocket)
-			app.enable('socket');
 
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);
