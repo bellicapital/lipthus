@@ -1,8 +1,11 @@
 /// <reference types="node" />
+import { KeyString } from "../interfaces/global.interface";
 import { BinDataFile, DbfInfo, DbfInfoParams } from './bdf';
 export declare class BinDataImage extends BinDataFile {
     width: number;
     height: number;
+    alt: KeyString;
+    title: KeyString;
     constructor(data: any, colRef?: any);
     info(width?: number, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean): any;
     toJSON(): any;
@@ -36,12 +39,16 @@ export interface DbfImageInfoParams extends DbfInfoParams {
     height: number;
     naturalWidth: number;
     naturalHeight: number;
+    alt: KeyString;
+    title: KeyString;
 }
 export declare class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
     width: number;
     height: number;
     naturalWidth: number;
     naturalHeight: number;
+    alt: KeyString;
+    title: KeyString;
     constructor(p: DbfImageInfoParams);
     getThumb(width: number, height: number, crop: boolean, nwm?: boolean, enlarge?: boolean, ext?: string): DbfThumb;
     uriName(ext: string): string;
@@ -54,6 +61,8 @@ export declare class DbfThumb {
     originalUri?: string;
     originalWidth: number;
     originalHeight: number;
+    alt: KeyString;
+    title: KeyString;
     constructor(values: any);
     toHtml(): string;
 }

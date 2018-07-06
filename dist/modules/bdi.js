@@ -13,6 +13,8 @@ class BinDataImage extends bdf_1.BinDataFile {
         super(data, colRef);
         this.width = data.width;
         this.height = data.height;
+        this.alt = data.alt || {};
+        this.title = data.title || {};
     }
     info(width, height, crop, enlarge, nwm) {
         const ret = new DbfImageInfo({
@@ -26,6 +28,8 @@ class BinDataImage extends bdf_1.BinDataFile {
             weight: this.weight,
             size: this.size,
             mtime: this.mtime,
+            alt: this.alt,
+            title: this.title,
             md5: this.md5,
             key: this.getKey()
         });
@@ -57,6 +61,10 @@ class BinDataImage extends bdf_1.BinDataFile {
         const ret = super.info();
         ret.width = this.width;
         ret.height = this.height;
+        if (this.alt)
+            ret.alt = this.alt;
+        if (this.title)
+            ret.title = this.title;
         return ret;
     }
     getDimentions() {
@@ -229,6 +237,8 @@ class DbfImageInfo extends bdf_1.DbfInfo {
         this.height = p.height;
         this.naturalWidth = p.naturalWidth;
         this.naturalHeight = p.naturalHeight;
+        this.alt = p.alt || {};
+        this.title = p.title || {};
     }
     getThumb(width, height, crop, nwm = false, enlarge = false, ext = '.jpg') {
         const ret = new DbfThumb({
@@ -236,6 +246,8 @@ class DbfImageInfo extends bdf_1.DbfInfo {
             name: this.uriName(ext),
             width: this.width,
             height: this.height,
+            alt: this.alt,
+            title: this.title,
             originalWidth: this.width,
             originalHeight: this.height
         });
@@ -275,6 +287,8 @@ class DbfThumb {
         this.height = values.height;
         this.originalWidth = values.originalWidth;
         this.originalHeight = values.originalHeight;
+        this.alt = values.alt;
+        this.title = values.title;
     }
     toHtml() {
         return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';

@@ -1,3 +1,5 @@
+import {KeyString} from "../interfaces/global.interface";
+
 const Image = require('./image');
 const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 import {BinDataFile, DbfInfo, DbfInfoParams} from './bdf';
@@ -13,12 +15,16 @@ export class BinDataImage extends BinDataFile {
 
 	public width: number;
 	public height: number;
+	public alt: KeyString;
+	public title: KeyString;
 
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
 
 		this.width = data.width;
 		this.height = data.height;
+		this.alt = data.alt || {};
+		this.title = data.title || {};
 	}
 
 	info(width?: number, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -33,6 +39,8 @@ export class BinDataImage extends BinDataFile {
 			weight: this.weight,
 			size: this.size,
 			mtime: this.mtime,
+			alt: this.alt,
+			title: this.title,
 			md5: this.md5,
 			key: this.getKey()
 		});
@@ -74,6 +82,12 @@ export class BinDataImage extends BinDataFile {
 
 		ret.width = this.width;
 		ret.height = this.height;
+
+		if (this.alt)
+			ret.alt = this.alt;
+
+		if (this.title)
+			ret.title = this.title;
 
 		return ret;
 	}
@@ -290,6 +304,8 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	height: number;
 	naturalWidth: number;
 	naturalHeight: number;
+	alt: KeyString;
+	title: KeyString;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -298,6 +314,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	height: number;
 	naturalWidth: number;
 	naturalHeight: number;
+	alt: KeyString;
+	title: KeyString;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
@@ -306,6 +324,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		this.height = p.height;
 		this.naturalWidth = p.naturalWidth;
 		this.naturalHeight = p.naturalHeight;
+		this.alt = p.alt || {};
+		this.title = p.title || {};
 	}
 
 	getThumb(width: number, height: number, crop: boolean, nwm = false, enlarge = false, ext = '.jpg') {
@@ -314,6 +334,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 			name: this.uriName(ext),
 			width: this.width,
 			height: this.height,
+			alt: this.alt,
+			title: this.title,
 			originalWidth: this.width,
 			originalHeight: this.height
 		});
@@ -362,6 +384,8 @@ export class DbfThumb {
 	originalUri?: string;
 	originalWidth: number;
 	originalHeight: number;
+	alt: KeyString;
+	title: KeyString;
 
 	constructor(values: any) {
 		this.uri = values.uri;
@@ -370,6 +394,8 @@ export class DbfThumb {
 		this.height = values.height;
 		this.originalWidth = values.originalWidth;
 		this.originalHeight = values.originalHeight;
+		this.alt = values.alt;
+		this.title = values.title;
 	}
 
 	toHtml() {
