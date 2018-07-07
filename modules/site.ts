@@ -180,8 +180,6 @@ export class Site extends EventEmitter {
 				if (config.static_host)
 					this.staticHost = this.externalProtocol + '://' + config.static_host;
 
-				this.domainName = config.host;
-
 				this.registerMethods = {
 					site: config.site_credentials,
 					google: config.googleApiKey && !!config.googleSecret,
