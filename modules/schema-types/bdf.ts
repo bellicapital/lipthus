@@ -3,10 +3,11 @@ import {BinDataFile} from "../bdf";
 
 
 export class Bdf extends SchemaType {
-	
-	public collection?: string;
-	public id?: string;
-	
+
+	public collection!: string;
+	public id!: string;
+	public dbname!: string;
+
 	constructor(public path: string, public options: any) {
 		super(path, options);
 	}
@@ -15,28 +16,29 @@ export class Bdf extends SchemaType {
 	checkRequired(val: any) {
 		return null !== val;
 	}
-	
-	
+
+
 	// noinspection JSUnusedLocalSymbols
 	cast(val: any, scope?: any, init?: any) {
 		if (null === val) return val;
 		if ('object' !== typeof val) return null;
-		
+
 		if (val instanceof BinDataFile)
 			return val;
-		
+
 		if (val.MongoBinData) {
 			return BinDataFile.fromMongo(val, {
+				db: this.dbname,
 				collection: this.collection,
 				id: this.id,
 				field: this.path
 			});
 		}
-		
+
 		throw new (SchemaType as any).CastError('Bdf', val);
 	}
-	
-	
+
+
 	//noinspection JSMethodCanBeStatic
 	get $conditionalHandlers() {
 		return {
@@ -52,7 +54,7 @@ export class Bdf extends SchemaType {
 			, '$exists': handleExists
 		};
 	}
-	
+
 	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
@@ -63,10 +65,10 @@ export class Bdf extends SchemaType {
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
 			const handler = (this.$conditionalHandlers as any)[$conditional];
-			
+
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with Bdf Type.");
-			
+
 			return handler.call(this, value);
 		} else {
 			return this.cast($conditional);

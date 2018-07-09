@@ -65,7 +65,17 @@ export class BinDataFile {
 	}
 
 	getPath() {
-		return this.colRef ? '/bdf/' + this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/' : null;
+		if (!this.colRef)
+			return;
+
+		let ret = '/bdf/';
+
+		if (this.colRef.db)
+			ret += this.colRef.db + '.';
+
+		ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
+
+		return ret;
 	}
 
 	getUri() {
@@ -111,7 +121,7 @@ export class BinDataFile {
 		return 'data:' + this.contentType + ';base64,' + this.MongoBinData.toString('base64');
 	}
 
-	static fromMongo(mongo: any, colRef?: any) {
+	static fromMongo(mongo: any, colRef?: ColRef) {
 		if (!mongo)
 			return mongo;
 
@@ -257,7 +267,7 @@ export class BinDataFile {
 }
 
 export interface DbfInfoParams {
-	path: string | null;
+	path?: string;
 	name: string;
 	md5?: string;
 	contentType: string;
@@ -270,7 +280,7 @@ export interface DbfInfoParams {
 
 export class DbfInfo implements DbfInfoParams {
 
-	path: string | null;
+	path?: string;
 	name: string;
 	md5?: string;
 	contentType: string;
@@ -294,6 +304,7 @@ export class DbfInfo implements DbfInfoParams {
 }
 
 import {BinDataImage} from './bdi';
+import {ColRef} from "../interfaces/global.interface";
 
 export default BinDataFile;
 

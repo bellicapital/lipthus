@@ -1,5 +1,6 @@
 import {IRouterHandler, IRouterMatcher, NextFunction} from "express-serve-static-core";
 import {LipthusRequest, LipthusResponse} from "../index";
+import {Types} from "mongoose";
 
 export type RequestHandler = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
 export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
@@ -44,4 +45,11 @@ export interface EnvironmentParams {
 	port?: number;
 	socket?: string;
 	mail?: any;
+}
+
+export interface ColRef {
+	db: string;
+	collection: string;
+	id: Types.ObjectId | string;
+	field: string;
 }
