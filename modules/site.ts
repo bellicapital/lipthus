@@ -110,8 +110,8 @@ export class Site extends EventEmitter {
 
 		this.environment = this.getEnvironment();
 		this.domainName = this.environment.domain;
-		this.protocol = this.environment.protocol;
-		this.externalProtocol = this.environment.externalProtocol;
+		this.protocol = this.environment.protocol || 'http';
+		this.externalProtocol = this.environment.externalProtocol || 'https';
 		this.dbconf = this.environment.db!;
 		this.db = new LipthusDb(this.dbconf, this);
 		this.dbs[this.db.name] = this.db;
@@ -175,9 +175,6 @@ export class Site extends EventEmitter {
 		return this.config.load()
 			.then(() => {
 				const config = this.config;
-
-				this.protocol = config.protocol;
-				this.externalProtocol = process.env.NODE_ENV !== 'development' ? config.external_protocol : 'http';
 
 				if (config.static_host)
 					this.staticHost = this.externalProtocol + '://' + config.static_host;

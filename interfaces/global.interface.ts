@@ -39,8 +39,8 @@ export interface EnvironmentParams {
 	production: boolean;
 	db: DbParams;
 	domain: string;
-	protocol: string;
-	externalProtocol: string;
+	protocol?: string;
+	externalProtocol?: string;
 	port?: number;
 	socket?: string;
 	mail?: any;
