@@ -55,8 +55,8 @@ export class Site extends EventEmitter {
 	public secret: string;
 	public mailer: any;
 	public config: Config;
-	public protocol = 'http';
-	public externalProtocol = 'https';
+	public protocol: string;
+	public externalProtocol: string;
 	public staticHost = '';
 	public domainName: string;
 	public db: LipthusDb;
@@ -110,6 +110,8 @@ export class Site extends EventEmitter {
 
 		this.environment = this.getEnvironment();
 		this.domainName = this.environment.domain;
+		this.protocol = this.environment.protocol;
+		this.externalProtocol = this.environment.externalProtocol;
 		this.dbconf = this.environment.db!;
 		this.db = new LipthusDb(this.dbconf, this);
 		this.dbs[this.db.name] = this.db;

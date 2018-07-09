@@ -4,8 +4,7 @@ const fs = require('fs');
 const WebSocketServer = require('ws').Server;
 
 module.exports = (app) => {
-	const config = app.site.config;
-	const secure = config.protocol === 'https';
+	const secure = app.site.protocol === 'https';
 	let server;
 
 	if(secure){
@@ -40,7 +39,7 @@ module.exports = (app) => {
 		}, app);
 	} else {
 		// noinspection JSUnresolvedVariable
-		if (config.external_protocol === 'https' || app.get('conf').trustProxy)
+		if (app.site.externalProtocol === 'https' || app.get('conf').trustProxy)
 			app.enable('trust proxy');
 
 		server = require('http').createServer(app);
@@ -63,7 +62,7 @@ module.exports = (app) => {
 				"  \u001b[36m info  -\u001b[0m Server listening on %s in %s mode. %s",
 				target,
 				app.get('env'),
-				config.external_protocol + ':' + app.site.langUrl()
+				app.site.externalProtocol + ':' + app.site.langUrl()
 			);
 
 			environment.socket && fs.existsSync(target) && fs.chmodSync(target, '777');

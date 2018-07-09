@@ -480,28 +480,6 @@
 				"_MD_AM_DEFAULTTZDSC",
 				"timezone"
 			],
-			"protocol": [
-				"string",
-				"Protocol",
-				"http",
-				"",
-				"radio",
-				{
-					"http": "http",
-					"https": "https"
-				}
-			],
-			"external_protocol": [
-				"string",
-				"External Protocol",
-				"https",
-				"Implica trust proxy",
-				"radio",
-				{
-					"http": "http",
-					"https": "https"
-				}
-			],
 			"ssl_pages": [
 				"page",
 				"Ssl pages",
