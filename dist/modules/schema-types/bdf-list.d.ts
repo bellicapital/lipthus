@@ -15,6 +15,7 @@ export declare class BdfList extends SchemaType {
     collection: string;
     id: string;
     path?: string;
+    dbname: string;
     constructor(key: string, options: any);
     checkRequired(val: any): boolean;
     /**

@@ -55,6 +55,7 @@ export class BdfList extends SchemaType {
 	collection!: string;
 	id!: string;
 	path?: string;
+	public dbname!: string;
 
 	constructor(key: string, options: any) {
 		super(key, options);
@@ -95,6 +96,7 @@ export class BdfList extends SchemaType {
 					retTmp[i] = val[i];
 				else
 					retTmp[i] = BinDataFile.fromMongo(val[i], {
+						db: this.dbname,
 						collection: this.collection,
 						id: this.id,
 						field: this.path + '.' + i
