@@ -69,7 +69,6 @@ class BdfList extends mongoose_1.SchemaType {
         Object.keys(val).forEach(i => {
             if (val[i].MongoBinData) {
                 w.push(i);
-                l(val[i] instanceof bdf_1.BinDataFile);
                 if (val[i] instanceof bdf_1.BinDataFile)
                     retTmp[i] = val[i];
                 else
