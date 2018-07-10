@@ -52,8 +52,8 @@ export class BinDataFileList {
 
 export class BdfList extends SchemaType {
 
-	collection?: string;
-	id?: string;
+	collection!: string;
+	id!: string;
 	path?: string;
 
 	constructor(key: string, options: any) {

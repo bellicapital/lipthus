@@ -201,7 +201,8 @@ export class GridFSFile {
 					this.thumb = BinDataFile.fromMongo(this.thumb, {
 						collection: this.gridStore.root + '.files',
 						id: this._id,
-						field: 'thumb'
+						field: 'thumb',
+						db: this.databaseName
 					});
 
 				return this.getMetadata()

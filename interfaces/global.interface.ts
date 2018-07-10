@@ -48,7 +48,7 @@ export interface EnvironmentParams {
 }
 
 export interface ColRef {
-	db: string;
+	db?: string;
 	collection: string;
 	id: Types.ObjectId | string;
 	field: string;
