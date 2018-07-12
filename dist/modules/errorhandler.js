@@ -16,10 +16,10 @@ const getView = (status, req) => {
 };
 function errorHandler(err_, req, res, next) {
     let err;
-    if (!(err_ instanceof Error) && !isNaN(+err_)) {
-        const status = parseInt(err_, 10);
+    if (!(err_ instanceof Error)) {
         err = new Error();
-        err.status = status;
+        if (!isNaN(+err_))
+            err.status = parseInt(err_, 10);
     }
     else
         err = err_;

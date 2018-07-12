@@ -24,10 +24,11 @@ const getView = (status: string, req: LipthusRequest) => {
 export function errorHandler(err_: Error | string, req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	let err: StatusError;
 
-	if (!(err_ instanceof Error) && !isNaN(+err_)) {
-		const status = parseInt(err_, 10);
+	if (!(err_ instanceof Error)) {
 		err = new Error() as StatusError;
-		err.status = status;
+
+		if (!isNaN(+err_))
+			err.status = parseInt(err_, 10);
 	} else
 		err = err_ as StatusError;
 
