@@ -164,7 +164,7 @@ class ReqFile {
 		let namespace;
 
 		return this.req.db.fs.fromFile(this.file)
-			.then(gfile => this.req.db.fs.get(gfile.fileId).load())
+			.then(gFile => this.req.db.fs.get(gFile.fileId).load())
 			.then(colFile => {
 				gsFile = colFile;
 
@@ -172,7 +172,7 @@ class ReqFile {
 					case 'video':
 						fileOptions.folder = 'videos';
 						break;
-					case'audio':
+					case 'audio':
 						fileOptions.folder = 'audios';
 						break;
 					default:

@@ -86,7 +86,7 @@ module.exports = function(req, res, next){
 			if(GridFSFile.videoExt.indexOf(ext) === -1 || file.folder !== 'videos')
 				return file.send(req, res);
 
-			return file.getVideoVersion(ext, !!req.query.force)
+			return file.getVideoVersion(ext, req.query.force)
 				.then(version => version.send(req, res))
 				.catch(err => {
 					if(err.code === 1)//version processing

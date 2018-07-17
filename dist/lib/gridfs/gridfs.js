@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const fs = require("fs");
-const util = require("util");
 const gridfs_file_1 = require("./gridfs-file");
-const GridStore = require('mongodb').GridStore;
+const path = require('path');
+const request = require('request');
 const Mime = require('mime');
+// const multimedia = require('multimedia-helper');
+const { GridStore } = require('mongodb');
 class GridFS {
     constructor(db, ns = GridStore.DEFAULT_ROOT_COLLECTION) {
         this.db = db;
@@ -56,11 +58,11 @@ class GridFS {
     fromFile(file) {
         return new Promise((ok, ko) => {
             if (typeof file === 'string') {
-                const path = file;
-                file = util.inspect(fs.statSync(file));
-                file.path = path;
-                file.type = Mime.lookup(path);
-                file.fileName = path.basename(path);
+                const filePath = file;
+                file = fs.statSync(file);
+                file.path = filePath;
+                file.type = Mime.getType(filePath);
+                file.fileName = path.basename(filePath);
             }
             else if (!file.fileName)
                 file.fileName = file.originalname;
@@ -75,6 +77,17 @@ class GridFS {
                     ok(doc);
                 });
             });
+        });
+    }
+    fromUrl(url) {
+        const fn = path.basename(url);
+        const tmp = '/tmp/' + fn;
+        return new Promise((ok, ko) => {
+            request
+                .get(url)
+                .on('end', () => this.fromFile(tmp).then(ok, ko))
+                .on('error', ko)
+                .pipe(fs.createWriteStream(tmp));
         });
     }
 }
