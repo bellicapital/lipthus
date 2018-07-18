@@ -220,16 +220,13 @@ export class BinDataImage extends BinDataFile {
 
 				gmi.autoOrient();
 
-				opt.maxwidth = opt.maxwidth || 960;
-				opt.maxheight = opt.maxheight || 960;
-
 				if (this.width > opt.maxwidth || this.height > opt.maxheight) {
 					const s = Math.min(opt.maxwidth / this.width, opt.maxheight / this.height);
 
-					this.width = s * this.width;
-					this.height = s * this.height;
+					this.width = Math.round(s * this.width);
+					this.height = Math.round(s * this.height);
 
-					debug('resize image');
+					debug('resize image. Max width: ' + opt.maxwidth + '. Max height: ' + opt.maxheight + '. New width: ' + this.width + '. New height: ' + this.height);
 
 					gmi.resize(this.width, this.height);
 				}
