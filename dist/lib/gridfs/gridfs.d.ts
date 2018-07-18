@@ -12,6 +12,7 @@ export declare class GridFS {
     collection(cb: any): void;
     find(): void;
     findOneField(id: string, field: string): Promise<{}>;
-    fromFile(file: string | any): Promise<any>;
-    fromUrl(url: string): Promise<{}>;
+    fromFile(file: string | any, fileOptions?: any): Promise<any>;
+    fromUrl(url: string, fileOptions?: any): Promise<{}>;
+    static getMultimedia(filePath: string): Promise<any>;
 }

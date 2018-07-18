@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const fs = require("fs");
 const gridfs_file_1 = require("./gridfs-file");
+const debug0 = require("debug");
+const debug = debug0('site:gridfs');
 const path = require('path');
 const request = require('request');
 const Mime = require('mime');
-// const multimedia = require('multimedia-helper');
+const multimedia = require('multimedia-helper');
 const { GridStore } = require('mongodb');
 class GridFS {
     constructor(db, ns = GridStore.DEFAULT_ROOT_COLLECTION) {
@@ -55,7 +57,7 @@ class GridFS {
             });
         });
     }
-    fromFile(file) {
+    fromFile(file, fileOptions = {}) {
         return new Promise((ok, ko) => {
             if (typeof file === 'string') {
                 const filePath = file;
@@ -64,31 +66,61 @@ class GridFS {
                 file.type = Mime.getType(filePath);
                 file.fileName = path.basename(filePath);
             }
-            else if (!file.fileName)
-                file.fileName = file.originalname;
-            const id = new mongoose_1.Types.ObjectId();
-            const gs = new GridStore(this.db, id, file.fileName, "w", { root: this.ns, content_type: file.type || file.mimetype });
-            gs.open((err, gs2) => {
-                if (err)
-                    return ko(err);
-                gs2.writeFile(file.path, (err2, doc) => {
-                    if (err2)
-                        return ko(err2);
-                    ok(doc);
+            else {
+                if (!file.fileName)
+                    file.fileName = file.originalname;
+                file.type = file.type || file.mimetype;
+            }
+            GridFS.getMultimedia(file.path)
+                .then(metadata => {
+                if (metadata) {
+                    file.type = metadata.contentType;
+                    fileOptions.metadata = metadata;
+                    Object.assign(fileOptions, metadata);
+                }
+                const type = file.type.split('/');
+                switch (type[0]) {
+                    case 'video':
+                        fileOptions.folder = 'videos';
+                        break;
+                    case 'audio':
+                        fileOptions.folder = 'audios';
+                        break;
+                    default:
+                        return;
+                }
+                const id = new mongoose_1.Types.ObjectId();
+                const gs = new GridStore(this.db, id, file.fileName, "w", { root: this.ns, content_type: file.type });
+                gs.open((err, gs2) => {
+                    if (err)
+                        return ko(err);
+                    gs2.writeFile(file.path, (err2, doc) => {
+                        if (err2)
+                            return ko(err2);
+                        this.get(doc.fileId).load()
+                            .then(gsFile => gsFile.update(fileOptions))
+                            .then(ok)
+                            .catch(ko);
+                    });
                 });
             });
         });
     }
-    fromUrl(url) {
+    fromUrl(url, fileOptions = {}) {
         const fn = path.basename(url);
         const tmp = '/tmp/' + fn;
+        debug('Fetching ' + url);
         return new Promise((ok, ko) => {
             request
                 .get(url)
-                .on('end', () => this.fromFile(tmp).then(ok, ko))
+                .on('end', () => this.fromFile(tmp, fileOptions).then(ok, ko))
                 .on('error', ko)
                 .pipe(fs.createWriteStream(tmp));
         });
+    }
+    static getMultimedia(filePath) {
+        return multimedia(filePath)
+            .catch((err) => debug(err));
     }
 }
 exports.GridFS = GridFS;

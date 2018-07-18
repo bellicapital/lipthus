@@ -3,7 +3,6 @@
 const fs = require('fs');
 const mongoose = require('mongoose');
 const {BinDataFile} = require('../modules');
-const multimedia = require('multimedia-helper');
 const debug = require('debug')('site:upload');
 
 module.exports = function(req, res){
@@ -163,31 +162,11 @@ class ReqFile {
 		let gsFile;
 		let namespace;
 
-		return this.req.db.fs.fromFile(this.file)
+		return this.req.db.fs.fromFile(this.file, fileOptions)
 			.then(gFile => this.req.db.fs.get(gFile.fileId).load())
-			.then(colFile => {
-				gsFile = colFile;
+			.then(colFile => gsFile = colFile)
 
-				switch (this.type[0]) {
-					case 'video':
-						fileOptions.folder = 'videos';
-						break;
-					case 'audio':
-						fileOptions.folder = 'audios';
-						break;
-					default:
-						return;
-				}
-
-				return multimedia(this.file.path)
-					.then(metadata => {
-						if (metadata) {
-							fileOptions.metadata = metadata;
-							Object.assign(fileOptions, metadata);
-						}
-					});
-			})
-			.then(() => gsFile.update(fileOptions))
+			// reference to item
 			.then(() => {
 				const update = {$set: {}};
 
