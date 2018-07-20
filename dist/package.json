@@ -74,7 +74,7 @@
 		"imagemin-svgo": "^6.0.0",
 		"jj-proxy-cache": "^1.0.11",
 		"langnames": "^1.0.1",
-		"less": "3.0.4",
+		"less": "^3.7.1",
 		"local-lang-names": "^1.0.0",
 		"md5": "^2.2.1",
 		"merge-descriptors": "^1.0.1",
