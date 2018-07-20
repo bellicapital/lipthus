@@ -1,48 +1,53 @@
-"use strict";
+import {LipthusSchema} from "../lib";
+import {LipthusRequest} from "../index";
+import {KeyString} from "../interfaces/global.interface";
 
 const mongoose = require('mongoose');
 const DBRef = mongoose.mongo.DBRef;
 const ipLocation = require('../modules/geo').ipLocation;
 const md5 = require('md5');
 
+export const name = "comment";
 
-module.exports = function comment(Schema) {
-	const Answer = new Schema({
+// noinspection JSUnusedGlobalSymbols
+export function getSchema() {
+
+	const Answer = new LipthusSchema({
 		active: Boolean,
 		name: String,
 		created: {type: Date, default: Date.now},
-		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
+		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
 		text: String,
 		iplocation: {}
 	});
 
-	const s = new Schema({
+	const s = new LipthusSchema({
 		active: {type: Boolean, index: true},
 		refused: {type: Boolean, index: true},
 		ref: DBRef.schema,
 		name: String,
-		email: String,//{type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
+		email: String, // {type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
 		text: String,
 		iplocation: {
-//			ip: String,
-//			area_code: String,
-//			dma_code: String,
-//			longitude: Number,
-//			latitude: Number,
-//			postal_code: String,
-//			city: String,
-//			region: String,
-//			country_name: String,
-//			country_code3: String,
-//			country_code: String,
-//			continent_code: String
+			// ip: String,
+			// area_code: String,
+			// dma_code: String,
+			// longitude: Number,
+			// latitude: Number,
+			// postal_code: String,
+			// city: String,
+			// region: String,
+			// country_name: String,
+			// country_code3: String,
+			// country_code: String,
+			// continent_code: String
 		},
 		url: String,
 		lang: String,
 		answers: [Answer],
-		modifier: {type: Schema.Types.ObjectId, ref: 'user'},
-		submitter: {type: Schema.Types.ObjectId, ref: 'user'},
-		extra: Schema.Types.Mixed
+		modifier: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
+		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
+		extra: LipthusSchema.Types.Mixed
 	}, {
 		/*
 		usePushEach: true
@@ -59,67 +64,8 @@ module.exports = function comment(Schema) {
 	});
 
 	// noinspection JSUnusedGlobalSymbols
-	s.methods = {
-		values4show: function () {
-			const d = this.created || this._id.getTimestamp();
-
-			return {
-				id: this.id,
-				created: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(),
-				name: this.name,
-				text: this.text,
-				city: this.iplocation && this.iplocation.city,
-				answers: this.answers
-			};
-		},
-		getHash: function () {
-			return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
-		},
-		getItem: function (fields) {
-			if (!this.ref || !this.ref.namespace)
-				return Promise.resolve();
-
-			const dbs = this.db.eucaDb.site.dbs;
-			const ref = this.ref.toObject();
-
-			if (!ref.db)
-				ref.db = this.db.eucaDb.site.db.name;
-
-			if (!dbs[ref.db])
-				return Promise.reject(new Error('db ' + ref.db + ' not found'));
-
-			return dbs[ref.db].deReference(ref.toObject ? ref.toObject() : ref, fields);
-		},
-		approve: function (req, val, cb) {
-			if (!req.user)
-				return cb(new Error('no user'));
-			if (!req.user.isAdmin())
-				return cb(new Error('you are nat an admin user'));
-
-			this.set({active: val, modifier: req.user._id}).save(cb);
-		},
-		values4Edit: function () {
-			const ret = this.jsonInfo();
-
-			ret.created = this.created.toUserDatetimeString();
-			ret.location = '';
-
-			if (ret.iplocation) {
-				if (ret.iplocation.city)
-					ret.location = ret.iplocation.city + ', ';
-
-				ret.location += ret.iplocation.ip;
-			}
-
-			delete ret.iplocation;
-
-			return ret;
-		}
-	};
-
-	// noinspection JSUnusedGlobalSymbols
 	s.statics = {
-		find4show (query, limit) {
+		find4show (query: any, limit?: number) {
 			if (typeof query === 'string')
 				query = mongoose.Types.ObjectId(query);
 
@@ -133,22 +79,22 @@ module.exports = function comment(Schema) {
 			if (limit)
 				q.limit(limit);
 
-			return q.then(comments => {
+			return q.then((comments: Array<any>) => {
 				comments.forEach((c, i) => comments[i] = c.values4show());
 
 				return comments;
 			});
 		},
-		submit (req, dbname, colname, itemid, uname, email, text) {
+		submit (req: LipthusRequest, dbname: string, colname: string, itemid: any, uname: string, email: string, text: string) {
 			return req.ml
 				.load('ecms-comment')
-				.then(LC => {
+				.then((LC: KeyString) => {
 					const config = req.site.config;
 
 					if (!config.com_rule || (!config.com_anonpost && !req.user))
 						return {error: LC._CM_APPROVE_ERROR};
 
-					let active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
+					const active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
 
 					const db = dbname ? req.site.dbs[dbname] : req.db;
 
@@ -164,7 +110,7 @@ module.exports = function comment(Schema) {
 							lang: req.ml.lang,
 							submitter: req.user && req.user._id
 						})
-						.then(comment => {
+						.then((comment: any) => {
 							if (req.user)
 								req.user.subscribe2Item(comment.get('ref'));
 
@@ -174,23 +120,15 @@ module.exports = function comment(Schema) {
 						});
 				});
 		},
-		countById (query) {
+		countById (query: any) {
 			// no usar ES6 en mongo.mapReduce hasta mongo 3.2
 			// comprobar javascriptEngine field in the output of db.serverBuildInfo() que sea SpiderMonkey y no V8.
 			// de momento no usamos ES6. jj - 21/6/16
 			const o = {
-				map: function () {
-					emit(this.ref.$id, 1);
-				},
-				reduce: function (k, v) {
-					let sum = 0;
-
-					Object.keys(v).forEach(function (key) {
-						sum += v[key];
-					});
-
-					return sum;
-				},
+				map: 'function () { emit(this.ref.$id, 1) }',
+				reduce: 'function (k, v) { let sum = 0;' +
+					'Object.keys(v).forEach(function (key) { sum += v[key] });' +
+					'return sum; }',
 				query: query
 			};
 
@@ -363,5 +301,80 @@ module.exports = function comment(Schema) {
 		}
 	};
 
+	s.loadClass(User);
+
 	return s;
-};
+}
+
+export class User {
+
+	public _id: any;
+	public created?: Date;
+	public name!: string;
+	public text!: string;
+	public iplocation?: any;
+	public answers?: Array<any>;
+	public ref?: any;
+	public db: any;
+	public jsonInfo: any;
+
+	values4show () {
+		const d = this.created || this._id.getTimestamp();
+
+		return {
+			id: this._id,
+			created: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(),
+			name: this.name,
+			text: this.text,
+			city: this.iplocation && this.iplocation.city,
+			answers: this.answers
+		};
+	}
+
+	getHash () {
+		return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
+	}
+
+	getItem (fields: Array<string>) {
+		if (!this.ref || !this.ref.namespace)
+			return Promise.resolve();
+
+		const dbs = this.db.eucaDb.site.dbs;
+		const ref = this.ref.toObject();
+
+		if (!ref.db)
+			ref.db = this.db.eucaDb.site.db.name;
+
+		if (!dbs[ref.db])
+			return Promise.reject(new Error('db ' + ref.db + ' not found'));
+
+		return dbs[ref.db].deReference(ref.toObject ? ref.toObject() : ref, fields);
+	}
+
+	approve (req: LipthusRequest, val: boolean) {
+		if (!req.user)
+			return Promise.reject(new Error('no user'));
+		if (!req.user.isAdmin())
+			return Promise.reject(new Error('you are nat an admin user'));
+
+		return this.set({active: val, modifier: req.user._id}).save();
+	}
+
+	values4Edit () {
+		const ret = this.jsonInfo();
+
+		ret.created = this.created.toUserDatetimeString();
+		ret.location = '';
+
+		if (ret.iplocation) {
+			if (ret.iplocation.city)
+				ret.location = ret.iplocation.city + ', ';
+
+			ret.location += ret.iplocation.ip;
+		}
+
+		delete ret.iplocation;
+
+		return ret;
+	}
+}

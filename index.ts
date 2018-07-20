@@ -5,7 +5,6 @@ import {LipthusDb, Site} from "./modules";
 import {User} from "./schemas/user";
 import * as express from "express";
 import {ApplicationRequestHandler, CssResponse, KeyString} from "./interfaces/global.interface";
-import {UploadedFile} from "./interfaces/uploaded-file";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
 
@@ -65,7 +64,7 @@ export interface LipthusRequest extends express.Request {
 	ipLocation: any;
 	nationalities: KeyString;
 	getUser: () => Promise<User>;
-	files?: Array<UploadedFile>;
+	files: Array<any>;	// Array<UploadedFile>;
 	security: any;
 	logError: (err: LipthusError) => Promise<any>;
 	lessSourceMap: string;

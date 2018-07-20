@@ -18,6 +18,7 @@ export interface User extends Document {
     subscribe2Item(ref: any): Promise<any>;
     getName(usereal?: boolean): string;
     baseInfo(includeEmail?: boolean): any;
+    isAdmin(): boolean;
 }
 export interface UserModel extends Model<User> {
     fromOAuth2(params: any): Promise<any>;

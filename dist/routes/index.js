@@ -1,22 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
 const fs_1 = require("./fs");
-const { Setup } = require("./setup");
-const { userPage } = require("./user");
-const fs = require('fs');
-const os = require('os');
-const Router = require('express').Router;
-const multer = require('multer');
+const info_1 = require("./info");
+const setup_1 = require("./setup");
+const user_1 = require("./user");
+const fs_2 = require("fs");
+const os_1 = require("os");
+const multer = require("multer");
+const notfoundmin_1 = require("./notfoundmin");
 const bdf = require('./bdf');
 const thumb = require('./thumb');
-const notfoundmin = require('./notfoundmin');
 const video = require('./video');
 const videos = require('./videos');
 const embed = require('./embed');
 const ajax = require('./ajax');
 const upload = require('./upload');
 const form = require('./form');
-const multipart = multer({ dest: os.tmpdir() }).any();
+const multipart = multer({ dest: os_1.tmpdir() }).any();
 const uLevelMiddleware = (level) => (req, res, next) => {
     req.getUser()
         .then(u => {
@@ -26,15 +27,16 @@ const uLevelMiddleware = (level) => (req, res, next) => {
     });
 };
 module.exports = function (app) {
-    const router = Router({ strict: true });
-    router.post('/ngsetup/:method', uLevelMiddleware(2), Setup);
+    const router = express_1.Router({ strict: true });
+    // ...  as any hasta que implememntemos router
+    router.post('/ngsetup/:method', uLevelMiddleware(2), setup_1.Setup);
     router.get('/bdf/:col/:id/:field/:p/:name', bdf);
     router.get('/bdf/:col/:id/:field/:name', bdf);
     router.get('/bdf/:col/:id/:field', bdf);
-    router.get('/bdf/*', notfoundmin);
+    router.get('/bdf/*', notfoundmin_1.default);
     router.get('/fs/:id', fs_1.fsRoute);
     router.get('/fs/:id/:fn', fs_1.fsRoute);
-    router.get('/fs/*', notfoundmin);
+    router.get('/fs/*', notfoundmin_1.default);
     router.get('/video/:id', video);
     router.get('/videos/:id', videos);
     router.get('/videos/:id/:type*', videos);
@@ -48,13 +50,13 @@ module.exports = function (app) {
     router.post('/form/:schema/:itemid/:cmd', form);
     router.get('/form/:schema/:itemid/get', form);
     router.all('/form/:schema/:cmd', form);
-    router.get('/info/:method', require('./info'));
-    router.all('/users/:uid', userPage);
+    router.get('/info/:method', info_1.default);
+    router.all('/users/:uid', user_1.userPage);
     router.all('/subscriptions/:action', require('./subscriptions'));
     router.get('/users/:uid/subscriptions', require('./user-subscriptions'));
     router.get('/lmns/:schema/:id', require('./lmns'));
     const dir = app.get('dir');
-    router.all('/unsubscribe', require(fs.existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
+    router.all('/unsubscribe', require(fs_2.existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
     router.all('/videouploader', multipart, require('./videouploader'));
     router.get('/resimg/:p', require('./resimg'));
     router.get('/optimg/:fn', require('./optimg'));

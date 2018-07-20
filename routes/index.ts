@@ -1,23 +1,23 @@
-import {fsRoute} from "./fs";
 import {LipthusApplication, LipthusRequest, LipthusResponse} from "../index";
-import {NextFunction} from "express";
+import {NextFunction, Router} from "express";
+import {fsRoute} from "./fs";
+import info from "./info";
+import {Setup} from "./setup";
+import {userPage} from "./user";
+import {existsSync} from "fs";
+import {tmpdir} from "os";
+import * as multer from "multer";
+import notfoundmin from "./notfoundmin";
 
-const {Setup} = require("./setup");
-const {userPage} = require("./user");
-const fs = require('fs');
-const os = require('os');
-const Router = require('express').Router;
-const multer = require('multer');
 const bdf = require('./bdf');
 const thumb = require('./thumb');
-const notfoundmin = require('./notfoundmin');
 const video = require('./video');
 const videos = require('./videos');
 const embed = require('./embed');
 const ajax = require('./ajax');
 const upload = require('./upload');
 const form = require('./form');
-const multipart = multer({ dest: os.tmpdir() }).any();
+const multipart = multer({ dest: tmpdir() }).any();
 
 const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	req.getUser()
@@ -32,14 +32,15 @@ const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusRe
 module.exports = function(app: LipthusApplication) {
 	const router = Router({strict: true});
 
-	router.post('/ngsetup/:method', uLevelMiddleware(2), Setup);
+	// ...  as any hasta que implememntemos router
+	router.post('/ngsetup/:method', uLevelMiddleware(2) as any, Setup as any);
 	router.get('/bdf/:col/:id/:field/:p/:name', bdf);
 	router.get('/bdf/:col/:id/:field/:name', bdf);
 	router.get('/bdf/:col/:id/:field', bdf);
-	router.get('/bdf/*', notfoundmin);
-	router.get('/fs/:id', fsRoute);
-	router.get('/fs/:id/:fn', fsRoute);
-	router.get('/fs/*', notfoundmin);
+	router.get('/bdf/*', notfoundmin as any);
+	router.get('/fs/:id', fsRoute as any);
+	router.get('/fs/:id/:fn', fsRoute as any);
+	router.get('/fs/*', notfoundmin as any);
 	router.get('/video/:id', video);
 	router.get('/videos/:id', videos);
 	router.get('/videos/:id/:type*', videos);
@@ -55,7 +56,7 @@ module.exports = function(app: LipthusApplication) {
 	router.post('/form/:schema/:itemid/:cmd', form);
 	router.get('/form/:schema/:itemid/get', form);
 	router.all('/form/:schema/:cmd', form);
-	router.get('/info/:method', require('./info'));
+	router.get('/info/:method', info as any);
 	router.all('/users/:uid', userPage);
 	router.all('/subscriptions/:action', require('./subscriptions'));
 	router.get('/users/:uid/subscriptions', require('./user-subscriptions'));
@@ -63,7 +64,7 @@ module.exports = function(app: LipthusApplication) {
 	router.get('/lmns/:schema/:id', require('./lmns'));
 
 	const dir = app.get('dir');
-	router.all('/unsubscribe', require(fs.existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
+	router.all('/unsubscribe', require(existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
 
 	router.all('/videouploader', multipart, require('./videouploader'));
 	router.get('/resimg/:p', require('./resimg'));

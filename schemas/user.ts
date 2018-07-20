@@ -231,6 +231,8 @@ export interface User extends Document {
 
 	// noinspection JSUnusedLocalSymbols
 	baseInfo(includeEmail?: boolean): any;
+
+	isAdmin(): boolean;
 }
 
 export interface UserModel extends Model<User> {

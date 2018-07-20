@@ -83,7 +83,11 @@ module.exports = function(req, res, next){
 			if(ext.indexOf('.') !== -1)
 				ext = path.extname(ext).substr(1);
 
-			if(GridFSFile.videoExt.indexOf(ext) === -1 || file.folder !== 'videos')
+			if(
+				GridFSFile.videoExt.indexOf(ext) === -1 ||			// no es una de las admitidas
+				file.folder !== 'videos' ||							//	no es un fichero principal de un video
+				(!file.versions[ext] && 'video/' + ext === file.contentType)	// no existe la versión y la extensión es la del archivo principal
+			)
 				return file.send(req, res);
 
 			return file.getVideoVersion(ext, req.query.force)
