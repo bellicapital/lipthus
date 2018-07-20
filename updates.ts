@@ -5,6 +5,7 @@ export const updates = (site: Site, version: string) => {
 	switch (version) {
 		case '1.6.1':
 		case '1.6.2':
+		case '1.6.3':
 			return site.db.config
 				.remove({name: {$in: ['protocol', 'external_protocol']}})
 				.then(() => ({ok: true}));

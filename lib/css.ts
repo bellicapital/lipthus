@@ -38,26 +38,25 @@ const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction)
 	if (!parts.length)
 		return next();
 
-	parts.some((part, idx) => {
+	const missing  = parts.some((part) => {
 		const m = part.match(/([dg])(\w)-(.+)$/);
 
-		if (!m) {
-			next(); // -> not found
-
+		if (!m) // -> not found
 			return true;
-		}
 
 		req.lessSourceMap = req.params.combined.replace(/\//g, '%2F');
 
 		files.push(dirs[m[1]] + '/public/css/' + devicesDir[m[2]] + m[3] + '.less');
 
-		if (idx === parts.length - 1)
-			req.db.cacheless.getCachedFiles(files, req.lessSourceMap)
-				.then((r: CssResponse) => req.cssResponse = r)
-				.then(() => next(), next);
-
 		return false;
 	});
+
+	if (missing)
+		next();
+	else
+		req.db.cacheless.getCachedFiles(files, req.lessSourceMap)
+			.then((r: CssResponse) => req.cssResponse = r)
+			.then(() => next(), next);
 };
 
 const single = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
