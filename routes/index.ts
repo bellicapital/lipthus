@@ -1,9 +1,9 @@
-"use strict";
+import {fsRoute} from "./fs";
+import {LipthusRequest, LipthusResponse} from "../index";
+import {NextFunction} from "express";
 
 const {Setup} = require("./setup");
-
 const {userPage} = require("./user");
-
 const fs = require('fs');
 const os = require('os');
 const Router = require('express').Router;
@@ -11,7 +11,6 @@ const multer = require('multer');
 const bdf = require('./bdf');
 const thumb = require('./thumb');
 const notfoundmin = require('./notfoundmin');
-const fsRoute = require('./fs').fs;
 const video = require('./video');
 const videos = require('./videos');
 const embed = require('./embed');
@@ -20,7 +19,7 @@ const upload = require('./upload');
 const form = require('./form');
 const multipart = multer({ dest: os.tmpdir() }).any();
 
-const uLevelMiddleware = level => (req, res, next) => {
+const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	req.getUser()
 		.then(u => {
 			if(!u || u.level < level)

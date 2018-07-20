@@ -325,7 +325,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		this.title = p.title || {};
 	}
 
-	getThumb(width: number, height: number, crop: boolean, nwm = false, enlarge = false, ext = '.jpg') {
+	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg') {
 		const ret = new DbfThumb({
 			uri: this.path,
 			name: this.uriName(ext),
@@ -338,6 +338,9 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		});
 
 		if (width) {
+			if (!height)
+				height = (this.height * width) / this.width;
+
 			if (!crop) {
 				const fc = Image.fitCalc(this.width, this.height, width, height, crop);
 

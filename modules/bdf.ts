@@ -211,7 +211,7 @@ export class BinDataFile {
 		});
 	}
 
-	static fromBuffer(p: any, opt?: any) {
+	static fromBuffer(p: any, opt?: any): BinDataFile | BinDataImage {
 		const obj = {
 			name: p.originalname,
 			contentType: p.mimetype,
