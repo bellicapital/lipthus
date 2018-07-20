@@ -1,5 +1,5 @@
 import {fsRoute} from "./fs";
-import {LipthusRequest, LipthusResponse} from "../index";
+import {LipthusApplication, LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
 
 const {Setup} = require("./setup");
@@ -22,14 +22,14 @@ const multipart = multer({ dest: os.tmpdir() }).any();
 const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	req.getUser()
 		.then(u => {
-			if(!u || u.level < level)
+			if (!u || u.level < level)
 				return next(403);
 
 			next();
 		});
 };
 
-module.exports = function(app){
+module.exports = function(app: LipthusApplication) {
 	const router = Router({strict: true});
 
 	router.post('/ngsetup/:method', uLevelMiddleware(2), Setup);
@@ -68,7 +68,7 @@ module.exports = function(app){
 	router.all('/videouploader', multipart, require('./videouploader'));
 	router.get('/resimg/:p', require('./resimg'));
 	router.get('/optimg/:fn', require('./optimg'));
-	router.get('/c/:id/:name', require('./cache'));//@deprecated
+	router.get('/c/:id/:name', require('./cache')); // @deprecated
 	router.get('/c/:id.:ext*', require('./cache'));
 	router.post('/paypalresponse', require('./paypalresponse'));
 	router.all('/dsresponse', require('./dsresponse'));
