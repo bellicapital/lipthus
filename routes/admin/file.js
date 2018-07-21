@@ -4,8 +4,6 @@ const path = require('path');
 
 module.exports = function(req, res, next){
 	res.htmlPage.init({
-		jQueryMobile: true,
-		jQueryMobileTheme: 'default',
 		layout: 'base',
 		view: 'admin/file',
 		userLevel: 3

@@ -29,17 +29,16 @@ export class GridFSFile {
 	public length = 0;
 	public contentType = '';
 	public folder?: string;
-	public err?: Error;
 	public metadata?: any;
 	public thumb?: any;
 	public versions?: { [s: string]: GridFSFile | Types.ObjectId };
 	public md5?: string;
 	public submitter?: string;
 	public loaded = false;
-	public error?: Error;
+	public error?: GridFSFileNotFoundError;
+	public duration?: number;
 	private _collection?: Collection;
 	private processLog: any = {};
-	private duration?: number;
 	private fps?: number;
 
 	constructor(public _id: string | Types.ObjectId, public gridStore: any) {
@@ -63,7 +62,7 @@ export class GridFSFile {
 		return this.gridStore.db.databaseName;
 	}
 
-	info(full: boolean): FileInfo {
+	info(full: boolean = false): FileInfo {
 		const ret = new FileInfo({
 			id: this._id + '',
 			uri: '/' + this.gridStore.root + '/' + this._id,
@@ -79,8 +78,8 @@ export class GridFSFile {
 			ret.lastModifiedDate = this.mTime();
 			ret.contentType = this.contentType;
 
-			if (this.err)
-				ret.error = this.err;
+			if (this.error)
+				ret.error = this.error;
 
 			if (this.metadata) {
 				Object.assign(ret, this.metadata);
@@ -96,7 +95,7 @@ export class GridFSFile {
 				}
 			} else if (this.thumb)
 				ret.thumb = '/bdf/fs/' + this._id + '/thumb/' + ret.basename + '.jpg';
-			else if (!this.err && !this.contentType.indexOf('video'))
+			else if (!this.error && !this.contentType.indexOf('video'))
 				ret.error = new Error('video conversion error');
 
 			if (this.thumb && this.thumb.uploadDate)
@@ -108,7 +107,7 @@ export class GridFSFile {
 				ret.submitter = this.submitter || undefined;
 			}
 		} else if (this.loaded)
-			ret.error = this.err;
+			ret.error = this.error;
 
 		return ret;
 	}
@@ -218,7 +217,7 @@ export class GridFSFile {
 		this.error = new GridFSFileNotFoundError('File not found ' + this._id);
 	}
 
-	getVideoVersion(k: string, force: boolean) {
+	getVideoVersion(k: string, force: boolean): Promise<GridFSFile | any> {
 		if (videoExt.indexOf(k) === -1)
 			return Promise.reject(new Error('Version ' + k + ' not implemented'));
 
@@ -260,13 +259,13 @@ export class GridFSFile {
 			return Promise.resolve(this.metadata);
 
 		return this.tmpFile()
-			.then((tmpfile: string) => multimedia(tmpfile))
+			.then(multimedia)
 			.then((r: any) => this.update({metadata: r}))
 			// assignamos todos los valores de metadata al propio objeto (duration, fps, etc...)
 			.then(() => Object.assign(this, this.metadata));
 	}
 
-	tmpFile() {
+	tmpFile(): Promise<string> {
 		const file = tmpdir + this._id + '_' + this.filename;
 
 		return fsp.access(file)
@@ -479,13 +478,13 @@ export class GridFSFile {
 		return ret;
 	}
 
-	sendThumb(req: LipthusRequest, res: LipthusResponse) {
+	sendThumb(req: LipthusRequest, res: LipthusResponse, opt?: any) {
 		return this.getThumb()
 			.then(thumb => {
 				if (!thumb)
 					return;
 
-				return thumb.send(req, res);
+				return thumb.send(req, res, opt);
 			});
 	}
 
@@ -507,7 +506,7 @@ export class GridFSFile {
 		return this.uploadDate!.getTime().toString();
 	}
 
-	getThumb() {
+	getThumb(): Promise<BinDataImage> {
 		return this.load()
 			.then(() => {
 				if (this.thumb) {
@@ -622,11 +621,11 @@ export class GridFSFile {
 			});
 	}
 
-	_pdfThumb(): Promise<BinDataImage> {
+	_pdfThumb(): Promise<BinDataImage | any> {
 		const tmpFile2 = tmpdir + 'thumb_' + this._id + '.png';
 
 		return this.tmpFile()
-			.then((tmpFile: any) => {
+			.then(tmpFile => {
 				return new Promise((ok, ko) => {
 					const cmd = 'convert -thumbnail 150x150 -background white -alpha remove "' + tmpFile + '"[0] ' + tmpFile2;
 

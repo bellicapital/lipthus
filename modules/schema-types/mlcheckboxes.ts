@@ -5,9 +5,9 @@ import {KeyAny} from "../../interfaces/global.interface";
 
 
 export class MlCheckbox {
-	
+
 	model = {options: {collection: ''}};
-	
+
 	constructor(public val: any, public path: string, public options: KeyAny, public schema?: any) {
 	}
 
@@ -23,7 +23,7 @@ export class MlCheckbox {
 
 				if (this.val)
 					this.val.forEach((val: any) =>
-						ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.defLang] : val));
+						ret.push(o[val] ? o[val][req.ml.lang] || o[val][req.ml.configLang] : val));
 
 				return ret;
 			});
@@ -94,9 +94,9 @@ export class MlCheckbox {
 
 
 export class MlCheckboxes extends SchemaType {
-	
+
 	public val: any;
-	
+
 	/**
 	 *
 	 * @param {String} path
@@ -105,7 +105,7 @@ export class MlCheckboxes extends SchemaType {
 	constructor(public path: string, public options: any) {
 		super(path, options, 'MlCheckboxesType');
 	}
-	
+
 	// noinspection JSMethodCanBeStatic
 	get $conditionalHandlers() {
 		return {
@@ -121,7 +121,7 @@ export class MlCheckboxes extends SchemaType {
 			, '$exists': handleExists
 		};
 	}
-	
+
 	// default(val) {
 	// 	return new MlCheckboxes(val);
 	// }
@@ -155,7 +155,7 @@ export class MlCheckboxes extends SchemaType {
 
 		if (!init)
 			return val;
-		
+
 		return new MlCheckbox(val, this.path, this.options, scope && scope.constructor.name === 'model' && scope.schema);
 	}
 
@@ -169,7 +169,7 @@ export class MlCheckboxes extends SchemaType {
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
 			const handler = (this.$conditionalHandlers as any)[$conditional];
-			
+
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with MlCheckboxes.");
 

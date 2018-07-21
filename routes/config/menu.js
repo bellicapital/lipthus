@@ -3,7 +3,6 @@
 module.exports = (req, res, next) => {
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			title: 'Config',
 			layout: 'config'
 		})

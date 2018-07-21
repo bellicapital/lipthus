@@ -10,7 +10,6 @@ module.exports = function(req, res, next){
 
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			layout: 'layout-mobile',
 			pageTitle: 'Notificaciones',
 			userLevel: 1,

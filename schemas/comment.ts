@@ -1,9 +1,8 @@
-import {LipthusSchema} from "../lib";
+import {DBRef, LipthusSchema} from "../lib";
 import {LipthusRequest} from "../index";
 import {KeyString} from "../interfaces/global.interface";
+import {Document, Model, Types} from "mongoose";
 
-const mongoose = require('mongoose');
-const DBRef = mongoose.mongo.DBRef;
 const ipLocation = require('../modules/geo').ipLocation;
 const md5 = require('md5');
 
@@ -28,6 +27,7 @@ export function getSchema() {
 		name: String,
 		email: String, // {type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
 		text: String,
+		rating: Number,
 		iplocation: {
 			// ip: String,
 			// area_code: String,
@@ -44,6 +44,7 @@ export function getSchema() {
 		},
 		url: String,
 		lang: String,
+		itemTitle: String,
 		answers: [Answer],
 		modifier: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
 		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
@@ -63,259 +64,24 @@ export function getSchema() {
 		created: true
 	});
 
-	// noinspection JSUnusedGlobalSymbols
-	s.statics = {
-		find4show (query: any, limit?: number) {
-			if (typeof query === 'string')
-				query = mongoose.Types.ObjectId(query);
-
-			if (query instanceof mongoose.Types.ObjectId)
-				query = {active: true, 'ref.$id': query};
-
-			const q = this
-				.find(query)
-				.sort({created: -1});
-
-			if (limit)
-				q.limit(limit);
-
-			return q.then((comments: Array<any>) => {
-				comments.forEach((c, i) => comments[i] = c.values4show());
-
-				return comments;
-			});
-		},
-		submit (req: LipthusRequest, dbname: string, colname: string, itemid: any, uname: string, email: string, text: string) {
-			return req.ml
-				.load('ecms-comment')
-				.then((LC: KeyString) => {
-					const config = req.site.config;
-
-					if (!config.com_rule || (!config.com_anonpost && !req.user))
-						return {error: LC._CM_APPROVE_ERROR};
-
-					const active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
-
-					const db = dbname ? req.site.dbs[dbname] : req.db;
-
-					return db.comment
-						.create({
-							ref: new DBRef(colname, itemid, db.name).toObject(),
-							name: uname ? uname : (req.user ? req.user.getName(true) : ""),
-							email: email,
-							text: text,
-							iplocation: req.ipLocation,
-							active: active,
-							url: req.get('Referer'),
-							lang: req.ml.lang,
-							submitter: req.user && req.user._id
-						})
-						.then((comment: any) => {
-							if (req.user)
-								req.user.subscribe2Item(comment.get('ref'));
-
-							db.comment.emit('submit', comment, req);
-
-							return comment.values4show();
-						});
-				});
-		},
-		countById (query: any) {
-			// no usar ES6 en mongo.mapReduce hasta mongo 3.2
-			// comprobar javascriptEngine field in the output of db.serverBuildInfo() que sea SpiderMonkey y no V8.
-			// de momento no usamos ES6. jj - 21/6/16
-			const o = {
-				map: 'function () { emit(this.ref.$id, 1) }',
-				reduce: 'function (k, v) { let sum = 0;' +
-					'Object.keys(v).forEach(function (key) { sum += v[key] });' +
-					'return sum; }',
-				query: query
-			};
-
-			return this.mapReduce(o)
-				.then(c => {
-					const counts = {};
-
-					Object.values(c).forEach(cc => counts[cc._id] = cc.value);
-
-					return counts;
-				});
-
-		},
-		colcount (cb) {
-			this.distinct('ref.$ref', (err, d) => {
-				if (err)
-					return cb(err);
-
-				let count = 0;
-
-				/*global ret*/
-				const ret = {};
-
-				d.forEach(r => {
-					this.count({'ref.$ref': r}, (err, c) => {
-						if (c)
-							ret[r.replace('dynobjects.', '')] = c;
-
-						if (++count === d.length) {
-							this.count({'ref.$ref': {$exists: false}}, (err, c) => {
-								if (c)
-									ret._ = c;
-
-								cb(err, ret);
-							});
-						}
-					});
-				});
-			});
-		},
-		colCountIncPending () {
-			const ret = {};
-
-			return this.distinct('ref.$ref')
-				.then(d => Promise.all(d.map(r => {
-						const itemSchema = r ? r.replace('dynobjects.', '') : '_';
-						const ref = r || null; // null hace que también se muestren los vacios. jj 7/7/15
-
-						return this.count({'ref.$ref': ref})
-							.then(c => this.count({
-									'ref.$ref': ref,
-									active: {$ne: true},
-									refused: {$ne: true}
-								})
-									.then(c2 => ret[itemSchema] = {total: c, pending: c2})
-							);
-					}))
-				)
-				.then(() => ret);
-		},
-		// mapReduce falla jj 4/2015
-//		colcount: function(cb){
-//			const ret = {},
-//				o = {
-//					map: function(){emit(this.ref && this.ref.$ref, 1);},
-//					reduce: function(k, v){return v.length;}
-//				};
-//
-//			this.mapReduce(o, function(err, r){
-//				if(err)
-//					return cb(err);
-//
-//				r && r.forEach(function(s){
-//					ret[s._id && s._id.replace('dynobjects.', '')] = s.value;
-//				});
-//
-//				cb(err, ret);
-//			});
-//		},
-		googleVisualizationList: function (req, colname, limit, skip) {
-			return req.ml.load('ecms-comment').then(lc => {
-				const ret = {
-					cols: [
-						{'label': lc._NAME, 'type': 'string'},
-						{'label': lc._CM_TEXT, 'type': 'string'},
-						{'label': lc._DATE, 'type': 'string'},
-						{'label': "", 'type': 'string'},
-						{'label': lc._ACTIVE, 'type': 'boolean'},
-						{'label': '', 'type': 'string'}
-					],
-					rows: []
-				};
-
-				return this.byColnameIncItemTitle(colname, {}, {
-					sort: {_id: -1},
-					limit: limit,
-					skip: skip
-				})
-					.then(comments => {
-						comments.forEach(comment => {
-							ret.rows.push({
-								p: {id: comment.id},
-								c: [
-									{v: comment.name},
-									{v: comment.text.truncate()},
-									{v: comment.created.toUserDateString('es', '-')},
-									{v: comment.itemTitle},
-									{v: !!comment.active},
-									{v: '<div id="' + comment.id + '" style="width: 18px;" class="ui-button ui-state-default ui-corner-all deleteComment"><span class="ui-icon ui-icon-trash"></span></div>'}
-								]
-							});
-						});
-
-						return ret;
-				});
-			});
-		},
-		byColname (colname, query, options) {
-			const ret = {
-				comments: [],
-				total: 0
-			};
-
-			query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
-
-			return this.count(query)
-				.then(count => {
-					if (!count)
-						return;
-
-					ret.total = count;
-
-					const q = this.find(query);
-
-					if(options)
-						Object.each(options, (o, v) => q[o](v));
-
-					return q.populate('modifier', 'uname')
-						.then(comments => ret.comments = comments);
-				})
-				.then(() => ret);
-		},
-		byColnameIncItemTitle (colname, query, options) {
-			return this.byColname(colname, query, options)
-				.then(r => {
-					if (!r.comments.length)
-						return r;
-
-					const promises = r.comments.map((comment, idx) =>
-						comment.getItem({title: 1})
-							.then(item => {
-								const obj = comment.toObject();
-								obj.id = obj._id.toString();
-
-								obj.item = item ? {
-									id: item.id,
-									title: item.title,
-									schema: item.schema,
-									link: item.getLink()
-								} : {}; // no mandamos undefined para evitar errores con items eliminados
-
-								obj.iplocation = ipLocation(obj.iplocation);
-
-								r.comments[idx] = obj;
-							})
-					);
-
-					return Promise.all(promises).then(() => r);
-				});
-		}
-	};
-
-	s.loadClass(User);
+	s.loadClass(Comment);
 
 	return s;
 }
 
-export class User {
+export class Comment {
 
 	public _id: any;
+	public active?: boolean;
+	public refused?: boolean;
 	public created?: Date;
 	public name!: string;
 	public text!: string;
+	public lang!: string;
 	public iplocation?: any;
 	public answers?: Array<any>;
 	public ref?: any;
-	public db: any;
+	public itemTitle!: string;
 	public jsonInfo: any;
 
 	values4show () {
@@ -335,15 +101,15 @@ export class User {
 		return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
 	}
 
-	getItem (fields: Array<string>) {
+	getItem (fields: any) {
 		if (!this.ref || !this.ref.namespace)
 			return Promise.resolve();
 
-		const dbs = this.db.eucaDb.site.dbs;
+		const dbs = (this as any).db.eucaDb.site.dbs;
 		const ref = this.ref.toObject();
 
 		if (!ref.db)
-			ref.db = this.db.eucaDb.site.db.name;
+			ref.db = (this as any).db.eucaDb.site.db.name;
 
 		if (!dbs[ref.db])
 			return Promise.reject(new Error('db ' + ref.db + ' not found'));
@@ -357,13 +123,13 @@ export class User {
 		if (!req.user.isAdmin())
 			return Promise.reject(new Error('you are nat an admin user'));
 
-		return this.set({active: val, modifier: req.user._id}).save();
+		return (this as any).set({active: val, modifier: req.user._id}).save();
 	}
 
 	values4Edit () {
 		const ret = this.jsonInfo();
 
-		ret.created = this.created.toUserDatetimeString();
+		ret.created = this.created!.toUserDatetimeString();
 		ret.location = '';
 
 		if (ret.iplocation) {
@@ -377,4 +143,256 @@ export class User {
 
 		return ret;
 	}
+
+
+	// statics
+	static find4show (this: LipthusCommentModel, query: any, limit?: number) {
+		if (typeof query === 'string')
+			query = Types.ObjectId(query);
+
+		if (query instanceof Types.ObjectId)
+			query = {active: true, 'ref.$id': query};
+
+		const q = this
+			.find(query)
+			.sort({created: -1});
+
+		if (limit)
+			q.limit(limit);
+
+		return q.then((comments: Array<any>) => {
+			comments.forEach((c, i) => comments[i] = c.values4show());
+
+			return comments;
+		});
+	}
+
+	static submit (this: LipthusCommentModel, req: LipthusRequest, dbname: string, colname: string, itemid: any, uname: string, email: string, text: string) {
+		return req.ml
+			.load('ecms-comment')
+			.then((LC: KeyString) => {
+				const config = req.site.config;
+
+				if (!config.com_rule || (!config.com_anonpost && !req.user))
+					return {error: LC._CM_APPROVE_ERROR};
+
+				const active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
+
+				const db = dbname ? req.site.dbs[dbname] : req.db;
+
+				return db.comment
+					.create({
+						ref: new DBRef(colname, itemid, db.name).toObject(),
+						name: uname ? uname : (req.user ? req.user.getName(true) : ""),
+						email: email,
+						text: text,
+						iplocation: req.ipLocation,
+						active: active,
+						url: req.get('Referer'),
+						lang: req.ml.lang,
+						submitter: req.user && req.user._id
+					})
+					.then((comment: any) => {
+						if (req.user)
+							req.user.subscribe2Item(comment.get('ref'));
+
+						db.comment.emit('submit', comment, req);
+
+						return comment.values4show();
+					});
+			});
+	}
+
+	static countById (this: LipthusCommentModel, query: any) {
+		// no usar ES6 en mongo.mapReduce hasta mongo 3.2
+		// comprobar javascriptEngine field in the output of db.serverBuildInfo() que sea SpiderMonkey y no V8.
+		// de momento no usamos ES6. jj - 21/6/16
+		const o = {
+			map: 'function () { emit(this.ref.$id, 1) }',
+			reduce: 'function (k, v) { let sum = 0;' +
+			'Object.keys(v).forEach(function (key) { sum += v[key] });' +
+			'return sum; }',
+			query: query
+		};
+
+		return this.mapReduce(o as any)
+			.then((c: any) => {
+				const counts: any = {};
+
+				Object.values(c).forEach((cc: any) => counts[cc._id] = cc.value);
+
+				return counts;
+			});
+
+	}
+
+	static colcount (this: LipthusCommentModel, cb: any) {
+		this.distinct('ref.$ref', (err: Error, d: Array<any>) => {
+			if (err)
+				return cb(err);
+
+			let count = 0;
+
+			/*global ret*/
+			const ret: any = {};
+
+			d.forEach(r => {
+				this.count({'ref.$ref': r}, (err2: Error, c: number) => {
+					if (c)
+						ret[r.replace('dynobjects.', '')] = c;
+
+					if (++count === d.length) {
+						this.count({'ref.$ref': {$exists: false}}, (err3: Error, c2: number) => {
+							if (c2)
+								ret._ = c2;
+
+							cb(err3, ret);
+						});
+					}
+				});
+			});
+		});
+	}
+
+	static colCountIncPending (this: LipthusCommentModel) {
+		const ret: any = {};
+
+		return this.distinct('ref.$ref')
+			.then(d => Promise.all(d.map(r => {
+					const itemSchema = r ? r.replace('dynobjects.', '') : '_';
+					const ref = r || null; // null hace que también se muestren los vacios. jj 7/7/15
+
+					return this.count({'ref.$ref': ref})
+						.then(c => this.count({
+								'ref.$ref': ref,
+								active: {$ne: true},
+								refused: {$ne: true}
+							})
+								.then(c2 => ret[itemSchema] = {total: c, pending: c2})
+						);
+				}))
+			)
+			.then(() => ret);
+	}
+
+	// mapReduce falla jj 4/2015
+	// 	colcount: function(cb){
+	// 		const ret = {},
+	// 			o = {
+	// 				map: function(){emit(this.ref && this.ref.$ref, 1);},
+	// 				reduce: function(k, v){return v.length;}
+	// 			};
+    //
+	// 		this.mapReduce(o, function(err, r){
+	// 			if(err)
+	// 				return cb(err);
+    //
+	// 			r && r.forEach(function(s){
+	// 				ret[s._id && s._id.replace('dynobjects.', '')] = s.value;
+	// 			});
+    //
+	// 			cb(err, ret);
+	// 		});
+	// 	}
+
+	static googleVisualizationList (this: LipthusCommentModel, req: LipthusRequest, colname: string, limit?: number, skip?: number) {
+		return req.ml.load('ecms-comment').then((lc: KeyString) => {
+			const ret = {
+				cols: [
+					{'label': lc._NAME, 'type': 'string'},
+					{'label': lc._CM_TEXT, 'type': 'string'},
+					{'label': lc._DATE, 'type': 'string'},
+					{'label': "", 'type': 'string'},
+					{'label': lc._ACTIVE, 'type': 'boolean'},
+					{'label': '', 'type': 'string'}
+				],
+				rows: <any>[]
+			};
+
+			return (this as any).byColnameIncItemTitle(colname, {}, {
+				sort: {_id: -1},
+				limit: limit,
+				skip: skip
+			})
+				.then((comments: Array<LipthusComment>) => {
+					comments.forEach(comment => {
+						ret.rows.push({
+							p: {id: comment._id},
+							c: [
+								{v: comment.name},
+								{v: comment.text.truncate()},
+								{v: comment.created!.toUserDateString('es', '-')},
+								{v: comment.itemTitle},
+								{v: !!comment.active},
+								{v: '<div id="' + comment._id + '" style="width: 18px;" class="ui-button ui-state-default ui-corner-all deleteComment"><span class="ui-icon ui-icon-trash"></span></div>'}
+							]
+						});
+					});
+
+					return ret;
+				});
+		});
+	}
+
+	static byColname (this: LipthusCommentModel, colname: string, query: any, options?: any) {
+		const ret: any = {
+			comments: [],
+			total: 0
+		};
+
+		query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
+
+		return this.count(query)
+			.then(count => {
+				if (!count)
+					return;
+
+				ret.total = count;
+
+				const q: any = this.find(query);
+
+				if (options)
+					Object.each(options, (o, v) => q[o](v));
+
+				return q.populate('modifier', 'uname')
+					.then((comments: Array<any>) => ret.comments = comments);
+			})
+			.then(() => ret);
+	}
+
+	static byColnameIncItemTitle (this: LipthusCommentModel, colname: string, query: any, options: any) {
+		return (this as any).byColname(colname, query, options)
+			.then((r: any) => {
+				if (!r.comments.length)
+					return r;
+
+				const promises = r.comments.map((comment: LipthusComment, idx: number) =>
+					comment.getItem({title: 1})
+						.then((item: any) => {
+							const obj = (comment as any).toObject();
+							obj.id = obj._id.toString();
+
+							obj.item = item ? {
+								id: item.id,
+								title: item.title,
+								schema: item.schema,
+								link: item.getLink()
+							} : {}; // no mandamos undefined para evitar errores con items eliminados
+
+							obj.iplocation = ipLocation(obj.iplocation);
+
+							r.comments[idx] = obj;
+						})
+				);
+
+				return Promise.all(promises).then(() => r);
+			});
+	}
+}
+
+export interface LipthusComment extends Comment, Document {
+
+}
+export interface LipthusCommentModel extends Model<LipthusComment> {
+
 }

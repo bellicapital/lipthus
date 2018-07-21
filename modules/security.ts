@@ -59,10 +59,10 @@ export namespace security {
 
 		req.security = new Security(req);
 
-		if (req.site.conf.origin !== false) {
-			const origin = req.site.conf.origin || req.headers.origin || '*';
+		if (req.site.environment.origin !== false) {
+			const origin = req.site.environment.origin || req.headers.origin || '*';
 
-			res.header('Access-Control-Allow-Origin', origin);
+			res.header('Access-Control-Allow-Origin', origin + '');
 			res.header('Access-Control-Allow-Credentials', 'true');
 			res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
 			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Authorization, Accept');

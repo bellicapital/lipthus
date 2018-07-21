@@ -7,8 +7,6 @@
 module.exports = function(req, res, next){
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
-			jQueryMobileTheme: 'default',
 			pageTitle: 'Notify subscriptors',
 			layout: 'base',
 			view: 'admin/notify-subscriptors',

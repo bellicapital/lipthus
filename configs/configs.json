@@ -51,16 +51,6 @@
 				"home",
 				"_MD_AM_STARTPAGEDSC"
 			],
-			"theme_set": [
-				"themeset",
-				"_MD_AM_DTHEME",
-				"default",
-				"_MD_AM_DTHEMEDSC"
-			],
-			"mobile_theme": [
-				"string",
-				"jquery-mobile-theme"
-			],
 			"closesite": [
 				"bool",
 				"_MD_AM_CLOSESITE",

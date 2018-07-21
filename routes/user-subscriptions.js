@@ -16,7 +16,6 @@ module.exports = (req, res, next) => {
 
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			layout: 'layout-mobile',
 			pageTitle: 'Subscripciones',
 			userLevel: 1,

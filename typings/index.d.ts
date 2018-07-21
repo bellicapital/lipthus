@@ -50,7 +50,7 @@ declare global {
 		// noinspection JSUnusedLocalSymbols
 		striptags(allowedTags?: string): string;
 		// noinspection JSUnusedLocalSymbols
-		truncate(length: number, options?: any): string;
+		truncate(length?: number, options?: any): string;
 	}
 }
 

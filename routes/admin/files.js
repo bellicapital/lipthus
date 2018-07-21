@@ -3,7 +3,6 @@
 module.exports = function(req, res, next){
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			pageTitle: 'Files',
 			layout: 'base',
 			view: 'admin/files',

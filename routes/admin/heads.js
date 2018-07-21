@@ -22,7 +22,6 @@ module.exports = (req, res, next)=>{
 
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			pageTitle: 'Head things',
 			layout: 'base',
 			view: 'admin/heads',

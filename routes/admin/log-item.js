@@ -61,8 +61,6 @@ module.exports = (req, res, next) => {
 
 							return res.htmlPage
 								.init({
-									jQueryMobile: true,
-									jQueryMobileTheme: 'cm',
 									layout: 'moderator',
 									userLevel: 3,
 									view: 'admin/log-item',

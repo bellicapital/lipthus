@@ -1,10 +1,7 @@
 module.exports = function(req, res, next){
-	
+
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
-			jQueryMobileTheme: 'default',
-			jQueryUI: true,
 			title: 'Google Cloud Messenger tester',
 			sitelogo: true,
 			view: 'admin/gcm',

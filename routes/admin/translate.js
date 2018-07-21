@@ -9,7 +9,7 @@ class TransPage {
 			page: {value: res.htmlPage}
 		});
 
-		this.conf = req.site.conf.translator || {};
+		this.conf = req.site.environment.translator || {};
 		this.dbs = this.conf.dbs || [req.db.name];
 		this.locals = res.locals;
 		this.locals.activeAll = req.cookies.translateAll === 'true';
@@ -40,7 +40,7 @@ class TransPage {
 	}
 
 	menu() {
-		const rest = this.req.path.match(/^\/translate\/.{2}(\/[^\.]+\.[^\/]+\/[^\/]+)$/);
+		const rest = this.req.path.match(/^\/translate\/.{2}(\/[^.]+\.[^\/]+\/[^\/]+)$/);
 
 		this.locals.rest = rest ? rest[1] : '';
 		this.locals.page = 'translate-lang';
@@ -170,7 +170,7 @@ class TransPage {
 
 		const req = this.req;
 		const res = req.res;
-		const split = req.params.collection.match(/^([^\.]+)\.(.+)$/);
+		const split = req.params.collection.match(/^([^.]+)\.(.+)$/);
 		const dbname = this.locals.db = split[1];
 		const colname = this.locals.collection = split[2];
 		const col = req.site.dbs[dbname][colname];
@@ -270,7 +270,7 @@ class TransPage {
 					const fields = col.translatableFieldList();
 
 					if (!fields.length)
-						return _finish(k);
+						return _finish();
 
 					col.find({active: true}, '_id', function (err, result) {
 						if (result.length) {
@@ -289,14 +289,14 @@ class TransPage {
 							};
 						}
 
-						_finish(k);
+						_finish();
 					});
 				})(k);
 			});
 		});
 
 
-		let _finish = k => {
+		let _finish = () => {
 			if (++count === collections.length)
 				this.send('home-translate');
 		};
@@ -306,9 +306,6 @@ class TransPage {
 	send(view) {
 		this.page
 			.init({
-				jQueryMobile: true,
-				jQueryMobileTheme: 'default',
-				jQueryUI: true,
 				title: 'Site translate page',
 				sitelogo: true,
 				layout: 'translate',
@@ -334,7 +331,7 @@ class TransPage {
 }
 
 module.exports = function(req, res, next){
-	if (Object.keys(req.site.langs).length < 2)
+	if (Object.keys(req.site.ml.langs).length < 2)
 		return res.send('Este sitio web no es multilingüe');
 
 //	req.db.translated.setWC();//word counters

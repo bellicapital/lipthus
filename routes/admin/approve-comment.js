@@ -13,9 +13,6 @@ module.exports = function comment(req, res, next){
 
 			return page.init({
 					userLevel: comment.getHash() === req.param('hash') ? 0 : 2,
-					jQueryMobile: true,
-					jQueryUI: true,
-					jQueryUIcss: true,
 					title: 'Approve comment',
 					sitelogo: true,
 					view: 'admin/approve-comment',

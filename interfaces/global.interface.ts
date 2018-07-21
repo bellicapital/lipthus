@@ -45,6 +45,14 @@ export interface EnvironmentParams {
 	port?: number;
 	socket?: string;
 	mail?: any;
+	cache?: any;
+	language?: string;
+	urls?: KeyString;	// base url 4 language code
+	translator?: {
+		dbs: Array<string>,
+		exclude: Array<string>
+	};
+	origin?: string | false;	// Access-Control-Allow-Origin
 }
 
 export interface ColRef {

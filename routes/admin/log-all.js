@@ -1,7 +1,5 @@
 "use strict";
 
-const ObjectId = require('mongoose').Types.ObjectId;
-
 module.exports = (req, res, next) => {
 	const query = {};
 	const uids = {};
@@ -112,8 +110,6 @@ module.exports = (req, res, next) => {
 		.then(() =>
 			res.htmlPage
 				.init({
-					jQueryMobile: true,
-					jQueryMobileTheme: 'cm',
 					layout: 'moderator',
 					userLevel: 3,
 					title: req.params.schema ? req.params.schema : 'All items',

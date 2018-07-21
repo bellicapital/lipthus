@@ -1,18 +1,10 @@
 import {LipthusSchema} from "../lib";
 import {BinDataFile, Site} from '../modules';
 import {Document, Model} from "mongoose";
+const debug = require("debug")('site:config');
 
 let definitions: any;
 const groupsByKey: any = {};
-
-function getDefinition(key: string) {
-	if (!definitions[groupsByKey[key]]) {
-		console.warn('Config ' + key + ' not defined');
-		return [];
-	}
-
-	return definitions[groupsByKey[key]].configs[key];
-}
 
 
 export const name = 'config';
@@ -29,7 +21,16 @@ export function getSchema(site: Site) {
 		value: {
 			type: LipthusSchema.Types.Mixed,
 			get: function (this: any, val: any) {
-				if (this.name && getDefinition(this.get('name'))[0] === 'bdf')
+				const key = this.get('name');
+				const definition = definitions[groupsByKey[key]];
+
+				if (!definition) {
+					debug('Deleting not defined Config ' + key);
+
+					return this.collection.remove({_id: this._id}).catch(console.error.bind(console));
+				}
+
+				if (definition.configs[key][0] === 'bdf')
 					return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
 
 				return val;

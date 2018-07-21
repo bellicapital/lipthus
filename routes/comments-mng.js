@@ -4,7 +4,6 @@ module.exports = (req, res, next) => {
 
 	return res.htmlPage
 		.init({
-			jQueryMobile: true,
 			layout: 'moderator',
 			pageTitle: req.site.config.sitename + ' - Comentarios',
 			userLevel: 2,
@@ -45,9 +44,9 @@ module.exports = (req, res, next) => {
 				limit: 50,
 				skip: (page - 1) * 50
 			};
-			
+
 			let Comments = {};
-			
+
 			if (req.params.col === '_') {
 				Comments = req.db.comment;
 			} else {
@@ -77,12 +76,12 @@ module.exports = (req, res, next) => {
 			return Comments.byColnameIncItemTitle(col, query, opt)
 				.then(r => {
 					vars.comments = r.comments;
-	
+
 					if (r.total > 50) {
 						const Paginator = require('../modules/paginator');
 						vars.paginator = new Paginator(page, r.total, '?f=' + filter);
 					}
-					
+
 					res.htmlPage
 						.addCSS('comments-mng')
 						.addJS('comments-mng.js')

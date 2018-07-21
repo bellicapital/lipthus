@@ -1,5 +1,7 @@
-import {readFile} from "mz/fs";
+import {readFile} from "fs";
+import {promisify} from "util";
 
+const pReadFile = promisify(readFile);
 const imagemin = require('imagemin');
 const imageminGifsicle = require('imagemin-gifsicle');
 const imageminMozjpeg = require('imagemin-mozjpeg');
@@ -15,6 +17,6 @@ const imageminopt = {
 };
 
 export function optimage (path: string) {
-	return readFile(path)
+	return pReadFile(path)
 		.then((buf: Buffer) => imagemin.buffer(buf, imageminopt));
 }

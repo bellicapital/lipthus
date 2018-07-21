@@ -1,5 +1,5 @@
 export class FileInfo implements FileInfoParams {
-	
+
 	id: string;
 	uri: string;
 	db: string;
@@ -19,29 +19,32 @@ export class FileInfo implements FileInfoParams {
 	md5?: string;
 	submitter?: string;
 	error?: Error;
-	
+	width?: number;
+	height?: number;
+	duration?: number;
+
 	constructor(values: FileInfoParams) {
 		this.id = values.id;
 		this.uri = values.uri;
 		this.db = values.db;
 		this.name = values.name || '';
-		
+
 		Object.assign(this, values);
 	}
-	
+
 	getThumb(width: number, height: number, crop: boolean) {
 		let uri = '/videos/' + this.db + '.' + this.id + '/poster' + width + 'x' + height;
-		
+
 		if (crop)
 			uri += 'k1';
-		
+
 		uri += '_' + this.basename;
-		
+
 		if (this.thumbTS)
 			uri += '_' + this.thumbTS;
-		
+
 		uri += '.jpg';
-		
+
 		return new FileThumb({
 			name: this.name,
 			width: crop ? width : 0, // 'todo',
@@ -54,14 +57,14 @@ export class FileInfo implements FileInfoParams {
 }
 
 export class FileThumb implements FileThumbParams {
-	
+
 	name: string;
 	width: number;
 	height: number;
 	uri: string;
 	originalUri: string;
 	ts?: number;
-	
+
 	constructor(p: FileThumbParams) {
 		this.name = p.name;
 		this.width = p.width;
@@ -70,7 +73,7 @@ export class FileThumb implements FileThumbParams {
 		this.originalUri = p.originalUri;
 		this.ts = p.ts;
 	}
-	
+
 	toHtml() {
 		return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';
 	}

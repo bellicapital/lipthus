@@ -12,11 +12,7 @@ export class JsManager {
 	public dir: string;
 	public lipthusDir: string;
 	public jQuery = false;
-	public jQueryMobile = false;
-	public jQueryUi = false;
 	public jQueryVersion: string;
-	public jQueryUiVersion: string;
-	public jQueryMobileVersion: string;
 	public datepicker = false;
 	public staticHost: string;
 	public scripts: { [s: string]: JsFile } = {};
@@ -32,8 +28,6 @@ export class JsManager {
 		this.dir = req.site.dir + '/public/js/';
 		this.lipthusDir = req.site.lipthusDir + '/public/js/';
 		this.jQueryVersion = req.app.get('jquery_version');
-		this.jQueryUiVersion = req.app.get('jquery_ui_version');
-		this.jQueryMobileVersion = req.app.get('jquery_mobile_version');
 		this.staticHost = res.locals.staticHost;
 		this.scripts = {};
 		this.lang = req.ml ? req.ml.lang : 'es';
@@ -89,22 +83,6 @@ export class JsManager {
 
 	final() {
 		return new Promise((ok, ko) => {
-			if (this.jQuery) {
-				if (this.jQueryMobile) {
-					this.add('//code.jquery.com/mobile/' + this.jQueryMobileVersion + '/jquery.mobile-' + this.jQueryMobileVersion + '.min.js', 40);
-
-					this.vars.mobileAjaxEnabled = this.mobileAjaxEnabled;
-
-					if (this.datepicker && !this.jQueryUi) {
-						this.add('/cms/js/jquery/plugins/jquery.ui.datepicker.js', 12);
-						this.add('/cms/js/jquery/plugins/jquery.mobile.datepicker.js', 10);
-					}
-				}
-
-				if (this.datepicker)
-					this.add('/cms/js/jquery/intl/jquery.ui.datepicker-' + this.lang + '.min.js', 11);
-			}
-
 			const ret: any = {
 				head: [],
 				body: [],
@@ -182,12 +160,8 @@ export class JsManager {
 					this.vars.js.push(obj);
 			}
 
-			if (this.jQuery) {
-				if (this.jQueryUi)
-					this.vars.js.unshift({src: '//code.jquery.com/ui/' + this.jQueryUiVersion + '/jquery-ui.min.js'});
-
+			if (this.jQuery)
 				this.vars.js.unshift({src: '//code.jquery.com/jquery-' + this.jQueryVersion + '.min.js'});
-			}
 
 			// Minify & combine
 			let count = 0;

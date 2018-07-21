@@ -59,7 +59,7 @@ const Admin = {
 			});
 	},
 	getCustom (req){
-		const conf = req.site.conf.adminMenus;
+		const conf = req.site.environment.adminMenus;
 
 		if(!conf || !conf.length)
 			return;
@@ -69,7 +69,7 @@ const Admin = {
 		const configLang = req.ml.configLang;
 		const uLevel = req.user && req.user.level || 0;
 
-		req.site.conf.adminMenus.forEach(r => {
+		req.site.environment.adminMenus.forEach(r => {
 			if(r.userLevel <= uLevel)
 				ret.push({
 					caption: r.caption[lang] || r.caption[configLang] || r.caption,

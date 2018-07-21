@@ -5,7 +5,6 @@ module.exports = (req, res, next) => {
 
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			title: 'Shopping Cart',
 			layout: 'config'
 		})

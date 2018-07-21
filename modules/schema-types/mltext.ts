@@ -120,7 +120,7 @@ export class MultilangText {
 	 * @param {string} lang
 	 * @returns {Promise}
 	 */
-	getLangOrTranslate(lang: string) {
+	getLangOrTranslate(lang: string): Promise<string> {
 		return new Promise((ok, ko) => {
 			if (!lang)
 				return ko(new Error('no lang provided'));

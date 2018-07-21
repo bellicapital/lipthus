@@ -118,7 +118,7 @@ export class BinDataFile {
 	}
 
 	toString() {
-		return 'data:' + this.contentType + ';base64,' + this.MongoBinData.toString('base64');
+		return 'data:' + this.contentType + ';base64,' + (this.MongoBinData as any).toString('base64');
 	}
 
 	static fromMongo(mongo: any, colRef?: ColRef) {
@@ -169,7 +169,7 @@ export class BinDataFile {
 	 *
 	 * @return Promise<BinDataFile>
 	 */
-	static fromFile(param: string | UploadedFile, opt = {}) {
+	static fromFile(param: string | UploadedFile, opt = {}): Promise<BinDataFile | BinDataImage> {
 		const p: UploadedFile = typeof param === 'string' ? {path: param} as UploadedFile : param;
 
 		if (!p.mimetype)
@@ -211,7 +211,7 @@ export class BinDataFile {
 		});
 	}
 
-	static fromBuffer(p: any, opt?: any): BinDataFile | BinDataImage {
+	static fromBuffer(p: any, opt?: any): Promise<BinDataFile | BinDataImage> {
 		const obj = {
 			name: p.originalname,
 			contentType: p.mimetype,
@@ -222,7 +222,7 @@ export class BinDataFile {
 			MongoBinData: new Binary(p.buffer)
 		};
 
-		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : new BinDataFile(obj);
+		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : Promise.resolve(new BinDataFile(obj));
 	}
 
 	//noinspection JSUnusedGlobalSymbols

@@ -4,8 +4,8 @@ const pem = require('pem');
 const fs = require('fs');
 
 module.exports = function(req, res, next){
-	const domain = req.site.conf.domain.production;
-	
+	const domain = req.site.environment.domain.production;
+
 	certInfo('/etc/letsencrypt/live/' + domain + '/cert.pem', (err, cert) => {
 		if(err)
 			return next(err);
@@ -70,8 +70,6 @@ module.exports = function(req, res, next){
 
 		res.htmlPage
 			.init({
-				jQueryMobile: true,
-				jQueryMobileTheme: 'default',
 				pageTitle: 'Certificates',
 				layout: 'base',
 				view: 'admin/cert',

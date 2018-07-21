@@ -8,15 +8,22 @@ import {existsSync} from "fs";
 import {tmpdir} from "os";
 import * as multer from "multer";
 import notfoundmin from "./notfoundmin";
+import cache from "./cache";
+import bdf from "./bdf";
+import {AjaxMiddleware} from "./ajax";
+import thumb from "./thumb";
+import form from "./form";
+import video from "./video";
+import optimg from "./optimg";
+import logout from "./logout";
+import videos from "./videos";
+import lmns from "./lmns";
+import resimg from "./resimg";
 
-const bdf = require('./bdf');
-const thumb = require('./thumb');
-const video = require('./video');
-const videos = require('./videos');
+import item_comments from "./item-comments";
+
 const embed = require('./embed');
-const ajax = require('./ajax');
 const upload = require('./upload');
-const form = require('./form');
 const multipart = multer({ dest: tmpdir() }).any();
 
 const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
@@ -32,45 +39,43 @@ const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusRe
 module.exports = function(app: LipthusApplication) {
 	const router = Router({strict: true});
 
-	// ...  as any hasta que implememntemos router
+	// ...  as "any" hasta que implementemos router
 	router.post('/ngsetup/:method', uLevelMiddleware(2) as any, Setup as any);
-	router.get('/bdf/:col/:id/:field/:p/:name', bdf);
-	router.get('/bdf/:col/:id/:field/:name', bdf);
-	router.get('/bdf/:col/:id/:field', bdf);
+	router.get('/bdf/:col/:id/:field/:p/:name', bdf as any);
+	router.get('/bdf/:col/:id/:field/:name', bdf as any);
+	router.get('/bdf/:col/:id/:field', bdf as any);
 	router.get('/bdf/*', notfoundmin as any);
 	router.get('/fs/:id', fsRoute as any);
 	router.get('/fs/:id/:fn', fsRoute as any);
 	router.get('/fs/*', notfoundmin as any);
-	router.get('/video/:id', video);
-	router.get('/videos/:id', videos);
-	router.get('/videos/:id/:type*', videos);
+	router.get('/video/:id', video as any);
+	router.get('/videos/:id', videos as any);
+	router.get('/videos/:id/:type*', videos as any);
 	router.get('/embed/:id', embed);
-	router.get('/thumbs/:id\\_:width\\_:height\\_:crop:nwm?.png', thumb);
+	router.get('/thumbs/:id\\_:width\\_:height\\_:crop:nwm?.png', thumb as any);
 	// router.get('/thumbs/:schema/:id/:field\\_:width\\_:height\\_:crop:nwm?.png', thumb);
 
 	require('./admin')(app, router);
 	require('./config')(app);
 
-	router.all('/ajax', ajax);
+	router.all('/ajax', AjaxMiddleware as any);
 	router.post('/upload', multipart, upload);
-	router.post('/form/:schema/:itemid/:cmd', form);
-	router.get('/form/:schema/:itemid/get', form);
-	router.all('/form/:schema/:cmd', form);
+	router.post('/form/:schema/:itemid/:cmd', form as any);
+	router.get('/form/:schema/:itemid/get', form as any);
+	router.all('/form/:schema/:cmd', form as any);
 	router.get('/info/:method', info as any);
 	router.all('/users/:uid', userPage);
 	router.all('/subscriptions/:action', require('./subscriptions'));
 	router.get('/users/:uid/subscriptions', require('./user-subscriptions'));
 
-	router.get('/lmns/:schema/:id', require('./lmns'));
+	router.get('/lmns/:schema/:id', lmns as any);
 
 	const dir = app.get('dir');
 	router.all('/unsubscribe', require(existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
 
-	router.all('/videouploader', multipart, require('./videouploader'));
-	router.get('/resimg/:p', require('./resimg'));
-	router.get('/optimg/:fn', require('./optimg'));
-	router.get('/c/:id/:name', require('./cache')); // @deprecated
-	router.get('/c/:id.:ext*', require('./cache'));
+	router.get('/resimg/:p', resimg as any);
+	router.get('/optimg/:fn', optimg as any);
+	router.get('/c/:id.:ext*', cache as any);
 	router.post('/paypalresponse', require('./paypalresponse'));
 	router.all('/dsresponse', require('./dsresponse'));
 	router.get('/dsresponsetest', require('./dsresponsetest'));
@@ -78,8 +83,8 @@ module.exports = function(app: LipthusApplication) {
 	router.get('/comments', require('./comments-mng'));
 	router.get('/comments/:col', require('./comments-mng'));
 	router.post('/comments/:col', require('./comments-mng-post'));
-	router.get('/item-comments/:schema/:itemid', require('./item-comments'));
-	router.get('/logout', require('./logout'));
+	router.get('/item-comments/:schema/:itemid', item_comments as any);
+	router.get('/logout', logout as any);
 	// require('./login')(app);
 
 	require('./rss')(app);

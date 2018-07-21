@@ -104,7 +104,7 @@ module.exports = function(req, res, next){
 							if(err)
 								return next(err);
 
-							const subscriptionConfirmUri = req.site.conf.subscriptionConfirmUri || '/subscriptions/confirm';
+							const subscriptionConfirmUri = req.site.environment.subscriptionConfirmUri || '/subscriptions/confirm';
 
 							options.subject = r;
 							options.content = {

@@ -157,7 +157,7 @@ export namespace LipthusSchemaTypes {
 	export const BdfList = mlbdfl.BdfList;
 	export const Fs = mlfs.Fs;
 	export const FsList = mlfs.FsList;
-	export const Multilang = mltext.Multilang;
+	export const Multilang = mltext.MultilangType;
 	export const MultilangText = mltext.MultilangText;
 }
 

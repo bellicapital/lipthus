@@ -27,7 +27,7 @@ module.exports = function(req, res, next){
 					subscriptions.push(title);
 				else
 					tr.events.forEach(event => subscriptions.push(req.ml.all['_SUBS_' + event + '_' + colname] || req.ml.all['_SUBS_' + event]));
-				
+
 				if(++count === toRetreave.length)
 					cb(subscriptions);
 			} else {
@@ -43,7 +43,7 @@ module.exports = function(req, res, next){
 			}
 		});
 	};
-	
+
 	function _next(err, notify){
 		if(typeof err === 'string')
 			err = new Error(err);
@@ -55,6 +55,7 @@ module.exports = function(req, res, next){
 			req.notifyError(err);
 	}
 
+	// noinspection FallThroughInSwitchStatementJS
 	switch(req.params.action){
 		case 'addItem':
 			if(!req.body.id)
@@ -122,7 +123,7 @@ module.exports = function(req, res, next){
 					req.db.subscriptionRequest
 						.create(params)
 						.then(subscription => {
-							const subscriptionConfirmUri = req.site.conf.subscriptionConfirmUri || '/subscriptions/confirm';
+							const subscriptionConfirmUri = req.site.environment.subscriptionConfirmUri || '/subscriptions/confirm';
 
 							const opt = {
 								to: req.body.email,

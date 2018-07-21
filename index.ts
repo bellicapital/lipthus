@@ -7,6 +7,8 @@ import * as express from "express";
 import {ApplicationRequestHandler, CssResponse, KeyString} from "./interfaces/global.interface";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
+import {Multilang} from "./modules/multilang";
+import {HtmlPage} from "./modules/htmlpage";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -49,9 +51,10 @@ export interface LipthusRequest extends express.Request {
 	// hostname: string;
 	fullUri: string;
 	notifyError: (err: any) => void;
-	ml: any;
+	ml: Multilang;
 	device: any;
 	logger: LipthusLogger;
+	logout: () => void;
 	db: LipthusDb;
 	site: Site;
 	app: LipthusApplication;
@@ -77,7 +80,8 @@ export interface LipthusRequest extends express.Request {
 
 export interface LipthusResponse extends express.Response {
 	now: number;
-	htmlPage: any;
+	htmlPage: HtmlPage;
+	timer: any;
 }
 
 export interface LipthusApplication extends express.Application {
@@ -99,3 +103,4 @@ export {Search, SearchModel} from "./schemas/search";
 export {User, UserModel} from "./schemas/user";
 export {NationalitiesModel, Nationality} from './schemas/nationalities';
 export {EnvironmentParams, DbParams} from './interfaces/global.interface';
+export {LipthusComment, LipthusCommentModel} from "./schemas/comment";

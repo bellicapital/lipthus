@@ -206,7 +206,7 @@ export class BinDataImage extends BinDataFile {
 				.catch(req.next);
 	}
 
-	postFromFile(opt: any = {}) {
+	postFromFile(opt: any = {}): Promise<BinDataImage> {
 		const gmi = gm(this.MongoBinData.buffer)
 			.strip();
 
@@ -246,9 +246,9 @@ export class BinDataImage extends BinDataFile {
 			});
 	}
 
-	static fromFile(p: any, opt = {}) {
+	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
 		return BinDataFile.fromFile(p, opt)
-			.then((bdi: BinDataImage) => bdi.postFromFile());
+			.then(bdi => (bdi as BinDataImage).postFromFile());
 	}
 
 	// noinspection JSUnusedGlobalSymbols

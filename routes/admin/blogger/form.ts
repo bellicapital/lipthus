@@ -4,16 +4,13 @@ import {NextFunction} from "express";
 export function bloggerForm (req: any, res: any, next: NextFunction) {
 	const schema = req.params.schema;
 	const id = req.params.id;
-	
+
 	res.locals.hasThumb = !!req.db.schemas[schema].paths.thumb;
 	res.locals.hasSocial = !!req.db.schemas[schema].paths.socialImage;
 	res.locals.schema = schema;
-	
+
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
-			jQueryMobileTheme: 'default',
-			jQueryUI: true,
 			title: 'Blogger',
 			sitelogo: true,
 			view: 'admin/blogger/form',
@@ -39,23 +36,23 @@ export function bloggerForm (req: any, res: any, next: NextFunction) {
 		.then(() => {
 			if (id === 'new-post')
 				return res.locals.post = {published: new Date()};
-			
+
 			const re = /\.html$/;
 			let query;
-			
+
 			if (Types.ObjectId.isValid(id))
 				query = {_id: id};
 			else if (id.match(re))
 				query = {url: id.replace(re, '')};
 			else
 				return next();
-			
+
 			// Formulario
 			return req.db[schema].findOne(query)
 				.then((post: any) => {
 					if (!post)
 						throw 404;
-					
+
 					return post.populate('submitter modifier', 'uname').execPopulate();
 				})
 				.then((post: any) => {

@@ -1,6 +1,6 @@
 import {NextFunction} from "express";
 import {EventEmitter} from "events";
-import {DbParams, EnvironmentParams, Hooks} from "../interfaces/global.interface";
+import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString} from "../interfaces/global.interface";
 import * as Debug from "debug";
 import {LipthusDb} from "./db";
 import * as express from "express";
@@ -19,6 +19,11 @@ import {Config} from "./config";
 import {canonicalhost} from '../lib/canonicalhost';
 import {LipthusLogger} from "./logger";
 import '../lib/global.l';
+import notFoundMin from "../routes/notfoundmin";
+import {MultilangModule} from "./multilang";
+import {HtmlPageMiddleware} from "./htmlpage";
+
+import logger_req from "./logger-req";
 
 const debug = Debug('site:site');
 const device = require('express-device');
@@ -28,15 +33,11 @@ const Subscriptor = require('./subscriptor');
 const Notifier = require('./notifier');
 const sitemap = require('./sitemap');
 const listen = require('./listen');
-const multilang = require('./multilang');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
-const HtmlPage = require('./htmlpage');
 const fs = require('mz/fs');
 const Ng = require('./ng2');
-const notFoundMin = require("../routes/notfoundmin");
-
 // no se puede con import
 const flash = require('connect-flash');
 const favicons = require("connect-favicons");
@@ -49,7 +50,6 @@ export class Site extends EventEmitter {
 	public lipthusBuildDir = path.dirname(__dirname);
 	public package: any;
 	public cmsPackage: any;
-	public conf: any;
 	public key: string;
 	public tmpDir: string;
 	public secret: string;
@@ -65,12 +65,15 @@ export class Site extends EventEmitter {
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
-	public dbs: any = {};
+	public dbs: KeyAny = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
 	public store?: any;
 	public registerMethods: any = {};
 	public environment: EnvironmentParams;
+	public langs: KeyString = {};
+	public availableLangs: KeyAny = {};
+	public availableTanslatorLangs: KeyAny = {};
 	private _notifier: any;
 
 	/**
@@ -89,16 +92,6 @@ export class Site extends EventEmitter {
 
 		if (!this.package.config)
 			this.package.config = {};
-
-		try {
-			this.conf = require(dir + '/custom-conf');
-		} catch (e) {
-			try {
-				this.conf = require(dir + '/conf');
-			} catch (e) {
-				this.conf = {};
-			}
-		}
 
 		this.key = this.package.name;
 		this.tmpDir = os.tmpdir();
@@ -170,7 +163,7 @@ export class Site extends EventEmitter {
 	init() {
 		this.createApp();
 
-		this.mailer = new Mailer(this.conf.mail, this);
+		this.mailer = new Mailer(this.environment.mail, this);
 
 		return this.config.load()
 			.then(() => {
@@ -253,7 +246,7 @@ export class Site extends EventEmitter {
 				this.app.use(errorHandler);
 
 				// para status 40x no disparamos error
-				this.app.use(notFoundMin);
+				this.app.use(notFoundMin as any);
 
 				return this.listen();
 			});
@@ -320,7 +313,6 @@ export class Site extends EventEmitter {
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
 			.set('csrf', csrf)
-			.set('conf', this.conf)
 			.set('environment', this.environment)
 			.set('tmpDir', this.tmpDir);
 
@@ -411,7 +403,7 @@ export class Site extends EventEmitter {
 		// Para usar paths absolutos en pug extends
 		app.locals.basedir = '/';
 
-		app.use(require('./logger-req'));
+		app.use(logger_req);
 		app.use(canonicalhost);
 		app.use(favicons(this.dir + '/public/img/icons'));
 
@@ -464,7 +456,7 @@ export class Site extends EventEmitter {
 
 		app.locals.sitename = this.config.sitename;
 
-		return multilang(app)
+		return MultilangModule(app)
 			.then(() => {
 				app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 					if (req.ml && req.ml.lang && req.subdomains.length) {
@@ -478,7 +470,7 @@ export class Site extends EventEmitter {
 				});
 				app.use('/', require('./cookielaw'));
 				app.use(flash());
-				app.use(HtmlPage.middleware);
+				app.use(HtmlPageMiddleware);
 				app.use(session(this));
 				LipthusLogger.init(app);
 				app.use(require('./cmjspanel'));
@@ -486,8 +478,8 @@ export class Site extends EventEmitter {
 				facebook(app);
 				app.use(auth(this));
 
-				if ('production' === app.get('env') && this.conf.cache)
-					app.use(require('./cache')(this.conf.cache));
+				if ('production' === app.get('env') && this.environment.cache)
+					app.use(require('./cache')(this.environment.cache));
 
 				app.use((req: LipthusRequest, res: any, next: NextFunction) => {
 					res.timer.end('cmjs');
@@ -497,14 +489,14 @@ export class Site extends EventEmitter {
 			});
 	}
 
-	logo(width: number, height: number) {
+	logo(width = 340, height = 48) {
 		if (this.config.sitelogo)
-			return this.config.sitelogo!.info(width || 340, height || 48);
+			return this.config.sitelogo!.info(width, height);
 
 		return {
 			uri: '/cms/img/logo.png',
-			width: 340,
-			height: 48
+			width: width,
+			height: height
 		};
 	}
 

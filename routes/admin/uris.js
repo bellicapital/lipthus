@@ -7,8 +7,6 @@ module.exports = function (req, res, next){
 		.init({
 			view: 'admin/uris',
 			title: 'Uri manager',
-			jQueryMobile: true,
-			jQueryMobileTheme: 'default',
 			layout: 'base',
 			userLevel: 3
 		})

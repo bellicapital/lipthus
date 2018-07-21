@@ -8,7 +8,6 @@ module.exports = (req, res, next)=>{
 
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
 			pageTitle: 'W3C validation',
 			layout: 'base',
 			view: 'admin/w3cv',

@@ -3,11 +3,9 @@
 module.exports = function(req, res, next){
 
 	const states = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
-	
+
 	res.htmlPage
 		.init({
-			jQueryMobile: true,
-			jQueryMobileTheme: 'default',
 			pageTitle: 'Websocket monitor',
 			layout: 'base',
 			view: 'admin/ws',

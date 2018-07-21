@@ -39,7 +39,7 @@ module.exports = (app) => {
 		}, app);
 	} else {
 		// noinspection JSUnresolvedVariable
-		if (app.site.externalProtocol === 'https' || app.get('conf').trustProxy)
+		if (app.site.externalProtocol === 'https' || app.get('environment').trustProxy)
 			app.enable('trust proxy');
 
 		server = require('http').createServer(app);

@@ -22,11 +22,9 @@ module.exports = function page(Schema){
 		menu: {type: Boolean, default: true},
 		sitemap: {type: Boolean, default: false},
 		theme: {type: String, default: "default"},
-		uitheme: String,
 		robots: String,
 		forceSSL: {type: Boolean, default: false},
 		noCache: {type: Boolean, default: true},
-		jQueryMobile: {type: Boolean, default: false},
 		video: Schema.Types.Fs,
 		image: {type: Schema.Types.BdfList, noWatermark: true},
 		html: String

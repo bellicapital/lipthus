@@ -25,7 +25,7 @@ export function getSchema() {
 		birthday: String,
 		pass: {type: String, maxlength: 32},
 		level: {type: Number, formtype: 'int', default: 0},
-		type: String,	// tipo de usuario especial (videouploader, translator, blogger, ...)
+		type: String,	// tipo de usuario especial (translator, blogger, ...)
 		timezone_offset: {type: Number, default: 1},
 		last_login: Date,
 		mailok: Boolean,
@@ -37,7 +37,6 @@ export function getSchema() {
 		address: {type: {}, formtype: 'location'},
 		phone: [],
 		nif: String,
-		jQueryUiTheme: String,
 		data: {},
 		cart: {type: ShoppingCart.schema, default: null},
 		oauth_user_id: String,
@@ -216,6 +215,7 @@ export interface User extends Document {
 	address: any;
 	devices: Array<any>;
 	subscriptions: any;
+	type?: string;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
