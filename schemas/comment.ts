@@ -8,65 +8,90 @@ const md5 = require('md5');
 
 export const name = "comment";
 
+const Answer = new LipthusSchema({
+	active: Boolean,
+	name: String,
+	created: {type: Date, default: Date.now},
+	submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
+	text: String,
+	iplocation: {}
+});
+
+export interface Answer {
+	active: boolean;
+	name: string;
+	created: Date;
+	submitter: Types.ObjectId;
+	text: string;
+	iplocation: any;
+}
+
+export interface IpLocation {
+	ip: string;
+	area_code?: string;
+	dma_code?: string;
+	longitude?: number;
+	latitude?: number;
+	postal_code?: string;
+	city: string;
+	region?: string;
+	country_name?: string;
+	country_code3?: string;
+	country_code?: string;
+	continent_code?: string;
+}
+
+const schema = new LipthusSchema({
+	active: {type: Boolean, index: true},
+	refused: {type: Boolean, index: true},
+	ref: DBRef.schema,
+	name: String,
+	email: String, // {type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
+	text: String,
+	rating: Number,
+	iplocation: {
+		// ip: String,
+		// area_code: String,
+		// dma_code: String,
+		// longitude: Number,
+		// latitude: Number,
+		// postal_code: String,
+		// city: String,
+		// region: String,
+		// country_name: String,
+		// country_code3: String,
+		// country_code: String,
+		// continent_code: String
+	},
+	url: String,
+	lang: String,
+	userLocation: String,
+	itemTitle: String,
+	answers: [Answer],
+	userAgent: String,
+	modifier: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
+	submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
+	extra: LipthusSchema.Types.Mixed
+}, {
+	/*
+    usePushEach: true
+    jj - 17/01/2018
+    evita un error $pushAll en  mongoose <5.0
+    https://medium.com/@stefanledin/how-to-solve-the-unknown-modifier-pushall-error-in-mongoose-d631489f85c0
+     */
+	usePushEach: true,
+	collection: 'comments',
+	// submitter: true,
+	// modifier: true,
+	lastMod: true,
+	created: true
+});
+
 // noinspection JSUnusedGlobalSymbols
 export function getSchema() {
 
-	const Answer = new LipthusSchema({
-		active: Boolean,
-		name: String,
-		created: {type: Date, default: Date.now},
-		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
-		text: String,
-		iplocation: {}
-	});
+	return schema.loadClass(Comment);
 
-	const s = new LipthusSchema({
-		active: {type: Boolean, index: true},
-		refused: {type: Boolean, index: true},
-		ref: DBRef.schema,
-		name: String,
-		email: String, // {type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
-		text: String,
-		rating: Number,
-		iplocation: {
-			// ip: String,
-			// area_code: String,
-			// dma_code: String,
-			// longitude: Number,
-			// latitude: Number,
-			// postal_code: String,
-			// city: String,
-			// region: String,
-			// country_name: String,
-			// country_code3: String,
-			// country_code: String,
-			// continent_code: String
-		},
-		url: String,
-		lang: String,
-		itemTitle: String,
-		answers: [Answer],
-		modifier: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
-		submitter: {type: LipthusSchema.Types.ObjectId, ref: 'user'},
-		extra: LipthusSchema.Types.Mixed
-	}, {
-		/*
-		usePushEach: true
-		jj - 17/01/2018
-		evita un error $pushAll en  mongoose <5.0
-		https://medium.com/@stefanledin/how-to-solve-the-unknown-modifier-pushall-error-in-mongoose-d631489f85c0
-		 */
-		usePushEach: true,
-		collection: 'comments',
-		// submitter: true,
-		// modifier: true,
-		lastMod: true,
-		created: true
-	});
-
-	s.loadClass(Comment);
-
-	return s;
 }
 
 export class Comment {
@@ -74,15 +99,21 @@ export class Comment {
 	public _id: any;
 	public active?: boolean;
 	public refused?: boolean;
-	public created?: Date;
+	public email!: string;
 	public name!: string;
 	public text!: string;
 	public lang!: string;
-	public iplocation?: any;
-	public answers?: Array<any>;
+	public iplocation?: IpLocation;
+	public answers?: Array<Answer>;
 	public ref?: any;
 	public itemTitle!: string;
 	public jsonInfo: any;
+	public url?: string;
+	public userAgent?: string;
+	public rating?: number;
+	public created?: Date;
+	public lastMod?: Date;
+	public userLocation?: string;
 
 	values4show () {
 		const d = this.created || this._id.getTimestamp();
