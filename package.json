@@ -38,6 +38,7 @@
 		"@types/gm": "^1.18.0",
 		"@types/md5": "^2.1.32",
 		"@types/mongoose": "^5.2.1",
+		"@types/morgan": "^1.7.35",
 		"@types/multer": "^1.3.7",
 		"@types/mz": "0.0.32",
 		"@types/node": "^10.5.2",
@@ -111,8 +112,5 @@
 		"unidecode": "^0.1.8",
 		"w3cjs": "^0.4.0",
 		"ws": "^5.2.2"
-	},
-	"devDependencies": {
-		"@types/morgan": "^1.7.35"
 	}
 }
