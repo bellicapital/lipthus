@@ -5,8 +5,9 @@
 	"scripts": {
 		"start": "node app",
 		"postinstall": "tsc && npm run copyfiles && npm run checkserver",
+		"build": "tsc && npm run copyfiles",
 		"tsc": "tsc",
-		"copyfiles": "copyfiles \"package.json\" dist",
+		"copyfiles": "copyfiles \"./package.json\" \"./modules/*.js\" \"./modules/**/*.js\" \"./routes/*.js\" \"./routes/**/*.js\" \"./schemas/*.js\" \"./dist\"",
 		"checkserver": "node dist/lib/server"
 	},
 	"repository": {
