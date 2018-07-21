@@ -10,9 +10,9 @@ copyfiles([
 	'routes/**/*.js',
 	'schemas/*.js',
 	'dist'
-], (err, r) => {
-	console.log('error', err);
-	console.log('result', r);
+], (err) => {
+	if (err)
+		console.error(err);
 
 	require('../dist/lib/server');
 });
