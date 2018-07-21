@@ -5,7 +5,7 @@
 	"scripts": {
 		"start": "node app",
 		"postinstall": "npm run build && npm run checkserver",
-		"build": "tsc && npm run copyfiles",
+		"build": "tsc",
 		"tsc": "tsc",
 		"copyfiles": "copyfiles package.json modules/*.js modules/**/*.js routes/*.js routes/**/*.js schemas/*.js dist",
 		"checkserver": "node dist/lib/server"
