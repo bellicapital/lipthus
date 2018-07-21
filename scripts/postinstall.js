@@ -14,5 +14,5 @@ copyfiles([
 	console.log('error', err);
 	console.log('result', r);
 
-	require('./dist/lib/server');
+	require('../dist/lib/server');
 });
