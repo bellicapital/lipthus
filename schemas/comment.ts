@@ -123,6 +123,7 @@ export class Comment {
 			created: d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(),
 			name: this.name,
 			text: this.text,
+			rating: this.rating,
 			city: this.iplocation && this.iplocation.city,
 			answers: this.answers
 		};
