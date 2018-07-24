@@ -262,10 +262,7 @@
 			"meta_description": [
 				"multilang",
 				"_MD_AM_METADESC",
-				{
-					"es": "Sitio web progresivo Lipthus",
-					"en": "Lipthus progressive application site"
-				},
+				null,
 				"_MD_AM_METADESCDSC",
 				"textarea"
 			],
