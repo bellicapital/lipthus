@@ -116,6 +116,9 @@ export class Site extends EventEmitter {
 	}
 
 	getEnvironment(): EnvironmentParams {
+		if (process.env.LIPTHUS_ENV)
+			return require(this.dir + '/environments/' + process.env.LIPTHUS_ENV).environment;
+
 		if (fs.existsSync(this.dir + '/custom-conf.json')) {
 			const ret = require(this.dir + '/custom-conf');
 
