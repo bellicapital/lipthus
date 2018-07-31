@@ -471,7 +471,6 @@ export class Site extends EventEmitter {
 
 					next();
 				});
-				app.use('/', require('./cookielaw'));
 				app.use(flash());
 				app.use(HtmlPageMiddleware);
 				app.use(session(this));
