@@ -208,6 +208,7 @@ export interface User extends Document {
 	key: string;
 	uname: string;
 	name: string;
+	pass: string;
 	level: number;
 	cart: any;
 	email: string;

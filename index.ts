@@ -54,7 +54,9 @@ export interface LipthusRequest extends express.Request {
 	ml: Multilang;
 	device: any;
 	logger: LipthusLogger;
+	logIn: (user: any, cb: any) => void;
 	logout: () => void;
+	userLoginMsg?: string;
 	db: LipthusDb;
 	site: Site;
 	app: LipthusApplication;
