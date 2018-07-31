@@ -115,7 +115,8 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 					image: req.site.dir + '/' + opt.wm.image,
 					gravity: opt.wm.gravity,
 					geometry: opt.wm.geometry,
-					opacity: opt.wm.opacity
+					opacity: opt.wm.opacity,
+					ratio: opt.wm.ratio
 				};
 			}
 

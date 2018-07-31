@@ -153,7 +153,7 @@ export class BinDataImage extends BinDataFile {
 
 		return Cache
 			.findOne(cacheQuery)
-			.then((cached: any) => {cached = null;
+			.then((cached: any) => {
 				if (cached)
 					return BinDataFile.fromMongo(cached);
 
@@ -203,7 +203,7 @@ export class BinDataImage extends BinDataFile {
 
 					return promisify(logo.size.bind(logo))()
 						.then((logoSize: any) => {
-							const wmWidth = (opt.wm.percent || .5) * opt.width;
+							const wmWidth = (opt.wm.ratio || .5) * opt.width;
 
 							// calculate logoHeight with keeping aspect ratio
 							const wmHeight = (logoSize.height * wmWidth) / logoSize.width;
