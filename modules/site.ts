@@ -22,12 +22,14 @@ import '../lib/global.l';
 import notFoundMin from "../routes/notfoundmin";
 import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";
-
 import logger_req from "./logger-req";
+import auth from "./auth";
+import {exists as exists_, existsSync} from "fs";
+import {promisify} from "util";
 
+const pExists = promisify(exists_);
 const debug = Debug('site:site');
 const device = require('express-device');
-const auth = require('./auth');
 const multipart = require('./multipart');
 const Subscriptor = require('./subscriptor');
 const Notifier = require('./notifier');
@@ -36,7 +38,6 @@ const listen = require('./listen');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
-const fs = require('mz/fs');
 const Ng = require('./ng2');
 // no se puede con import
 const flash = require('connect-flash');
@@ -119,7 +120,7 @@ export class Site extends EventEmitter {
 		if (process.env.LIPTHUS_ENV)
 			return require(this.dir + '/environments/' + process.env.LIPTHUS_ENV).environment;
 
-		if (fs.existsSync(this.dir + '/custom-conf.json')) {
+		if (existsSync(this.dir + '/custom-conf.json')) {
 			const ret = require(this.dir + '/custom-conf');
 
 			return ret.include ? require(this.dir + '/' + ret.include) : ret;
@@ -536,7 +537,7 @@ export class Site extends EventEmitter {
 	loadLocalRoutes() {
 		const path_ = this.dir + '/routes';
 
-		return fs.exists(path_)
+		return pExists(path_)
 			.then((exists: boolean) => exists && require(path_)(this.app));
 	}
 

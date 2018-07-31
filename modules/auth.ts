@@ -156,7 +156,7 @@ const clearCookiesMiddleware = (req: LipthusRequest, res: LipthusResponse, next:
 	next();
 };
 
-export = (site: Site): any => {
+export default (site: Site): any => {
 	const app = site.app;
 
 	const passport = new Passport();
