@@ -153,25 +153,24 @@ export class BinDataImage extends BinDataFile {
 
 		return Cache
 			.findOne(cacheQuery)
-			.then((cached: any) => {
+			.then((cached: any) => {cached = null;
 				if (cached)
 					return BinDataFile.fromMongo(cached);
 
 				return this.toBuffer(opt)
 					.then((buffer: Buffer) => {
-							const cache = Object.assign({
-								name: this.name,
-								contentType: cacheQuery.contentType,
-								mtime: this.mtime || new Date(),
-								tag: 'image',
-								MongoBinData: new Binary(buffer),
-								ref: this.colRef,
-								srcmd5: this.md5
-							}, opt);
+						const cache = Object.assign({
+							name: this.name,
+							contentType: cacheQuery.contentType,
+							mtime: this.mtime || new Date(),
+							tag: 'image',
+							MongoBinData: new Binary(buffer),
+							ref: this.colRef,
+							srcmd5: this.md5
+						}, opt);
 
-							return new Cache(cache);
-						}
-					)
+						return new Cache(cache);
+					})
 					.then((cached2: any) => cached2.save())
 					.then((cached3: any) => BinDataFile.fromMongo(cached3));
 			});
@@ -200,16 +199,26 @@ export class BinDataImage extends BinDataFile {
 					return buffer;
 
 				if (opt.wm.type === 2) {
-					gmi = gm(buffer, this.name)
-						.command('composite')
-						.gravity(opt.wm.gravity || 'Center')
-						.strip()
-						.in(opt.wm.image);
+					const logo = gm(opt.wm.image);
 
-					if (opt.wm.geometry)
-						gmi.geometry(opt.wm.geometry);
+					return promisify(logo.size.bind(logo))()
+						.then((logoSize: any) => {
+							const wmWidth = (opt.wm.percent || .5) * opt.width;
 
-					return promisify(gmi.toBuffer.bind(gmi))();
+							// calculate logoHeight with keeping aspect ratio
+							const wmHeight = (logoSize.height * wmWidth) / logoSize.width;
+
+							gmi = gm(buffer, this.name)
+								.gravity(opt.wm.gravity || 'Center')
+								.out('(', opt.wm.image, ' ', '-resize', wmWidth + 'x' + wmHeight + '>', ')')
+								.out('-composite')
+							;
+
+							if (opt.wm.geometry)
+								gmi.geometry(opt.wm.geometry);
+
+							return promisify(gmi.toBuffer.bind(gmi))();
+						});
 				}
 
 				return buffer;
