@@ -63,6 +63,7 @@ export interface LipthusRequest extends express.Request {
 	maxImgWidth?: number;
 	maxImgHeight?: number;
 	imgCrop?: boolean;
+	imgEnlarge?: boolean;
 	imgnwm?: boolean;
 	ipLocation: any;
 	nationalities: KeyString;

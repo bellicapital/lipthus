@@ -122,7 +122,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 				if (!val)
 					return Promise.resolve();
 
-				info = val.info(req.maxImgWidth, req.maxImgHeight, req.imgCrop, req.imgnwm);
+				info = val.info(req); // .maxImgWidth, req.maxImgHeight, req.imgCrop, req.imgnwm);
 
 				info.uri = site.staticHost + info.uri;
 

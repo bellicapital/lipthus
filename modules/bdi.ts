@@ -4,6 +4,8 @@ const Image = require('./image');
 const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 import {BinDataFile, DbfInfo, DbfInfoParams} from './bdf';
 import {promisify} from 'util';
+import {LipthusRequest} from "../index";
+import {IncomingMessage} from "http";
 
 const path = require('path');
 const md5 = require('md5');
@@ -27,7 +29,20 @@ export class BinDataImage extends BinDataFile {
 		this.title = data.title || {};
 	}
 
-	info(width?: number, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
+	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
+		l(mixed && mixed.constructor.name);
+		let width: number | undefined;
+
+		if (mixed instanceof IncomingMessage) {
+			width = mixed.maxImgWidth;
+			height = mixed.maxImgHeight;
+			crop = mixed.imgCrop;
+			enlarge = mixed.imgEnlarge;
+			nwm = mixed.imgnwm;
+		} else {
+			width = mixed as number;
+		}
+
 		const ret: any = new DbfImageInfo({
 			name: this.name,
 			contentType: this.contentType,
