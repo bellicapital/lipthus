@@ -30,7 +30,7 @@ export class BinDataImage extends BinDataFile {
 	}
 
 	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
-		l(mixed && mixed.constructor.name);
+		let lang = 'es';
 		let width: number | undefined;
 
 		if (mixed instanceof IncomingMessage) {
@@ -39,6 +39,7 @@ export class BinDataImage extends BinDataFile {
 			crop = mixed.imgCrop;
 			enlarge = mixed.imgEnlarge;
 			nwm = mixed.imgnwm;
+			lang = mixed.ml.lang;
 		} else {
 			width = mixed as number;
 		}
@@ -54,8 +55,8 @@ export class BinDataImage extends BinDataFile {
 			weight: this.weight,
 			size: this.size,
 			mtime: this.mtime,
-			alt: this.alt,
-			title: this.title,
+			alt: this.alt ? this.alt[lang] : undefined,
+			title: this.title ? this.title[lang] : undefined,
 			md5: this.md5,
 			key: this.getKey()
 		});
@@ -134,21 +135,24 @@ export class BinDataImage extends BinDataFile {
 		if (!opt['ref.id'] && this.colRef)
 			Object.keys(this.colRef).forEach(i => opt['ref.' + i] = this.colRef[i]);
 
-		const cacheOpt: any = {};
+		const cacheQuery: any = {};
 
-		Object.assign(cacheOpt, opt);
+		Object.assign(cacheQuery, opt);
 
-		cacheOpt.contentType = 'image/' + (opt.format || 'jpg');
-		delete cacheOpt.format;
+		cacheQuery.contentType = 'image/' + (opt.format || 'jpg');
+		delete cacheQuery.format;
 
-		if (cacheOpt.wm)
-			cacheOpt.wm = true;
+		if (opt.wm) {
+			delete cacheQuery.wm;
 
-		if (!cacheOpt.width)
-			cacheOpt.width = {$exists: false};
+			Object.keys(opt.wm).forEach(k => cacheQuery['wm.' + k] = opt.wm[k]);
+		}
+
+		if (!cacheQuery.width)
+			cacheQuery.width = {$exists: false};
 
 		return Cache
-			.findOne(cacheOpt)
+			.findOne(cacheQuery)
 			.then((cached: any) => {
 				if (cached)
 					return BinDataFile.fromMongo(cached);
@@ -157,7 +161,7 @@ export class BinDataImage extends BinDataFile {
 					.then((buffer: Buffer) => {
 							const cache = Object.assign({
 								name: this.name,
-								contentType: cacheOpt.contentType,
+								contentType: cacheQuery.contentType,
 								mtime: this.mtime || new Date(),
 								tag: 'image',
 								MongoBinData: new Binary(buffer),
@@ -316,8 +320,8 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	height: number;
 	naturalWidth: number;
 	naturalHeight: number;
-	alt: KeyString;
-	title: KeyString;
+	alt?: string;
+	title?: string;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -326,8 +330,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	height: number;
 	naturalWidth: number;
 	naturalHeight: number;
-	alt: KeyString;
-	title: KeyString;
+	alt?: string;
+	title?: string;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
@@ -336,8 +340,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		this.height = p.height;
 		this.naturalWidth = p.naturalWidth;
 		this.naturalHeight = p.naturalHeight;
-		this.alt = p.alt || {};
-		this.title = p.title || {};
+		this.alt = p.alt;
+		this.title = p.title;
 	}
 
 	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg') {

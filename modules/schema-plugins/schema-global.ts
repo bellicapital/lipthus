@@ -134,7 +134,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 
 				Object.keys(val).forEach(i => {
 					if (val[i].info) {
-						info = val[i].info(req.maxImgWidth, req.maxImgHeight);
+						info = val[i].info(req);
 						info.uri = site.staticHost + info.uri;
 						ret.push(info);
 					}
