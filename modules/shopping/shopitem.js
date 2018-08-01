@@ -174,7 +174,7 @@ ShopItemExtra.schema = new LipthusSchema({
 ShopItem.schema = new LipthusSchema({
 	quantity: {type: Number, default: 1},
 	description: {},
-	ref: DBRef.schema,
+	ref: {type: DBRef.schema},
 	price: Number,
 	extras: [ShopItemExtra.schema]
 }, {

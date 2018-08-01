@@ -5,7 +5,7 @@ const DBRef = require('mongoose').mongo.DBRef;
 
 module.exports = function vote(Schema){
 	const s = new Schema({
-		item: DBRef.schema,
+		item: {type: DBRef.schema},
 		iplocation: {},
 		device: {},
 		submitter: {type: Schema.Types.ObjectId, ref: 'user'}

@@ -44,7 +44,7 @@ export interface IpLocation {
 const schema = new LipthusSchema({
 	active: {type: Boolean, index: true},
 	refused: {type: Boolean, index: true},
-	ref: DBRef.schema,
+	ref: {type: DBRef.schema},
 	name: String,
 	email: String, // {type: String, validate: /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/},
 	text: String,
