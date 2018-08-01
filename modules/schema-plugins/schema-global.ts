@@ -101,6 +101,10 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			return Promise.resolve();
 
 		const opt = schema.tree[k];
+
+		if (!opt)
+			return Promise.resolve(val);
+
 		const ret: Array<any> = [];
 		const site = this.db.eucaDb.site;
 		let info: any = null;
