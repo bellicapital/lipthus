@@ -21,9 +21,9 @@ export interface Answer {
 	active: boolean;
 	name: string;
 	created: Date;
-	submitter: Types.ObjectId;
+	submitter?: Types.ObjectId;
 	text: string;
-	iplocation: any;
+	iplocation?: any;
 }
 
 export interface IpLocation {
@@ -33,7 +33,7 @@ export interface IpLocation {
 	longitude?: number;
 	latitude?: number;
 	postal_code?: string;
-	city: string;
+	city?: string;
 	region?: string;
 	country_name?: string;
 	country_code3?: string;
