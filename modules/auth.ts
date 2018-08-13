@@ -111,7 +111,10 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   request.  The first step in Google authentication will involve
 			//   redirecting the user to google.com.  After authorization, Google
 			//   will redirect the user back to this application at /auth/google/callback
-			app.get('/auth/google',
+			app.get('/auth/google', (req, res, next) => {
+					(req as any).session.redirect_to = req.query.redirect_to;
+					next();
+				},
 				passport.authenticate('google', {
 					scope: [
 						'https://www.googleapis.com/auth/plus.login',
@@ -124,12 +127,12 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   request.  If authentication fails, the user will be redirected back to the
 			//   login page.  Otherwise, the primary route function  will be called,
 			//   which, in this example, will redirect the user to the home page.
-			app.get('/oauth2cb', clearCookiesMiddleware as any,
+			app.get('/oauth2cb', clearCookiesMiddleware as any, (req, res, next) => {
 				passport.authenticate('google', {
 					failureRedirect: '/login',
-					successRedirect: '/'
-				})
-			);
+					successRedirect: (req as any).session.redirect_to || '/'
+				})(req, res, next);
+			});
 		}
 	};
 

@@ -7,5 +7,5 @@ export default (req: LipthusRequest, res: LipthusResponse) => {
 
 	Object.keys(req.cookies).forEach((k => res.clearCookie(k)));
 
-	res.redirect('/');
+	res.redirect('back');
 };

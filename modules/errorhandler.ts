@@ -34,8 +34,7 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 
 	if (err.status === 401) {
 		if (!res.headersSent) {
-
-			return res.redirect('/login?referrer=' + encodeURIComponent(req.originalUrl));
+			return res.redirect('/login/?referrer=' + encodeURIComponent(req.originalUrl));
 		}
 
 		return next();
