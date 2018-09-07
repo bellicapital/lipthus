@@ -36,15 +36,20 @@ module.exports = function dynobject() {
 				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.eucaDb.schema(name, schema)));
 		},
 		getSchemas: function () {
+			if (this.schema.options.schemas)
+				return Promise.resolve(this.schema.options.schemas);
+
+			this.schema.options.schemas = {};
+
 			return this.find()
 				.then((objs: Array<any>) => {
-					const schemas = {};
-					
-					s.set('schemas', schemas);
-					
-					objs.forEach(DoSchema.fromModel, schemas);
-					
-					return schemas;
+					objs.forEach(o => {
+						const schema = DoSchema.fromModel(o);
+
+						this.schema.options.schemas[schema.options.name] = schema;
+					});
+
+					return this.schema.options.schemas;
 				});
 		},
 		getKeys: function () {

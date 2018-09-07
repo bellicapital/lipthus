@@ -185,7 +185,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	}
 
 	schema(name: string, schema: LipthusSchema) {
-		schema.set('name', name);
+		schema.options.name = name;
 		schema.plugin(schemaGlobalMethods as any);
 		schema.plugin(schemaGlobalStatics as any);
 
