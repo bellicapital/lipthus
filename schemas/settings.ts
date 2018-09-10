@@ -1,6 +1,6 @@
 import {BinDataFile, MultilangText} from "../modules";
 import {LipthusSchema} from "../lib";
-import {Document, Model} from "mongoose";
+import {Document, Model, Types} from "mongoose";
 
 namespace LipthusSettings {
 	export const name = 'settings';
@@ -66,8 +66,12 @@ namespace LipthusSettings {
 		setValue(this: any, key: string, value: any, type?: string) {
 			const update: any = {value: value};
 
-			if (type)
+			if (type) {
 				update.type = type;
+
+				if (value && type === 'ObjectId')
+					update.value = Types.ObjectId(value);
+			}
 
 			return this.update({name: key}, update, {upsert: true});
 		}

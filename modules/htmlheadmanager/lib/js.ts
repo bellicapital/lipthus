@@ -6,6 +6,9 @@ import {KeyAny} from "../../../interfaces/global.interface";
 
 // @types/uglify-es ???
 const uglify: any = require("uglify-es");
+const uglifyOptions = {
+	// ecma: 5
+};
 
 export class JsManager {
 
@@ -86,8 +89,8 @@ export class JsManager {
 			const ret: any = {
 				head: [],
 				body: [],
-				headInline: this.headInline ? uglify.minify(this.headInline).code : '',
-				bodyInline: this.deferredInline ? uglify.minify(this.deferredInline).code : ''
+				headInline: this.headInline ? uglify.minify(this.headInline, uglifyOptions).code : '',
+				bodyInline: this.deferredInline ? uglify.minify(this.deferredInline, uglifyOptions).code : ''
 			};
 			const scripts: Array<JsFile> = [];
 			const scriptsArray = Object.values(this.scripts);
@@ -193,7 +196,7 @@ export class JsManager {
 				if (cached)
 					return cached;
 
-				const ugliResult = uglify.minify(fs.readFileSync(script.path, {encoding: 'utf8'}));
+				const ugliResult = uglify.minify(fs.readFileSync(script.path, {encoding: 'utf8'}), uglifyOptions);
 
 				if (ugliResult.error)
 					throw ugliResult.error;

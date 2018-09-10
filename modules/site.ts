@@ -66,7 +66,7 @@ export class Site extends EventEmitter {
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
-	public dbs: KeyAny = {};
+	public dbs: {[s: string]: LipthusDb} = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
 	public store?: any;

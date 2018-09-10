@@ -19,9 +19,11 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		} else {
 			const dbs = req.site.dbs;
 
-			Object.values(dbs).forEach(db => {
+			Object.values(dbs).some(db => {
 				if (db[colname])
 					collection = db[colname];
+
+				return !!db[colname];
 			});
 		}
 	}
