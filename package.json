@@ -3,7 +3,7 @@
 	"version": "1.6.5",
 	"private": true,
 	"scripts": {
-		"start": "node app",
+		"start": "ts-node index",
 		"postinstall": "tsc && node scripts/postinstall"
 	},
 	"repository": {
