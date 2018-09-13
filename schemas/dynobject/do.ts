@@ -56,7 +56,7 @@ class DoSchema extends LipthusSchema {
 
 	static fromModel(obj: any) {
 		const def: any = {
-			rating: {type: Number, index: 1, default: 2.5},
+			rating: {type: Number, index: 1},
 			ratingCount: Number,
 			parents: [{}],
 			children: [{}],
