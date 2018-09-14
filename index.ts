@@ -1,7 +1,7 @@
 import * as Debug from 'debug';
 import './lib/vanilla.extensions';
 import './lib/global.l';
-import {LipthusDb, Site} from "./modules";
+import {LipthusDb, Site, SiteOptions} from "./modules";
 import {User} from "./schemas/user";
 import * as express from "express";
 import {ApplicationRequestHandler, CssResponse, KeyString} from "./interfaces/global.interface";
@@ -31,7 +31,7 @@ process.on('warning', (warning: any) => {
 process.on('unhandledRejection', (reason: any, p: any) => console.log('Unhandled Rejection at: Promise', p, 'reason:', reason));
 
 // noinspection JSUnusedGlobalSymbols
-export function lipthusSite(dir: string, options?: any): Promise<Site> {
+export function lipthusSite(dir: string, options?: SiteOptions): Promise<Site> {
 	return new Promise((ok, ko) => {
 		const site = new Site(dir, options);
 
