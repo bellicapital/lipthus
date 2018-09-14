@@ -76,14 +76,21 @@ export class Site extends EventEmitter {
 	public availableLangs: KeyAny = {};
 	public availableTanslatorLangs: KeyAny = {};
 	private _notifier: any;
+	private _hooks: Hooks = {pre: {}, post: {}};
 
 	/**
 	 * @deprecated
 	 */
 	public cmsDir: string;
 
-	constructor(public dir: string, private _hooks: Hooks = {pre: {}, post: {}}) {
+	constructor(public dir: string, public options: SiteOptions = {}) {
 		super();
+
+		if (this.options.pre)
+			this._hooks.pre = this.options.pre;
+
+		if (this.options.post)
+			this._hooks.post = this.options.post;
 
 		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
 		// noinspection JSDeprecatedSymbols
@@ -252,7 +259,10 @@ export class Site extends EventEmitter {
 				// para status 40x no disparamos error
 				this.app.use(notFoundMin as any);
 
-				return this.listen();
+				if (!this.options.skipListening)
+					return this.listen();
+				else
+					debug('Skip listening');
 			});
 	}
 
@@ -427,6 +437,7 @@ export class Site extends EventEmitter {
 		app.use('/js', require('../lib/js'));
 		app.use('/.well-known/acme-challenge', express.static("/etc/letsencrypt/webroot/.well-known/acme-challenge"));
 
+		// noinspection TypeScriptValidateJSTypes
 		app.use(device.capture());
 		device.enableDeviceHelpers(app);
 
@@ -579,4 +590,18 @@ export class Site extends EventEmitter {
 	translate(src: string, from: string, to: string, cb: (err: Error, r: any) => void, srclog: string) {
 		this.translator.translate(src, from, to, cb, srclog);
 	}
+}
+
+export interface SiteOptions {
+	pre?: {
+		checkVersion?: any;
+		setupApp?: any;
+		finish?: any;
+	};
+	post?: {
+		setupApp?: any;
+		plugins?: any;
+		finish?: any;
+	};
+	skipListening?: boolean;
 }
