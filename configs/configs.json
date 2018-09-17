@@ -538,7 +538,7 @@
 			"googleApiKey": [
 				"string",
 				"Google Api key",
-				"706794212879-1jt8annibt4thuq87nsh7gu0ok0am0n5.apps.googleusercontent.com",
+				"",
 				"<a href='https://code.google.com/apis/console'>Google Services Api Key</a>"
 			],
 			"googleSecret": [

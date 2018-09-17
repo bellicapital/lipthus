@@ -35,7 +35,7 @@ export class Translator {
 				break;
 		}
 
-		Object.defineProperty(site, 'translator', {value: this});
+		site.translator = this;
 	}
 
 	availableLangs() {
@@ -83,7 +83,8 @@ export class Translator {
 							}
 						});
 
-						this.tmp.set(this.service + 'AvailableLangs', this._availableLangs);
+						this.tmp.set(this.service + 'AvailableLangs', this._availableLangs)
+							.catch((errTmp: Error) => console.error(errTmp));
 
 						ok(this._availableLangs);
 					});
