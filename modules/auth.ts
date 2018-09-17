@@ -112,7 +112,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   redirecting the user to google.com.  After authorization, Google
 			//   will redirect the user back to this application at /auth/google/callback
 			app.get('/auth/google', (req, res, next) => {
-					(req as any).session.redirect_to = req.query.redirect_to;
+					(req as any).session.redirect_to = req.query.redirect_to || '';
 					next();
 				},
 				passport.authenticate('google', {

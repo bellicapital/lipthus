@@ -95,9 +95,7 @@ export class Multilang {
 	static _translateAvailable(site: Site) {
 		const config = site.config;
 
-		const ret = config.auto_translate;
-
-		if (!ret)
+		if (!config.auto_translate)
 			return false;
 
 		if (config.translate_service === 'azure')

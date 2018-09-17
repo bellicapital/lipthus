@@ -1,11 +1,12 @@
 import {LipthusRequest} from "../index";
+import {KeyString} from "../interfaces/global.interface";
 
 export class AjaxGlobalMethods {
 	
 	constructor(public req: LipthusRequest) {
 	}
 	
-	main() {
+	main(): Promise<any> {
 		const req = this.req;
 		
 		return req.ml.langUserNames()
@@ -23,10 +24,12 @@ export class AjaxGlobalMethods {
 	}
 	
 	// noinspection JSUnusedGlobalSymbols
-	loginInfo() {
+	loginInfo(): Promise<LoginInfo> {
 		return this.req.ml.load('ecms-user')
 			.then(() => this.main())
 			.then((ret: any) => {
+				ret = <LoginInfo> ret;
+
 				if (ret.user)
 					ret.msg = 'Ya estás logueado como ' + ret.user.name;
 				
@@ -81,3 +84,14 @@ export class AjaxGlobalMethods {
 }
 
 export default AjaxGlobalMethods;
+
+export interface LoginInfo {
+	LC: KeyString;
+	user: any;
+	msg?: string;
+	registerMethods: {
+		site: boolean;
+		google: boolean;
+		fecebook: boolean;
+	};
+}
