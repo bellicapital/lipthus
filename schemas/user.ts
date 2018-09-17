@@ -73,14 +73,14 @@ export function getSchema() {
 	s.methods = {
 		baseInfo: function (this: any, includeEmail = false) {
 			const ret: any = {
-				'id': this.id,
-				'uname': this.getName(),
-				'name': this.getName(true),
-				'isAdmin': this.isAdmin(),
-				'level': this.level,
-				'type': this.type || undefined,
-				'picture': this.getImage('square'),
-				'fbid': this.facebook && this.facebook.id
+				id: this.id,
+				uname: this.getName(),
+				name: this.getName(true),
+				isAdmin: this.isAdmin(),
+				level: this.level,
+				type: this.type || undefined,
+				picture: this.getImage('square'),
+				fbid: this.facebook && this.facebook.id
 			};
 
 			if (includeEmail)
@@ -111,7 +111,10 @@ export function getSchema() {
 			if (this.picture)
 				return this.picture;
 
-			return this.image ? this.image + q : undefined;
+			if (this.image)
+				return this.image + q;
+
+			return 'http://www.gravatar.com/avatar/' + md5(this.email) + '?s=90';
 		},
 		subscribe2Item: function (this: any, ref: any) {
 			if (ref.toJSON)
