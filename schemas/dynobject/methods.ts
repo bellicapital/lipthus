@@ -286,7 +286,7 @@ export function getNodeData(this: any, req: LipthusRequest, level: number, filte
 								
 								if (++count2 === rc.length && ++count === Object.keys(r).length)
 									ok(ret);
-							}).catch(console.trace.bind(console));
+							}).catch(console.error.bind(console));
 						});
 					}
 				});
@@ -296,7 +296,7 @@ export function getNodeData(this: any, req: LipthusRequest, level: number, filte
 
 // noinspection JSUnusedGlobalSymbols
 export function commentsCount(this: any, cb: any) {
-	return this.db.models.comment.count({'ref.$id': this._id, active: true}, cb);
+	return this.db.models.comment.countDocuments({'ref.$id': this._id, active: true}, cb);
 }
 
 

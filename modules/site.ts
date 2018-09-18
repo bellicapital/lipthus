@@ -113,7 +113,7 @@ export class Site extends EventEmitter {
 		this.domainName = this.environment.domain;
 		this.protocol = this.environment.protocol || 'http';
 		this.externalProtocol = this.environment.externalProtocol || 'https';
-		this.dbconf = this.environment.db!;
+		this.dbconf = this.environment.db || {name: this.key};
 		this.db = new LipthusDb(this.dbconf, this);
 		this.dbs[this.db.name] = this.db;
 		this.secret = 'lipthus ' + this.dbconf.name;

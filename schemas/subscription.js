@@ -100,7 +100,7 @@ module.exports = function subscription(Schema){
 
 			query[db + '.' + collection + '.items'] = itemId;
 
-			this.count(query, cb);
+			this.countDocuments(query, cb);
 		},
 		getCountByItemIncludeNew: function(itemId, db, collection, cb){
 			const query = {$or: [{}, {}]};
@@ -109,8 +109,8 @@ module.exports = function subscription(Schema){
 
 			query.$or[1]["subscriptions." + db + '.' + collection + '.events'] = 'newItem';
 
-			this.count(query, (err, c) => {
-				this.db.models.user.count(query, (err, uc) => cb(err, c + uc));
+			this.countDocuments(query, (err, c) => {
+				this.db.models.user.countDocuments(query, (err, uc) => cb(err, c + uc));
 			});
 		}
 	};

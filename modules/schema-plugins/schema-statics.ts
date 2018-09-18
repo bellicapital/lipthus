@@ -299,7 +299,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 			d.forEach(k => {
 				cQuery[field] = k;
 				
-				this.count(cQuery, (err2: Error, c: number) => {
+				this.countDocuments(cQuery, (err2: Error, c: number) => {
 					if (err2)
 						error = err2;
 					

@@ -51,6 +51,15 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
 		uri += (this.params.host || 'localhost') + '/' + this.name;
 
+		const options = this.params.options || {};
+
+		if (!options.promiseLibrary)
+			options.promiseLibrary = global.Promise;
+
+		// Avoid a Deprecation warning
+		if (options.useNewUrlParser === undefined)
+			options.useNewUrlParser = true;
+
 		this._conn = mongoose.createConnection(uri, this.params.options || {promiseLibrary: global.Promise});
 
 		this._conn.once('connected', this.onConnOpen.bind(this));

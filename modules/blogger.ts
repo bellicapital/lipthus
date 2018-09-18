@@ -29,7 +29,7 @@ export class Blogger {
 		this.keys.forEach(k => {
 			count++;
 			
-			req.site.db[k].count(query, (err: Error, r: any) => {
+			req.site.db[k].countDocuments(query, (err: Error, r: any) => {
 				if (err) return cb(err);
 				
 				const blog = this.getBlog(k).set('items', r);
@@ -136,7 +136,7 @@ export class Blog {
 						post.url = post.id;
 				});
 				
-				return collection.count(query)
+				return collection.countDocuments(query)
 					.then((count: number) => ({posts: r, total: count}));
 			});
 	}
