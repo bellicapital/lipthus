@@ -12,7 +12,8 @@ export const name = 'nationalities';
 export function getSchema() {
 	const s = new LipthusSchema({
 		code: String,
-		title: LipthusSchemaTypes.Multilang
+		title: LipthusSchemaTypes.Multilang,
+		custom: Boolean // not a real country
 	}, {
 		collection: 'nationalities'
 	});
@@ -29,6 +30,7 @@ export function getSchema() {
 export interface Nationality extends Document, NationalitiesMethods {
 	code: string;
 	title: {[s: string]: MultilangText};
+	custom: boolean;
 }
 
 export interface NationalitiesModel extends Model<Nationality>, NationalitiesStatics {
