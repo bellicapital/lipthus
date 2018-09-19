@@ -3,6 +3,14 @@ import {LipthusSchema} from "../../lib";
 import {KeyAny} from "../../interfaces/global.interface";
 
 export function schemaGlobalStatics(schema: LipthusSchema) {
+
+	// temp solution for mongoose upgrade
+	try {
+		schema.statics.countDocuments = function (this: any, filter?: any) {
+			return this.count(filter);
+		};
+	} catch (e) {}
+
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
 		const ns = fieldName.split('.');
 		const last = ns.length - 1;
