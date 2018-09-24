@@ -60,7 +60,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		if (options.useNewUrlParser === undefined)
 			options.useNewUrlParser = true;
 
-		this._conn = mongoose.createConnection(uri, this.params.options || {promiseLibrary: global.Promise});
+		this._conn = mongoose.createConnection(uri, options);
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
