@@ -12,8 +12,7 @@ export const name = 'nationalities';
 export function getSchema() {
 	const s = new LipthusSchema({
 		code: String,
-		title: LipthusSchemaTypes.Multilang,
-		custom: Boolean // not a real country
+		title: LipthusSchemaTypes.Multilang
 	}, {
 		collection: 'nationalities'
 	});
@@ -30,7 +29,6 @@ export function getSchema() {
 export interface Nationality extends Document, NationalitiesMethods {
 	code: string;
 	title: {[s: string]: MultilangText};
-	custom: boolean;
 }
 
 export interface NationalitiesModel extends Model<Nationality>, NationalitiesStatics {
@@ -41,7 +39,7 @@ export class NationalitiesMethods {
 
 export class NationalitiesStatics {
 
-	getList(req: LipthusRequest, lang?: string) {
+	getList(req: LipthusRequest, lang?: string, forceReload?: boolean) {
 		const _lang = lang || req.ml.lang;
 
 		const end = () => {
@@ -51,7 +49,7 @@ export class NationalitiesStatics {
 			return cache[_lang];
 		};
 
-		if (cache[_lang])
+		if (!forceReload && cache[_lang])
 			return Promise.resolve(end());
 
 		return this.getLangList(_lang)
