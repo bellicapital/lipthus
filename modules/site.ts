@@ -75,6 +75,7 @@ export class Site extends EventEmitter {
 	public langs: KeyString = {};
 	public availableLangs: KeyAny = {};
 	public availableTanslatorLangs: KeyAny = {};
+	public sitemap?: any;
 	private _notifier: any;
 	private _hooks: Hooks = {pre: {}, post: {}};
 
@@ -356,7 +357,7 @@ export class Site extends EventEmitter {
 			req.domainName = (req.hostname || req.get('host') || '').replace(/^.+\.([^.]+\.[^.]+)$/, '$1');
 			req.fullUri = req.protocol + '://' + req.headers.host + req.originalUrl;
 
-			res.set('X-Powered-By', 'Eucalipthus');
+			res.set('X-Powered-By', 'Lipthus');
 
 			req.notifyError = err => {
 				err.url = req.fullUri;
@@ -488,7 +489,10 @@ export class Site extends EventEmitter {
 				app.use(session(this));
 				LipthusLogger.init(app);
 				app.use(require('./cmjspanel'));
-				app.use(sitemap(this));
+
+				if (!this.environment.customSitemap)
+					app.use(sitemap(this));
+
 				facebook(app);
 				app.use(auth(this));
 
