@@ -53,6 +53,7 @@ export interface EnvironmentParams {
 		exclude: Array<string>
 	};
 	origin?: string | false;	// Access-Control-Allow-Origin
+	customSitemap?: boolean;
 }
 
 export interface ColRef {

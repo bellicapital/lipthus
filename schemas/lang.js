@@ -41,9 +41,7 @@ module.exports = function lang(Schema, site){
 		values: function(){
 			const ret = this.toObject();
 
-			excludeAll.forEach(function(n){
-				delete(ret[n]);
-			});
+			excludeAll.forEach(n => delete(ret[n]));
 
 			return ret;
 		}
@@ -55,9 +53,7 @@ module.exports = function lang(Schema, site){
 		},
 		getValues: function(name){
 			return this.get(name)
-				.then(r => {
-					return r && r.values();
-				});
+				.then(r => r && r.values());
 		},
 		getFullTree: function(cb){
 			this.find().sort({_k: 1}).exec(function(err, r){
