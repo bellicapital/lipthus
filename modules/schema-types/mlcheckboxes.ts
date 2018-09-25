@@ -69,7 +69,7 @@ export class MlCheckbox {
 
 				update['dynvars.' + this.path + '.options'] = o;
 
-				db.dynobject.update(query, update)
+				db.dynobject.updateOne(query, update)
 					.then(() => ok(o))
 					.catch(ko);
 			});

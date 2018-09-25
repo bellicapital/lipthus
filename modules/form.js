@@ -223,7 +223,7 @@ class EucaForm
 
 		debug(this.schemaName, query, update);
 
-		return this.model.update(query, update, {upsert: true})
+		return this.model.updateOne(query, update, {upsert: true})
 			.then(r => {
 				debug(r);
 
