@@ -16,7 +16,6 @@ import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
-import {canonicalhost} from '../lib/canonicalhost';
 import {LipthusLogger} from "./logger";
 import '../lib/global.l';
 import notFoundMin from "../routes/notfoundmin";
@@ -419,7 +418,6 @@ export class Site extends EventEmitter {
 		app.locals.basedir = '/';
 
 		app.use(logger_req);
-		app.use(canonicalhost);
 		app.use(favicons(this.dir + '/public/img/icons'));
 
 		if (process.env.NODE_ENV === 'development') {
