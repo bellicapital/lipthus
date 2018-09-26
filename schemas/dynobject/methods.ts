@@ -196,7 +196,7 @@ export function removeParent(this: any, colname: string, parentId: any, cb: any)
 			if (childFound) {
 				parent.children = children;
 				
-				db.collections[colname].update({id: parent._id}, {children: children}, (err2?: Error) => err2 && console.warn(err2));
+				db.collections[colname].updateOne({id: parent._id}, {children: children}, (err2?: Error) => err2 && console.warn(err2));
 			} else
 				console.warn('Child ' + thisId + ' not found in ' + colname + '.' + parentId);
 		}
@@ -445,7 +445,7 @@ export function getName(this: any, pathname: string, req: LipthusRequest, cb: an
 			
 			update['dynvars.' + pathname + '.options.' + val + '.' + lang] = result;
 			
-			req.db.dynobject.update(query, update)
+			req.db.dynobject.updateOne(query, update)
 				.then(() => ok(result))
 				.catch(ko);
 		}, 'getName • ' + this.schema + ' • ' + pathname);

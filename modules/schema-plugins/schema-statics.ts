@@ -154,7 +154,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		const update: KeyAny = {};
 		update[key] = value;
 		
-		return this.update({_id: id}, update, (err: Error, numberAffected: number) => cb(err, {status: !!numberAffected}));
+		return this.updateOne({_id: id}, update, (err: Error, numberAffected: number) => cb(err, {status: !!numberAffected}));
 	};
 	
 	schema.statics.getDefinition = function (this: any, k: string) {

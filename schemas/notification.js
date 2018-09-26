@@ -32,7 +32,7 @@ module.exports = function notification(Schema){
 			return this.countDocuments({uid: user, seen: {$ne: true}});
 		},
 		resetUserNoti : function(user) {
-			return this.update({uid: user, seen: {$ne: true}}, {$set: {seen: true}}, {multi: true});
+			return this.updateMultiple({uid: user, seen: {$ne: true}}, {$set: {seen: true}});
 		}
 	};
 

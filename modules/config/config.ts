@@ -137,7 +137,7 @@ export class Config {
 
 		update[key] = v;
 
-		return this.model.update(
+		return this.model.updateOne(
 			{name: this.configs[k].name},
 			update,
 			{upsert: true}
