@@ -76,6 +76,54 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		
 		return ret;
 	};
+
+	schema.statics.updateOneNative = function (this: any) {
+		const col = this.db.collection(this.schema.options.collection);
+		const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
+
+		['modified', 'modifier'].forEach(k => {
+			const mod = keys.indexOf(k);
+
+			if (mod > -1)
+				keys.splice(mod, 1);
+		});
+
+		const ret = col.updateOne.apply(col, arguments);
+
+		// evento
+		this.find(arguments[0], (err: Error, docs: any) => {
+			if (err || !docs || !docs.length)
+				return;
+
+			docs.forEach((doc: any) => doc.emit('update', keys));
+		});
+
+		return ret;
+	};
+
+	schema.statics.updateManyNative = function (this: any) {
+		const col = this.db.collection(this.schema.options.collection);
+		const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
+
+		['modified', 'modifier'].forEach(k => {
+			const mod = keys.indexOf(k);
+
+			if (mod > -1)
+				keys.splice(mod, 1);
+		});
+
+		const ret = col.updateMany.apply(col, arguments);
+
+		// evento
+		this.find(arguments[0], (err: Error, docs: any) => {
+			if (err || !docs || !docs.length)
+				return;
+
+			docs.forEach((doc: any) => doc.emit('update', keys));
+		});
+
+		return ret;
+	};
 	
 	schema.statics.updateByIdNative = function (this: any, id: string) {
 		arguments[0] = {_id: Types.ObjectId(id)};
