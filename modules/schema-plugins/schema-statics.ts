@@ -52,7 +52,10 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		
 		return this.find(query, null, {sort: {top: -1, _weight: 1}}, cb);
 	};
-	
+
+	/**
+	 * @deprecated
+	 */
 	schema.statics.updateNative = function (this: any) {
 		const col = this.db.collection(this.schema.options.collection);
 		const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
