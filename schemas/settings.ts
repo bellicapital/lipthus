@@ -73,7 +73,7 @@ namespace LipthusSettings {
 					update.value = Types.ObjectId(value);
 			}
 
-			return this.update({name: key}, update, {upsert: true});
+			return this.updateOne({name: key}, update, {upsert: true});
 		}
 	}
 
