@@ -15,6 +15,29 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		schema.statics.updateMany = function (this: any, filter: any, update: any) {
 			return this.update.call(this, filter, update, {multi: true});
 		};
+		schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
+			const col = this.db.collection(this.schema.options.collection);
+			const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
+
+			['modified', 'modifier'].forEach(k => {
+				const mod = keys.indexOf(k);
+
+				if (mod > -1)
+					keys.splice(mod, 1);
+			});
+
+			const ret = col.update.call(col, filter, update, {multi: true});
+
+			// evento
+			this.find(filter, (err: Error, docs: any) => {
+				if (err || !docs || !docs.length)
+					return;
+
+				docs.forEach((doc: any) => doc.emit('update', keys));
+			});
+
+			return ret;
+		};
 	} catch (e) {}
 
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
