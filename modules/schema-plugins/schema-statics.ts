@@ -9,6 +9,12 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		schema.statics.countDocuments = function (this: any, filter?: any) {
 			return this.count(filter);
 		};
+		schema.statics.updateOne = function (this: any, filter?: any) {
+			return this.update.apply(this, arguments);
+		};
+		schema.statics.updateMany = function (this: any, filter: any, update: any) {
+			return this.update.call(this, filter, update, {multi: true});
+		};
 	} catch (e) {}
 
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
