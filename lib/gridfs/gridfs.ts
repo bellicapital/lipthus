@@ -96,6 +96,9 @@ export class GridFS {
 						Object.assign(fileOptions, metadata);
 					}
 
+					if (!fileOptions.uploadDate)
+						fileOptions.uploadDate = new Date();
+
 					const type = file.type.split('/');
 
 					switch (type[0]) {
