@@ -1,4 +1,4 @@
-import {NextFunction} from "express";
+import {NextFunction, Router} from "express";
 import {EventEmitter} from "events";
 import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString} from "../interfaces/global.interface";
 import * as Debug from "debug";
@@ -113,7 +113,7 @@ export class Site extends EventEmitter {
 		this.domainName = this.environment.domain;
 		this.protocol = this.environment.protocol || 'http';
 		this.externalProtocol = this.environment.externalProtocol || 'https';
-		this.dbconf = this.environment.db!;
+		this.dbconf = this.environment.db || {name: this.key};
 		this.db = new LipthusDb(this.dbconf, this);
 		this.dbs[this.db.name] = this.db;
 		this.secret = 'lipthus ' + this.dbconf.name;
@@ -534,7 +534,7 @@ export class Site extends EventEmitter {
 
 		return this.loadLocalRoutes()
 			.then(() => {
-				const router = express.Router({strict: true});
+				const router = Router({strict: true});
 
 				if (this.config.startpage && this.pages[this.config.startpage])
 					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));

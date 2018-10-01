@@ -269,12 +269,12 @@ export class Comment {
 			const ret: any = {};
 
 			d.forEach(r => {
-				this.count({'ref.$ref': r}, (err2: Error, c: number) => {
+				this.countDocuments({'ref.$ref': r}, (err2: Error, c: number) => {
 					if (c)
 						ret[r.replace('dynobjects.', '')] = c;
 
 					if (++count === d.length) {
-						this.count({'ref.$ref': {$exists: false}}, (err3: Error, c2: number) => {
+						this.countDocuments({'ref.$ref': {$exists: false}}, (err3: Error, c2: number) => {
 							if (c2)
 								ret._ = c2;
 
@@ -294,8 +294,8 @@ export class Comment {
 					const itemSchema = r ? r.replace('dynobjects.', '') : '_';
 					const ref = r || null; // null hace que también se muestren los vacios. jj 7/7/15
 
-					return this.count({'ref.$ref': ref})
-						.then(c => this.count({
+					return this.countDocuments({'ref.$ref': ref})
+						.then(c => this.countDocuments({
 								'ref.$ref': ref,
 								active: {$ne: true},
 								refused: {$ne: true}
@@ -374,7 +374,7 @@ export class Comment {
 
 		query['ref.$ref'] = colname ? 'dynobjects.' + colname : null;
 
-		return this.count(query)
+		return this.countDocuments(query)
 			.then(count => {
 				if (!count)
 					return;

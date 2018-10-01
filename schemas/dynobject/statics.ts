@@ -89,7 +89,7 @@ export function checkAll(this: any, req: any, cb: (err?: Error, r?: any) => {}) 
 				
 				update.$set[d] = doc[d];
 				
-				this.update({_id: doc._id}, update, () => {});
+				this.updateOne({_id: doc._id}, update, () => {});
 			});
 		});
 		

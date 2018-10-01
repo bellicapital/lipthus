@@ -80,7 +80,7 @@ export class LipthusLogger {
 	}
 	
 	count(type: string): Promise<number> {
-		return this.collection(type).count({});
+		return this.collection(type).countDocuments({});
 	}
 	
 	list(type: string, query: any, opt: any, cb: () => {}): void {

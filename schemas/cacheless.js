@@ -106,7 +106,7 @@ module.exports = function cacheless(Schema){
 								compress: compress
 							};
 
-							return db.cacheless.update({source: src}, update, {upsert: true})
+							return db.cacheless.updateOne({source: src}, update, {upsert: true})
 								.then(() => r);
 						},
 						err => {

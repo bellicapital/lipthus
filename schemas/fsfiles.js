@@ -230,7 +230,7 @@ module.exports = function fsfiles(Schema){
 		 * @returns {Promise}
 		 */
 		chunksCount: function(){
-			return this.db.collection('fs.chunks').count({files_id: this._id});
+			return this.db.collection('fs.chunks').countDocuments({files_id: this._id});
 		}
 	};
 

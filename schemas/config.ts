@@ -44,7 +44,7 @@ export function getSchema(site: Site) {
 	 * @returns {Promise|Promise.<{}>|*}
 	 */
 	s.statics.changeValue = function (this: any, key: string, value: any) {
-		return this.update({name: key}, {$set: {value: value}})
+		return this.updateOne({name: key}, {$set: {value: value}})
 			.then(() => this.db.eucaDb.site.config[key] = value);
 	};
 

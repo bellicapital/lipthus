@@ -137,7 +137,7 @@ export class Config {
 
 		update[key] = v;
 
-		return this.model.update(
+		return this.model.updateOne(
 			{name: this.configs[k].name},
 			update,
 			{upsert: true}
@@ -175,7 +175,7 @@ export class Config {
 	}
 
 	checkDefaults() {
-		return this.model.count({})
+		return this.model.countDocuments({})
 			.then((c: number) => {
 				if (c)
 					return;
@@ -184,7 +184,7 @@ export class Config {
 
 				return exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson')
 					.then((r: { stdout: string, stderr: string }) =>
-						this.model.count({})
+						this.model.countDocuments({})
 							.then((c2: number) => {
 								if (c2)
 									return;

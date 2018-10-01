@@ -48,7 +48,7 @@ module.exports = function translatorCache(Schema){
 			
 			update["values." + to] = value;
 			
-			this.update({from: from, src: src}, {$set: update}, {upsert: true}, function(err,r){
+			this.updateOne({from: from, src: src}, {$set: update}, {upsert: true}, function(err,r){
 				return cb && cb(err,r);
 			});
 		}

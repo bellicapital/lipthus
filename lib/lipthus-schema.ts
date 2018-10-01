@@ -135,11 +135,14 @@ export class LipthusSchema extends Schema {
 		});
 
 		this.post('init', (a: any) => this.eachPath(p => {
-			if (a[p]) {
-				const path = this.path(p);
+			try {
+				if (a[p]) {
+					const path = this.path(p);
 
-				if (path && path.constructor && path.constructor.name === 'Multilang')
-					Object.defineProperty(a[p], '_id', {value: a._id});
+					if (path && path.constructor && path.constructor.name === 'Multilang')
+						Object.defineProperty(a[p], '_id', {value: a._id});
+				}
+			} catch (e) {
 			}
 		}));
 	}

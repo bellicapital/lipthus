@@ -23,16 +23,16 @@ module.exports = function notification(Schema){
 				.sort({created: -1});
 		},
 		userTotalCount: function(user){
-			return this.count({uid: user});
+			return this.countDocuments({uid: user});
 		},
 		userUnread: function(user){
-			return this.count({uid: user, read: {$ne: true}});
+			return this.countDocuments({uid: user, read: {$ne: true}});
 		},
 		userUnseen: function(user){
-			return this.count({uid: user, seen: {$ne: true}});
+			return this.countDocuments({uid: user, seen: {$ne: true}});
 		},
 		resetUserNoti : function(user) {
-			return this.update({uid: user, seen: {$ne: true}}, {$set: {seen: true}}, {multi: true});
+			return this.updateMultiple({uid: user, seen: {$ne: true}}, {$set: {seen: true}});
 		}
 	};
 

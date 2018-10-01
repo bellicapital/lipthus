@@ -32,17 +32,17 @@ class Subscriptor {
 		const ret = {};
 
 		return db.subscription
-			.count()
+			.estimatedDocumentCount()
 			.then(total => ret.total = total)
-			.then(() => db.user.count({subscriptions: {$exists: true}}))
+			.then(() => db.user.countDocuments({subscriptions: {$exists: true}}))
 			.then(total => ret.total += total)
 			.then(() => db.loggerSubscription.summary({event: 'request'}))
 			.then(request => ret.request = request)
-			.then(() => db.subscriptionRequest.count())
+			.then(() => db.subscriptionRequest.countDocuments())
 			.then(c => ret.request.total = c)
 			.then(() => db.loggerSubscription.summary({event: 'join'}))
 			.then(join => ret.join = join)
-			// .then(() => db.subscriptionRequest.count({confirmed: true}))
+			// .then(() => db.subscriptionRequest.countDocuments({confirmed: true}))
 			// .then(c => ret.join.total = c)
 			.then(() => db.loggerSubscription.summary({event: 'unsubscribe'}))
 			.then(unsubscribe => ret.unsubscribe = unsubscribe)
@@ -67,7 +67,7 @@ class Subscriptor {
 
 		query[key] = value;
 
-		return db.subscription.count(query, count => db.user.count(query, count2 => count + count2));
+		return db.subscription.countDocuments(query, count => db.user.countDocuments(query, count2 => count + count2));
 	}
 
 	getSubscriptors(dbname, model, type, value, onlyUsers) {

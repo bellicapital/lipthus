@@ -169,7 +169,7 @@ export class MultilangText {
 
 		update[this.path + '.' + lang] = data;
 
-		this.collection.update({_id: this._id}, {$set: update})
+		this.collection.updateOne({_id: this._id}, {$set: update})
 			.then((r: any) => {
 				if (!r.result.nModified)
 					console.error(new Error('MultilangText no updated. Id: ' + this._id + JSON.stringify(update)));

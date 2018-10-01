@@ -28,7 +28,7 @@ module.exports = function loggerSubscription(Schema){
 			lastMonth.setMonth(thisMonth.getMonth() - 1);
 			const ret = {};
 
-			return this.count(query)
+			return this.countDocuments(query)
 				.then(total => {
 					ret.total = total;
 					query.created = {$gt: thisMonth};
