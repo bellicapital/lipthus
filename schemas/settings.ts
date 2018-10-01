@@ -37,8 +37,9 @@ namespace LipthusSettings {
 					)
 						.getLangOrTranslate(lang);
 				case 'bdi':
+					const value = this.get('value');
 					//noinspection JSUnresolvedVariable
-					return Promise.resolve(this.value && this.value.info());
+					return Promise.resolve(value && value.info());
 				case 'string':
 				case 'boolean':
 				default:

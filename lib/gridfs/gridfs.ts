@@ -88,16 +88,17 @@ export class GridFS {
 				file.type = file.type || file.mimetype;
 			}
 
+			if (!fileOptions.uploadDate)
+				fileOptions.uploadDate = new Date();
+
 			GridFS.getMultimedia(file.path)
 				.then(metadata => {
 					if (metadata) {
+						delete metadata.title;
 						file.type = metadata.contentType;
 						fileOptions.metadata = metadata;
 						Object.assign(fileOptions, metadata);
 					}
-
-					if (!fileOptions.uploadDate)
-						fileOptions.uploadDate = new Date();
 
 					const type = file.type.split('/');
 

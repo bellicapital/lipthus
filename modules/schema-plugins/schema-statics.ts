@@ -3,6 +3,64 @@ import {LipthusSchema} from "../../lib";
 import {KeyAny} from "../../interfaces/global.interface";
 
 export function schemaGlobalStatics(schema: LipthusSchema) {
+	// temp solution for mongoose upgrade
+	try {
+		schema.statics.countDocuments = function (this: any, filter?: any) {
+			return this.count(filter);
+		};
+		schema.statics.updateOne = function (this: any, filter?: any) {
+			return this.update.apply(this, arguments);
+		};
+		schema.statics.updateMany = function (this: any, filter: any, update: any) {
+			return this.update.call(this, filter, update, {multi: true});
+		};
+		schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
+			const col = this.db.collection(this.schema.options.collection);
+			const keys = Object.keys(update.$set || update.$unset);
+
+			['modified', 'modifier'].forEach(k => {
+				const mod = keys.indexOf(k);
+
+				if (mod > -1)
+					keys.splice(mod, 1);
+			});
+
+			const ret = col.update.call(col, filter, update);
+
+			// evento
+			this.find(filter, (err: Error, docs: any) => {
+				if (err || !docs || !docs.length)
+					return;
+
+				docs.forEach((doc: any) => doc.emit('update', keys));
+			});
+
+			return ret;
+		};
+		schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
+			const col = this.db.collection(this.schema.options.collection);
+			const keys = Object.keys(update.$set || update.$unset);
+
+			['modified', 'modifier'].forEach(k => {
+				const mod = keys.indexOf(k);
+
+				if (mod > -1)
+					keys.splice(mod, 1);
+			});
+
+			const ret = col.update.call(col, filter, update, {multi: true});
+
+			// evento
+			this.find(filter, (err: Error, docs: any) => {
+				if (err || !docs || !docs.length)
+					return;
+
+				docs.forEach((doc: any) => doc.emit('update', keys));
+			});
+
+			return ret;
+		};
+	} catch (e) {}
 
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
 		const ns = fieldName.split('.');

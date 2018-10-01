@@ -121,7 +121,7 @@ module.exports = function lang(Schema, site){
 		check: function(cb){
 			const dbname = this.db.name;
 
-			this.estimatedDocumentCount(function(err, count){
+			this.countDocuments(function(err, count){
 				if(err || count > 5) return cb && cb(err, count);
 
 				console.log('Inserting lang collection default values');

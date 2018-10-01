@@ -87,7 +87,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			if (
 				GridFSFile.videoExt.indexOf(ext) === -1 ||			// no es una de las admitidas
 				file.folder !== 'videos' ||							// no es un fichero principal de un video
-				(!file.versions![ext] && 'video/' + ext === file.contentType)	// no existe la versión y la extensión es la del archivo principal
+				('video/' + ext === file.contentType && (!file.versions || !file.versions[ext]))	// no existe la versión y la extensión es la del archivo principal
 			)
 				return file.send(req, res);
 

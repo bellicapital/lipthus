@@ -188,6 +188,9 @@ export class GridFSFile {
 
 		this.loaded = true;
 
+		if (!this._id)
+			return Promise.reject(new Error('eeee'));
+
 		return this.collection()
 			.then(collection => collection.findOne({_id: this._id}))
 			.then((obj: any) => {
@@ -429,8 +432,9 @@ export class GridFSFile {
 
 	update(params: any) {
 		return this.collection()
-			.then(collection => collection.updateOne({_id: this._id}, {$set: params}))
-			.then(() => Object.assign(this, params));
+			.then(collection => collection.update({_id: this._id}, {$set: params}))
+			.then(() => Object.assign(this, params))
+			.then(() => this);
 	}
 
 	/**
@@ -503,7 +507,7 @@ export class GridFSFile {
 	}
 
 	getKey() {
-		return this.uploadDate!.getTime().toString();
+		return this.mTime().getTime().toString();
 	}
 
 	getThumb(): Promise<BinDataImage> {
@@ -521,7 +525,7 @@ export class GridFSFile {
 	}
 
 	createThumb() {
-		let ret;
+		let ret: any;
 
 		if (this.contentType.indexOf('video') === 0)
 			ret = this.getVideoFrame();
@@ -530,7 +534,7 @@ export class GridFSFile {
 		else
 			return Promise.reject(new Error('Can\'t create a thumb of ' + this.filename));
 
-		return ret.then(bdf => {
+		return ret.then((bdf: any) => {
 			if (bdf) {
 				bdf.setColRef({
 					collection: this.gridStore.root + '.files',
