@@ -8,14 +8,25 @@ export class AjaxGlobalMethods {
 	
 	main(): Promise<any> {
 		const req = this.req;
+		const site = req.site;
+		const user = req.user;
 		
 		return req.ml.langUserNames()
-			.then((ln: {[code: string]: string}) => ({
-				sitename: req.site + '',
-				languages: ln,
-				user: req.user && req.user.baseInfo() || undefined,
-				registerMethods: req.site.registerMethods
-			}));
+			.then(ln => {
+				const ret: any = {
+					sitename: site + '',
+					languages: ln,
+					registerMethods: site.registerMethods
+				};
+
+				if (user)
+					ret.user = user.baseInfo();
+
+				if (site.environment.VAPID)
+					ret.publicKey = site.environment.VAPID.publicKey;
+
+				return ret;
+			});
 	}
 	
 	// noinspection JSUnusedGlobalSymbols

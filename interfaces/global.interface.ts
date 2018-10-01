@@ -54,6 +54,10 @@ export interface EnvironmentParams {
 	};
 	origin?: string | false;	// Access-Control-Allow-Origin
 	customSitemap?: boolean;
+	VAPID?: {
+		publicKey: string,
+		privateKey: string
+	};
 }
 
 export interface ColRef {
