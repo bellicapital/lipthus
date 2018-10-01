@@ -17,7 +17,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		};
 		schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
 			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
+			const keys = Object.keys(update.$set || update.$unset);
 
 			['modified', 'modifier'].forEach(k => {
 				const mod = keys.indexOf(k);
@@ -40,7 +40,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		};
 		schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
 			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(arguments[1].$set || arguments[1].$unset);
+			const keys = Object.keys(update.$set || update.$unset);
 
 			['modified', 'modifier'].forEach(k => {
 				const mod = keys.indexOf(k);
