@@ -5,6 +5,7 @@ import {Document, Model} from "mongoose";
 import {MultilangText} from "../modules/schema-types/mltext";
 
 let cache: KeyAny = {};
+const lastUpdates: KeyAny = {};
 
 export const name = 'nationalities';
 
@@ -42,9 +43,13 @@ export class NationalitiesStatics {
 	getList(req: LipthusRequest, lang?: string, forceReload?: boolean) {
 		const _lang = lang || req.ml.lang;
 
+		// 10 min cache per language
+		if (lastUpdates[_lang] && (lastUpdates[_lang] < (Date.now() - 600000)))
+			delete cache[_lang];
+
 		const end = () => {
-			if (lang === req.ml.lang && !req.nationalities)
-				Object.defineProperty(req, 'nationalities', {value: cache[_lang]});
+			if (_lang === req.ml.lang && !req.nationalities)
+				req.nationalities = cache[_lang];
 
 			return cache[_lang];
 		};
@@ -55,6 +60,7 @@ export class NationalitiesStatics {
 		return this.getLangList(_lang)
 			.then((list: any) => {
 				cache[_lang] = list;
+				lastUpdates[_lang] = Date.now();
 
 				return end();
 			});
