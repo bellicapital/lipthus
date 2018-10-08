@@ -10,7 +10,7 @@ const imageminSvgo = require('imagemin-svgo');
 const imageminopt = {
 	use: [
 		imageminGifsicle(),
-		imageminMozjpeg(),
+		imageminMozjpeg({quality: 70}),
 		imageminOptipng(),
 		imageminSvgo({multipass: true})
 	]
@@ -18,5 +18,9 @@ const imageminopt = {
 
 export function optimage (path: string) {
 	return pReadFile(path)
-		.then((buf: Buffer) => imagemin.buffer(buf, imageminopt));
+		.then(optimageBuffer);
+}
+
+export function optimageBuffer (buf: Buffer) {
+	return imagemin.buffer(buf, imageminopt);
 }

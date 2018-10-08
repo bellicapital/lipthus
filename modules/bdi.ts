@@ -179,7 +179,8 @@ export class BinDataImage extends BinDataFile {
 
 	toBuffer(opt: any): Promise<Buffer> {
 		let gmi = gm(this.MongoBinData.buffer, this.contentType.replace('/', '.'))
-			.quality(70)
+			.samplingFactor(2, 2)
+			.quality(79)
 			.strip()
 			.autoOrient();
 
