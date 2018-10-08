@@ -32,6 +32,7 @@ export class Config {
 	webmastermail?: string;
 	model: ConfigModel | any = {};
 	lang_subdomains?: boolean;
+	auto_hreflang?: boolean;
 
 	constructor(public site: Site) {
 		this.groups = {};

@@ -82,10 +82,8 @@ module.exports = function cache(cache){
 		if(req.method !== 'GET')
 			return next();
 
-		if(req.query._c){
+		if(req.query._c)
 			req.url = req.url.replace(/[?&]_c=[^&]*/, '');
-			res.htmlPage.head.addLink({rel: 'canonical', href: req.url});
-		}
 
 		if(/^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|bot)/.test(req.path))
 			return next();

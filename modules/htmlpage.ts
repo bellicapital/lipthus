@@ -250,7 +250,7 @@ export class HtmlPage {
 			});
 	}
 
-	send(view?: string, locals?: any) {
+	send(view?: string, locals: any = {}) {
 		if (this.sent)
 			return Promise.reject(new Error('HtmlPage already sent'));
 
@@ -271,11 +271,18 @@ export class HtmlPage {
 				locals = Object.assign({
 					page: this.key,
 					metas: this.head.metas,
-					hreflangs: this.head.hreflangs,
 					user: this.req.user
 				}, locals);
 
 				Object.assign(this.locals, locals);
+
+				if (this.req.site.config.auto_hreflang && !this.locals.hreflangs)
+					this.locals.hreflangs = this.head.hreflangs;
+
+				if (!this.locals.canonical)
+					this.locals.canonical = this.req.protocol + '://' + this.req.headers.host + this.req.path;
+
+				this.head.addLink({rel: 'canonical', href: this.locals.canonical});
 
 				this.addOpenGraphMetas();
 
@@ -484,7 +491,7 @@ export class HtmlPage {
 			og.site_name = req.site.config.sitename;
 
 		if (!og.url)
-			og.url = req.site.mainUrl(this.lang) + req.path;
+			og.url = req.protocol + '://' + req.headers.host + req.path;
 
 		if (!og.app_id) {
 			const fbid = req.site.config.fb_app_id;

@@ -1,6 +1,7 @@
 import {CssManager} from "./css";
 import {JsManager} from "./js";
 import {LipthusRequest, LipthusResponse} from "../../../index";
+import {KeyString} from "../../../interfaces/global.interface";
 
 const fs = require('fs');
 const Url = require('url');
@@ -18,8 +19,14 @@ export class HeadManager {
 		this.links = res.locals.headLinks = [];
 	}
 
-	get hreflangs() {
-		return this.langUris();
+	// noinspection SpellCheckingInspection
+	get hreflangs(): KeyString | void {
+		const ret = this.langUris();
+
+		if (ret) {
+			ret['x-default'] = ret[this.req.ml.lang];
+			return ret;
+		}
 	}
 
 	addJS(src: Array<string> | string, opt?: any) {
@@ -67,7 +74,7 @@ export class HeadManager {
 		return this;
 	}
 
-	langUris(url?: string) {
+	langUris(url?: string): KeyString | void {
 		const req = this.req;
 
 		if (Object.keys(req.site.langUrls).length <= 1)

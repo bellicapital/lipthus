@@ -112,6 +112,11 @@
 				"Auto translate",
 				false
 			],
+			"auto_hreflang": [
+				"bool",
+				"Auto hreflang",
+				false
+			],
 			"translate_service": [
 				"selector",
 				"Translate Service",
