@@ -210,6 +210,8 @@ export class BinDataImage extends BinDataFile {
 							const wmHeight = (logoSize.height * wmWidth) / logoSize.width;
 
 							gmi = gm(buffer, this.name)
+								.samplingFactor(2, 2)
+								.strip()
 								.gravity(opt.wm.gravity || 'Center')
 								.out('(', opt.wm.image, ' ', '-resize', wmWidth + 'x' + wmHeight + '>', ')')
 								.out('-composite')
