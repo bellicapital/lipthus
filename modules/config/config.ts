@@ -31,6 +31,7 @@ export class Config {
 	version?: string;
 	webmastermail?: string;
 	model: ConfigModel | any = {};
+	lang_subdomains?: boolean;
 
 	constructor(public site: Site) {
 		this.groups = {};
