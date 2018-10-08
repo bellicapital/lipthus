@@ -65,7 +65,9 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 
 					const gmi = gm(bdf.MongoBinData.buffer)
 						.setFormat(bdf.contentType.split('/')[1])
-						.quality(82)
+						.samplingFactor(2, 2)
+						.strip()
+						.quality(79)
 						.resize(opt.width, opt.height, opt.crop && '^');
 
 					if (opt.crop)
