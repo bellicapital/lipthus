@@ -86,6 +86,9 @@ export class HeadManager {
 			}
 		}
 
+		if (!req.site.config.lang_subdomains)
+			url = url!.replace(/^\/\w{2}(\/?)/, '$1');
+
 		Object.keys(req.site.langUrls).forEach(code => ret[code] = req.protocol + ':' + req.site.langUrls[code] + url);
 
 		return ret;
