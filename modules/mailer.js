@@ -30,7 +30,7 @@ class Mailer {
 
 	ensureFrom(opt) {
 		if (!opt.from)
-			opt.from = this.site + " <server@" + this.site.domainName + ">";
+			opt.from = this.site + " <noreply@" + (this.site.domainName.replace(/^\w+\.([^.]+\.\w+)$/, '$1')) + ">";
 	}
 
 	ensureForceEmbeddedImages(opt) {
