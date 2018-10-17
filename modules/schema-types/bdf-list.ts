@@ -156,7 +156,7 @@ export class BdfList extends SchemaType {
 const handleSingle = function (this: any, val: any) {
 	return this.cast(val);
 };
-const handleExists = () => true;
+const handleExists = (r: boolean) => r;
 const handleArray = function (this: any, val: Array<any>) {
 	return val.map((m: any) => this.cast(m));
 };
