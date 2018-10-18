@@ -58,6 +58,7 @@ export interface EnvironmentParams {
 		publicKey: string,
 		privateKey: string
 	};
+	authDb?: string;
 }
 
 export interface ColRef {

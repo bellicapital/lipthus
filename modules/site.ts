@@ -12,7 +12,7 @@ import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import {session} from "./session";
-import {LipthusRequest, LipthusResponse, LipthusApplication} from "../index";
+import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
@@ -65,7 +65,7 @@ export class Site extends EventEmitter {
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
-	public dbs: {[s: string]: LipthusDb} = {};
+	public dbs: { [s: string]: LipthusDb } = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
 	public store?: any;
@@ -76,6 +76,8 @@ export class Site extends EventEmitter {
 	public availableTanslatorLangs: KeyAny = {};
 	public sitemap?: any;
 	private _notifier: any;
+	private _userCol?: UserModel;
+	private _authDb: any;
 	private _hooks: Hooks = {pre: {}, post: {}};
 
 	/**
@@ -211,6 +213,23 @@ export class Site extends EventEmitter {
 			this._notifier = new Notifier(this);
 
 		return this._notifier;
+	}
+
+	get authDb() {
+		if (!this._authDb)
+			this._authDb = this.environment.authDb ? this.dbs[this.environment.authDb] : this.db;
+
+		return this._authDb;
+	}
+
+	get userCollection(): UserModel {
+		if (!this._userCol) {
+			this.db.models.user = this.authDb.model('user');
+
+			this._userCol = this.db.user;
+		}
+
+		return this._userCol;
 	}
 
 	hooks(hook: string, method: string) {
@@ -377,8 +396,8 @@ export class Site extends EventEmitter {
 					to: this.config.webmastermail,
 					subject: 'New error in ' + this.key, // Subject line
 					text: err.url + '\n'
-					+ err.title + '\n'
-					+ err.stack
+						+ err.title + '\n'
+						+ err.stack
 				})
 					.catch(console.error.bind(console));
 			};

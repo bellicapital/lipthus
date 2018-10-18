@@ -6,7 +6,7 @@ const s = require('express-session');
 const MongoStore = require("connect-mongo")(s);
 
 export const session = (site: Site) => {
-	site.store = new MongoStore({mongooseConnection: site.db._conn});
+	site.store = new MongoStore({mongooseConnection: site.authDb._conn});
 	
 	const params = {
 		secret: site.secret,

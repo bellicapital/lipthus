@@ -22,7 +22,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					else
 						query.uname = username;
 
-					site.db.user
+					site.userCollection
 						.findOne(query)
 						.then(user => {
 							if (!user)
@@ -100,7 +100,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					data.token = {value: accessToken};
 					data.email = profile.email;
 
-					site.db.user.fromOAuth2(data)
+					site.userCollection.fromOAuth2(data)
 						.then(user => done(null, user))
 						.catch(done);
 				}
@@ -144,7 +144,7 @@ const getUser = (req: LipthusRequest) => {
 		return Promise.resolve(req.user);
 
 	if (mongoose.Types.ObjectId.isValid(req.user))
-		return req.site.db.user
+		return req.site.userCollection
 			.findById(req.user)
 			.then((user: any) => req.user = user);
 
