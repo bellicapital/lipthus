@@ -79,18 +79,11 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		
 		return this.findById(id, projection).then((obj?: any) => {
 			if (obj) {
-				let str = 'obj = obj';
-				
-				ns.forEach((v) => {
-					str += '[';
-					
-					if (/^\d+$/.test(v))
-						str += parseInt(v, 10) + ']';
-					else
-						str += '"' + v + '"]';
-				});
-				
-				eval(str);
+				// first level with Document.get(key)
+				obj = obj.get(ns.shift());
+
+				// others
+				ns.forEach((v) => obj = obj[v]);
 			}
 			
 			if (cb)

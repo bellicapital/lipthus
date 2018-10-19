@@ -25,25 +25,26 @@ namespace LipthusSettings {
 	export class SettingMethods {
 
 		getValue(this: any, lang?: string) {
+			const value = this.get('value');
+
 			//noinspection JSUnresolvedVariable
-			switch (this.type) {
+			switch (this.get('type')) {
 				case 'ml':
 					//noinspection JSUnresolvedFunction
 					return new MultilangText(
-						this.value,
+						value,
 						this.collection,
 						'value', this._id,
 						this.db.eucaDb.site
 					)
 						.getLangOrTranslate(lang);
 				case 'bdi':
-					const value = this.get('value');
 					//noinspection JSUnresolvedVariable
 					return Promise.resolve(value && value.info());
 				case 'string':
 				case 'boolean':
 				default:
-					return Promise.resolve(this.value);
+					return Promise.resolve(value);
 			}
 		}
 	}
@@ -54,7 +55,7 @@ namespace LipthusSettings {
 
 			return this.find(query)
 				.then((settings: Array<any>) => Promise.all(
-					settings.map(st => ret[st.name] = st.getValue(lang).then((v: any) => ret[st.name] = v))
+					settings.map(st => ret[st.get('name')] = st.getValue(lang).then((v: any) => ret[st.get('name')] = v))
 				))
 				.then(() => ret);
 		}
