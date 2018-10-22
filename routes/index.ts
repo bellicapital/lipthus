@@ -39,6 +39,7 @@ const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusRe
 module.exports = function(app: LipthusApplication) {
 	const router = Router({strict: true});
 
+
 	// ...  as "any" hasta que implementemos router
 	router.post('/ngsetup/:method', uLevelMiddleware(2) as any, Setup as any);
 	router.get('/bdf/:col/:id/:field/:p/:name', bdf as any);

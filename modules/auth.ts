@@ -167,7 +167,7 @@ export default (site: Site): any => {
 	app.use(passport.initialize());
 	app.use(passport.session());
 
-	passport.serializeUser((user: any, done: any) => done(null, user.id));
+	passport.serializeUser((user: any, done: any) => done(null, user._id.toString()));
 
 	passport.deserializeUser((id: any, done: any) => done(null, id));
 
