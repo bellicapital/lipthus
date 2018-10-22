@@ -1,16 +1,15 @@
-"use strict";
+import {LipthusApplication} from "../index";
+import * as fs from "fs";
+import {LipthusWebSocketServer} from "../classes/web-socket-server";
 
-const fs = require('fs');
-const WebSocketServer = require('ws').Server;
-
-module.exports = (app) => {
+export default (app: LipthusApplication) => {
 	const secure = app.site.protocol === 'https';
-	let server;
+	let server: any;
 
-	if(secure){
+	if (secure) {
 		let ssl = app.get('conf').ssl;
 
-		if(!ssl){
+		if (!ssl) {
 			ssl = {
 				"key": "/etc/letsencrypt/live/" + app.site.key + "/privkey.pem",
 				"cert": "/etc/letsencrypt/live/" + app.site.key + "/fullchain.pem",
@@ -21,14 +20,12 @@ module.exports = (app) => {
 			};
 		}
 
-		const sslContent = {
-
-		};
+		const sslContent: any = {};
 
 		Object.each(ssl, (k, v) => {
-			if(k === 'ca'){
+			if (k === 'ca') {
 				sslContent[k] = [];
-				v.forEach(f => sslContent[k].push(fs.readFileSync(f)));
+				v.forEach((f: string) => sslContent[k].push(fs.readFileSync(f)));
 			} else
 				sslContent[k] = fs.readFileSync(v);
 		});
@@ -45,12 +42,13 @@ module.exports = (app) => {
 		server = require('http').createServer(app);
 	}
 
-	Object.defineProperty(app, 'server', {get: () =>  server});
+	Object.defineProperty(app, 'server', {get: () => server});
 
 	const environment = app.get('environment');
 	const target = environment.socket ? '/tmp/' + environment.socket + '.sock' : environment.port;
 
-	environment.socket && fs.existsSync(target) && fs.unlinkSync(target);
+	if (environment.socket && fs.existsSync(target))
+		fs.unlinkSync(target);
 
 	return new Promise((ok, ko) => {
 		server.listen(target);
@@ -65,44 +63,10 @@ module.exports = (app) => {
 				app.site.externalProtocol + ':' + app.site.langUrl()
 			);
 
-			environment.socket && fs.existsSync(target) && fs.chmodSync(target, '777');
+			if (environment.socket && fs.existsSync(target))
+				fs.chmodSync(target, '777');
 
-			const wss = new WebSocketServer({server: server});
-
-			wss.on("connection", (ws, req) => {
-				ws.created = new Date();
-				ws.upgradeReq = req;
-
-				ws.json = json => ws.send(JSON.stringify(json));
-
-				ws.json({info: 'ws connected'});
-
-				ws.on('message', m => {
-					try {
-						m = JSON.parse(m);
-						ws.emit('json', m);
-					} catch (e) {
-					}
-				});
-			});
-
-			wss.broadcast = (data, path) => {
-				wss.clients.forEach(client => {
-					if (!path || client.upgradeReq.url === path)
-						client.send(JSON.stringify(data), err => err && console.error(err));
-				});
-			};
-
-			wss.getClients = path => {
-				const ret = [];
-
-				wss.clients.forEach(client => {
-					if (client.upgradeReq.url.match(path))
-						ret.push(client);
-				});
-
-				return ret;
-			};
+			const wss = new LipthusWebSocketServer({server});
 
 			Object.defineProperty(app, 'wss', {get: () => wss});
 

@@ -105,7 +105,7 @@ class SiteMap {
 	}
 }
 
-module.exports = (site: Site) => {
+export default (site: Site) => {
 	site.sitemap = new SiteMap(site);
 
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {

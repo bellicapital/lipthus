@@ -41,6 +41,7 @@
 		"@types/passport": "^0.4.6",
 		"@types/uglify-js": "^3.0.3",
 		"@types/underscore": "^1.8.9",
+		"@types/ws": "^6.0.1",
 		"accounting": "^0.4.1",
 		"body-parser": "^1.18.3",
 		"connect-favicons": "^0.1.5",
