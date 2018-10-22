@@ -25,6 +25,8 @@ import logger_req from "./logger-req";
 import auth from "./auth";
 import {exists as exists_, existsSync} from "fs";
 import {promisify} from "util";
+import listen from "./listen";
+import sitemap from "./sitemap";
 
 const pExists = promisify(exists_);
 const debug = Debug('site:site');
@@ -32,8 +34,6 @@ const device = require('express-device');
 const multipart = require('./multipart');
 const Subscriptor = require('./subscriptor');
 const Notifier = require('./notifier');
-const sitemap = require('./sitemap');
-const listen = require('./listen');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});

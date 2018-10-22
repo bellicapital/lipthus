@@ -9,6 +9,7 @@ import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
 import {Multilang} from "./modules/multilang";
 import {HtmlPage} from "./modules/htmlpage";
+import {LipthusWebSocketServer} from "./classes/web-socket-server";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -91,12 +92,14 @@ export interface LipthusApplication extends express.Application {
 	use: ApplicationRequestHandler<this>;
 	db: LipthusDb;
 	site: Site;
+	wss: LipthusWebSocketServer;
 
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;
 }
 
 export {LipthusError} from './classes/lipthus-error';
+export {LipthusWebSocketServer} from './classes/web-socket-server';
 export {LipthusDocument} from './interfaces/lipthus-document';
 export const nodeModule = (key: string) => require(key);
 export {Setting, SettingModel} from "./schemas/settings";
