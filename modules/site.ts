@@ -11,7 +11,7 @@ import * as os from "os";
 import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
-import {session} from "./session";
+import session from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";

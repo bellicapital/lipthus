@@ -44,6 +44,17 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	}
 
 	connect() {
+		const {uri, options} = this.connectParams();
+
+		this._conn = mongoose.createConnection(uri, options);
+
+		this._conn.once('connected', this.onConnOpen.bind(this));
+		this._conn.on('error', this.onConnError.bind(this));
+		this._conn.on('disconnected', this.onDisconnected.bind(this));
+		this._conn.on('reconnected', this.onReconnected.bind(this));
+	}
+
+	connectParams() {
 		let uri = 'mongodb://';
 
 		if (this.params.user && this.params.pass)
@@ -64,12 +75,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		if (options.useCreateIndex === undefined)
 			options.useCreateIndex = true;
 
-		this._conn = mongoose.createConnection(uri, options);
-
-		this._conn.once('connected', this.onConnOpen.bind(this));
-		this._conn.on('error', this.onConnError.bind(this));
-		this._conn.on('disconnected', this.onDisconnected.bind(this));
-		this._conn.on('reconnected', this.onReconnected.bind(this));
+		return {uri: uri, options: options};
 	}
 
 	addLipthusSchemas() {
