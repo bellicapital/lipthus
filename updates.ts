@@ -11,6 +11,9 @@ export const updates = (site: Site, version: string) => {
 				.remove({name: {$in: ['protocol', 'external_protocol']}})
 				.then(() => ({ok: true}));
 
+		case "1.7.4":
+			return site.db._conn.collection('sessions').removeMany()
+				.then(() => ({ok: true}));
 		default:
 			return Promise.resolve({ok: true});
 	}
