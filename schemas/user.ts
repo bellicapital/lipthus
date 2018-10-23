@@ -38,7 +38,7 @@ export function getSchema() {
 		phone: [],
 		nif: String,
 		data: {},
-		cart: {type: ShoppingCart.schema, default: null},
+		cart: {type: ShoppingCart.schema, default: undefined},
 		oauth_user_id: String,
 		oauth_data: {},
 		facebook: {}, // @deprecated
