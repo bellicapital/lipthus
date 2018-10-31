@@ -2,7 +2,7 @@ import {ConfigVarInstance} from "./configvar";
 import {Site} from "../site";
 import {BinDataImage} from "../bdi";
 import {MultilangText} from "../schema-types/mltext";
-import {ConfigModel, Config as ConfigD} from "../../schemas/config";
+import {ConfigModel, ConfigDoc} from "../../schemas/config";
 import * as Debug from "debug";
 
 const util = require('util');
@@ -44,11 +44,11 @@ export class Config {
 
 		return this.checkDefaults()
 			.then(() => this.model.find())
-			.then((obj: Array<ConfigD> | any) => {
-				const indb: any = {};
+			.then((obj: Array<ConfigDoc>) => {
+				const indb: {[s: string]: ConfigDoc} = {};
 				const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
 
-				obj.forEach((c: ConfigD) => indb[c.get('name')] = c);
+				obj.forEach(c => indb[c.get('name')] = c);
 
 				const configs: any = require(this.site.lipthusDir + '/configs/configs');
 
@@ -64,7 +64,7 @@ export class Config {
 								g[keys[idx]] = v);
 
 						if (indb[key]) {
-							g.value = indb[key].get('value');
+							g.value = indb[key].getValue();
 							g._id = indb[key]._id;
 						}
 
@@ -72,7 +72,10 @@ export class Config {
 
 						if (!indb[key]) {
 							indb[key] = new this.model({name: key, value: this.configs[key].value});
-							indb[key].save();
+
+							indb[key].save()
+								.catch(console.error.bind(console));
+
 							this.configs[key]._id = indb[key]._id;
 						}
 
@@ -93,9 +96,7 @@ export class Config {
 	}
 
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update: any, cb = (v: any) => {
-	}) {
-
+	get(k: string, update: any, cb = (v: any) => {}) {
 		if (update) {
 			this.model.findOne({name: k}, (err: Error, obj: any) => {
 				if (err) return cb(err);

@@ -1,6 +1,7 @@
 import {LipthusSchema} from "../lib";
 import {BinDataFile, Site} from '../modules';
 import {Document, Model} from "mongoose";
+
 const debug = require("debug")('site:config');
 
 let definitions: any;
@@ -19,24 +20,28 @@ export function getSchema(site: Site) {
 	const s = new LipthusSchema({
 		name: {type: String, unique: true},
 		value: {
-			type: LipthusSchema.Types.Mixed,
-			get: function (this: any, val: any) {
-				const key = this.get('name');
-				const definition = definitions[groupsByKey[key]];
-
-				if (!definition) {
-					debug('Deleting not defined Config ' + key);
-
-					return this.collection.remove({_id: this._id}).catch(console.error.bind(console));
-				}
-
-				if (definition.configs[key][0] === 'bdf')
-					return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
-
-				return val;
-			}
+			type: LipthusSchema.Types.Mixed
 		}
 	}, {collection: 'config'});
+
+	s.methods = {
+		getValue: function (this: any) {
+			const val = this.get('value');
+			const key = this.get('name');
+			const definition = definitions[groupsByKey[key]];
+
+			if (!definition) {
+				debug('Deleting not defined Config ' + key);
+
+				return this.collection.remove({_id: this._id}).catch(console.error.bind(console));
+			}
+
+			if (definition.configs[key][0] === 'bdf')
+				return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
+
+			return val;
+		}
+	};
 
 	/**
 	 * @param key
@@ -51,13 +56,15 @@ export function getSchema(site: Site) {
 	return s;
 }
 
-export interface Config extends Document {
+export interface ConfigDoc extends Document {
 	query: string;
 	created?: Date;
 	name: string;
 	value: any;
+
+	getValue: () => any;
 }
 
-export interface ConfigModel extends Model<Config> {
+export interface ConfigModel extends Model<ConfigDoc> {
 
 }

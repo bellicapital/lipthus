@@ -8,14 +8,7 @@ namespace LipthusSettings {
 		name: {type: String, unique: true},
 		type: String,
 		value: {
-			type: LipthusSchema.Types.Mixed, noWatermark: true, get: function (this: any, val: any): any {
-				//noinspection JSUnresolvedVariable
-				if (val && val.MongoBinData) { //noinspection JSUnresolvedFunction,JSUnresolvedVariable,JSPotentiallyInvalidUsageOfThis
-					return BinDataFile.fromMongo(val, {collection: 'settings', id: this._id, field: 'value'});
-				}
-
-				return val;
-			}
+			type: LipthusSchema.Types.Mixed, noWatermark: true
 		}
 	}, {
 		collection: 'settings',
@@ -25,12 +18,13 @@ namespace LipthusSettings {
 	export class SettingMethods {
 
 		getValue(this: any, lang?: string) {
-			const value = this.get('value');
+			let value = this.get('value');
 
-			//noinspection JSUnresolvedVariable
+			if (value && value.MongoBinData)
+				value = BinDataFile.fromMongo(value, {collection: 'settings', id: this._id, field: 'value'});
+
 			switch (this.get('type')) {
 				case 'ml':
-					//noinspection JSUnresolvedFunction
 					return new MultilangText(
 						value,
 						this.collection,
@@ -39,7 +33,6 @@ namespace LipthusSettings {
 					)
 						.getLangOrTranslate(lang);
 				case 'bdi':
-					//noinspection JSUnresolvedVariable
 					return Promise.resolve(value && value.info());
 				case 'string':
 				case 'boolean':
