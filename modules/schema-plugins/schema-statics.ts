@@ -15,54 +15,41 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		schema.statics.updateMany = function (this: any, filter: any, update: any) {
 			return this.update.call(this, filter, update, {multi: true});
 		};
-		schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
-			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(update.$set || update.$unset);
-
-			['modified', 'modifier'].forEach(k => {
-				const mod = keys.indexOf(k);
-
-				if (mod > -1)
-					keys.splice(mod, 1);
-			});
-
-			const ret = col.update.call(col, filter, update);
-
-			// evento
-			this.find(filter, (err: Error, docs: any) => {
-				if (err || !docs || !docs.length)
-					return;
-
-				docs.forEach((doc: any) => doc.emit('update', keys));
-			});
-
-			return ret;
-		};
-		schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
-			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(update.$set || update.$unset);
-
-			['modified', 'modifier'].forEach(k => {
-				const mod = keys.indexOf(k);
-
-				if (mod > -1)
-					keys.splice(mod, 1);
-			});
-
-			const ret = col.update.call(col, filter, update, {multi: true});
-
-			// evento
-			this.find(filter, (err: Error, docs: any) => {
-				if (err || !docs || !docs.length)
-					return;
-
-				docs.forEach((doc: any) => doc.emit('update', keys));
-			});
-
-			return ret;
-		};
 	} catch (e) {}
 	*/
+
+	schema.statics._updateNative = function (this: any, multiple: boolean, filter: any, update: any) {
+		const col = this.db.collection(this.schema.options.collection);
+		const keys = Object.keys(update.$set || update.$unset);
+		const func = multiple ? 'updateMany' : 'updateOne';
+
+		['modified', 'modifier'].forEach(k => {
+			const mod = keys.indexOf(k);
+
+			if (mod > -1)
+				keys.splice(mod, 1);
+		});
+
+		const ret = col[func].call(col, filter, update);
+
+		// event
+		this.find(filter, (err: Error, docs: any) => {
+			if (err || !docs || !docs.length)
+				return;
+
+			docs.forEach((doc: any) => doc.emit('update', keys));
+		});
+
+		return ret;
+	};
+
+	schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
+		return this._updateNative(false, filter, update);
+	};
+
+	schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
+		return this._updateNative(true, filter, update);
+	};
 
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
 		const ns = fieldName.split('.');

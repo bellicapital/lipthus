@@ -11,6 +11,7 @@ export class MlCheckbox {
 	constructor(public val: any, public path: string, public options: KeyAny, public schema?: any) {
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getVal(req: LipthusRequest, db: LipthusDb) {
 		db = db || req.db;
 
@@ -89,6 +90,10 @@ export class MlCheckbox {
 		this.val.forEach((val: string) => ret[val] = this.options.options[val]);
 
 		return ret;
+	}
+
+	toJSON() {
+		return this.val;
 	}
 }
 
@@ -175,10 +180,10 @@ export class MlCheckboxes extends SchemaType {
 
 			return handler.call(this, value);
 		} else {
-			if ('string' === typeof $conditional)
-				return $conditional;
-			else if ($conditional instanceof MlCheckboxes)
+			if ($conditional instanceof MlCheckboxes)
 				return $conditional.val;
+
+			return $conditional;
 		}
 	}
 }
