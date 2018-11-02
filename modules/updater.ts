@@ -3,7 +3,7 @@ import {Site} from "./site";
 import {updates} from '../updates';
 import {existsSync} from 'fs';
 
-const debug = Debug('site:updater');
+const debug = Debug('site:version');
 debug.log = console.log.bind(console);
 
 
@@ -15,7 +15,7 @@ export function checkVersions(site: Site): Promise<any> {
 }
 
 function checkCmsVersion(site: Site) {
-	debug('lipthus version:' + site.config.version);
+	debug('lipthus: v' + site.config.version);
 	
 	if (site.cmsPackage.version === site.config.version)
 		return;
@@ -29,7 +29,7 @@ function checkCmsVersion(site: Site) {
 }
 
 function checkAppVersion(site: Site) {
-	debug('site version:' + site.config.siteversion);
+	debug(site.key + ' : v' + site.config.siteversion);
 	
 	if (site.package.version === site.config.siteversion)
 		return;

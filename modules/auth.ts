@@ -3,7 +3,6 @@ import {NextFunction} from "express";
 import {Passport} from "passport";
 
 const md5 = require('md5');
-const debug = require('debug')('site:auth');
 const mongoose = require('mongoose');
 
 const registerSiteStrategies = (site: Site, passport: any) => {
@@ -58,7 +57,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 
 		facebook() {
 			if (!config.fb_app_id)
-				return debug('Facebook auth failed. No app id provided.');
+				return;
 
 			const FacebookTokenStrategy = require('passport-facebook-token');
 
@@ -78,11 +77,8 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 		},
 
 		google() {
-			if (!config.googleApiKey)
-				return debug('Google auth failed. No app id provided.');
-
-			if (!config.googleSecret)
-				return debug('Google auth failed. No secret key provided.');
+			if (!config.googleApiKey || !config.googleSecret)
+				return;
 
 			const GoogleStrategy = require('passport-google-oauth2').Strategy;
 

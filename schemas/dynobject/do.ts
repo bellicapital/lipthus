@@ -132,7 +132,7 @@ class DoSchema extends LipthusSchema {
 					break;
 				case 'image':
 					p.type = LipthusSchemaTypes.BdfList;
-					p.multi = dv.multi;
+					p.multi = dv.multi || 0;
 					// noinspection PointlessBooleanExpressionJS
 					p.noWatermark = !!dv.noWatermark;
 					break;
