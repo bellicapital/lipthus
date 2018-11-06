@@ -93,6 +93,7 @@ export interface LipthusApplication extends express.Application {
 	db: LipthusDb;
 	site: Site;
 	wss: LipthusWebSocketServer;
+	subscriptor: any;
 
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;

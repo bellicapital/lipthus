@@ -215,11 +215,13 @@ export interface User extends Document {
 	level: number;
 	cart: any;
 	email: string;
+	language: string;
 	phone: Array<string>;
 	address: any;
 	devices: Array<any>;
 	subscriptions: any;
 	type?: string;
+	email_notifications?: boolean;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;

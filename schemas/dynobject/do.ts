@@ -210,7 +210,8 @@ class DoSchema extends LipthusSchema {
 			subscriptions: !!obj.subscriptions,
 			showTranslate: !!obj.showTranslate,
 			logUpdates: obj.logUpdates,
-			list_order: obj.list_order
+			list_order: obj.list_order,
+			versionKey: '__v'
 		});
 
 		schema.index({'parents.$ref': 1});

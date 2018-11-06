@@ -27,13 +27,13 @@ import {exists as exists_, existsSync} from "fs";
 import {promisify} from "util";
 import listen from "./listen";
 import sitemap from "./sitemap";
+import Notifier from "./notifier";
 
 const pExists = promisify(exists_);
 const debug = Debug('site:site');
 const device = require('express-device');
 const multipart = require('./multipart');
 const Subscriptor = require('./subscriptor');
-const Notifier = require('./notifier');
 const Mailer = require("./mailer");
 const facebook = require("./facebook");
 const csrf = csurf({cookie: true});

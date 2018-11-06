@@ -79,33 +79,31 @@ class Subscriptor {
 			query = dbname;
 			onlyUsers = model;
 		} else
-			query['subscriptions.' + dbname + '.' + model + '.' + type] = value;
+			query['subscriptions.' + dbname + '.' + model + '.' + type + '.key'] = value;
 
-		const promises = [];
-
-		promises.push(
-			db.user.find(query)
-				.select('email language name uname email_notifications devices')
-				.then(users =>
-					users.forEach(u => byEmail[u.email] = {
-						email: u.email,
-						lang: u.language,
-						name: u.getName(true),
-						email_notifications: u.email_notifications,
-						devices: u.devices,
-						user: u
-					}))
-		);
-
-		if(!onlyUsers)
-			promises.push(
-				db.subscription
-					.find(query)
-					.select('email lang')
-					.then(subscribed => subscribed.forEach(s => byEmail[s.email] = s.toObject()))
-			);
-
-		return Promise.all(promises)
+		return db.user.find(query)
+			.select('email language name uname email_notifications devices subscriptions')
+			.then(users =>
+				users.forEach(u => byEmail[u.email] = {
+					email: u.email,
+					lang: u.language,
+					name: u.getName(true),
+					email_notifications: u.email_notifications,
+					devices: u.devices,
+					subscribed: u.get('subscriptions')[dbname][model][type].find(s => s.key === value),
+					user: u
+				}))
+			.then(() => {
+				if (!onlyUsers) {
+					return db.subscription
+						.find(query)
+						.select('email lang subscriptions')
+						.then(subscribed => subscribed.forEach(s => {
+							byEmail[s.email] = s.toObject();
+							byEmail[s.email].subscribed = s.get('subscriptions')[dbname][model][type].find(s => s.key === value);
+						}));
+				}
+			})
 			.then(() => Object.values(byEmail));
 	}
 
