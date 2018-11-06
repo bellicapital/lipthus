@@ -132,7 +132,7 @@ class DoSchema extends LipthusSchema {
 					break;
 				case 'image':
 					p.type = LipthusSchemaTypes.BdfList;
-					p.multi = dv.multi;
+					p.multi = dv.multi || 0;
 					// noinspection PointlessBooleanExpressionJS
 					p.noWatermark = !!dv.noWatermark;
 					break;
@@ -210,7 +210,8 @@ class DoSchema extends LipthusSchema {
 			subscriptions: !!obj.subscriptions,
 			showTranslate: !!obj.showTranslate,
 			logUpdates: obj.logUpdates,
-			list_order: obj.list_order
+			list_order: obj.list_order,
+			versionKey: '__v'
 		});
 
 		schema.index({'parents.$ref': 1});

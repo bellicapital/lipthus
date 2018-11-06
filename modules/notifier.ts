@@ -1,13 +1,17 @@
-"use strict";
+import {Site} from "./site";
+
+import {Message, Sender} from "node-gcm";
+import {User} from "../schemas/user";	// deprecated
 
 const FCM = require('fcm-push');
-const Gcm = require('node-gcm');	// deprecated
 const fs = require('fs');
 const debug = require('debug')('site:gcm');
-const merge = require('merge-descriptors');
 
 class Notifier {
-	constructor(site) {
+
+	public serverFrom: string;
+
+	constructor(public site: Site) {
 		Object.defineProperty(this, 'site', {value: site});
 
 		this.serverFrom = site + " <server@" + site.domainName + ">";
@@ -37,14 +41,15 @@ class Notifier {
 	 * @param values
 	 * @returns {Promise}
 	 */
-	gcm(ids, values) {
+	gcm(ids: Array<string>, values: any) {
 		return new Promise((ok, ko) =>
-			this.gcm_(ids, values, (err, r) => err ? ko(err) : ok(r))
+			this.gcm_(ids, values, (err: Error, r: any) => err ? ko(err) : ok(r))
 		);
 	}
 
-	gcm_(ids, values, cb) {
-		cb = cb || function () {};
+	gcm_(ids: Array<string>, values: any, cb: any) {
+		cb = cb || function () {
+		};
 
 		if (!values)
 			return cb(new Error('No data'));
@@ -71,11 +76,12 @@ class Notifier {
 
 		debug(values);
 
-		const msg = new Gcm.Message(values);
-		const sender = new Gcm.Sender(site.config.googleApiKey);
+		const msg = new Message(values);
+		const sender = new Sender(site.config.googleApiKey);
 
-		sender.send(msg, {registrationTokens: ids}, 4, (err, r) => {
-			err && debug(err);
+		sender.send(msg, {registrationTokens: ids}, 4, (err: Error, r: any) => {
+			if (err)
+				debug(err);
 
 			new site.db
 				.loggerGCM({
@@ -95,10 +101,10 @@ class Notifier {
 		});
 	}
 
-	toAdmin(subject, content, tpl, tag, extra) {
+	toAdmin(subject: string, content: string, tpl: string | null, tag: string, extra?: any) {
 		if (tpl) {
-			return this.parseContent(this.site.config.language, content, tpl, function (err, content) {
-				this.toAdmin(subject, content, null, tag, extra);
+			return this.parseContent(this.site.config.language, content, tpl, (err: Error, r: any) => {
+				this.toAdmin(subject, r, null, tag, extra);
 			});
 		}
 
@@ -108,7 +114,12 @@ class Notifier {
 			// const lang = (admin && admin.language) || site.config.language;
 
 			if (admin)
-				this.toUser(admin, subject, content, tag, extra);
+				this.toUser(admin, {
+					subject: subject,
+					content: content,
+					tag: tag,
+					extra: extra
+				});
 			else
 				site.sendMail({
 					from: this.serverFrom,
@@ -119,11 +130,11 @@ class Notifier {
 		});
 	}
 
-	toEmail(opt, cb) {
-		if(typeof cb === 'function')
+	toEmail(opt: any, cb?: any) {
+		if (typeof cb === 'function')
 			console.warn('notifier.toEmail() callback has been deprecated. Use Promise');
 
-		const options = {
+		const options: any = {
 			from: opt.from || this.serverFrom,
 			to: opt.to,
 			subject: opt.subject
@@ -134,7 +145,7 @@ class Notifier {
 
 		if (opt.tpl) {
 			return new Promise((ok, ko) => {
-				this.parseContent(opt.lang || 'es', opt.body || {}, opt.tpl, (err, content) => {
+				this.parseContent(opt.lang || 'es', opt.body || {}, opt.tpl, (err: Error, content: any) => {
 					if (err)
 						return cb ? cb(err) : ko(err);
 
@@ -156,29 +167,17 @@ class Notifier {
 		}
 	}
 
-	toUser(user, opt, content, tag, extra, tpl) {
-		if(content){
-			console.warn('notifier.toUser now recieves only two arguments');
-
-			opt = {
-				subject: opt,
-				content: content,
-				tag: tag,
-				extra: extra,
-				tpl: tpl
-			}
-		}
-
+	toUser(user: User, opt: any = {}) {
 		if (opt.tpl) {
-			return this.parseContent(user.language || this.site.config.language, opt.content, opt.tpl, function (err, content) {
-				const opt = Object.assign({}, o);
-				delete opt.tpl;
-				opt.content = content;
-				this.toUser(opt);
+			return this.parseContent(user.language || this.site.config.language, opt.content, opt.tpl, (err: Error, r: any) => {
+				const opt2 = Object.assign({}, opt);
+				delete opt2.tpl;
+				opt2.content = r;
+				this.toUser(user, opt2);
 			});
 		}
 
-		const noti = {
+		const notification = {
 			subject: opt.subject,
 			content: opt.content,
 			uid: user._id,
@@ -188,9 +187,9 @@ class Notifier {
 			extra: opt.extra
 		};
 
-		this.site.db.notification.create(noti);
+		this.site.db.notification.create(notification);
 
-		if (user.email_notifications !== false) {
+		if (user.email_notifications !== false && opt.email) {
 			this.site.sendMail({
 				from: this.serverFrom,
 				to: user.email,
@@ -199,7 +198,7 @@ class Notifier {
 			});
 		}
 
-		if (user.devices && user.devices.length) {
+		if (opt.device && user.devices && user.devices.length) {
 			const firebase = this.site.config.firebase;
 
 			if (!firebase || !firebase.serverkey)
@@ -208,7 +207,7 @@ class Notifier {
 			const fcm = new FCM(firebase.serverkey);
 
 			// https://firebase.google.com/docs/cloud-messaging/http-server-ref
-			const options = {
+			const options: any = {
 				// to: ids.length === 1 ? ids[0] : undefined,
 				// registration_ids: ids,//.length > 1 ? ids : undefined,
 				collapse_key: this.site.key,
@@ -218,7 +217,7 @@ class Notifier {
 					title: opt.subject,
 					body: opt.content,
 					icon: opt.icon || this.site.config.sitelogo,
-					click_action: noti.url
+					click_action: notification.url
 				}
 			};
 
@@ -227,8 +226,8 @@ class Notifier {
 				options.to = device.regId;
 
 				return fcm.send(options)
-					.then(a => debug(a))
-					.catch(err => {
+					.then((a: any) => debug(a))
+					.catch((err: string) => {
 						// jj - 5/3/18. Devuelve un string!!! y aparece un warning en la cónsola
 						// ... así que lo mejor es mostrar sólo el texto del mensaje
 						console.error(err);
@@ -242,26 +241,30 @@ class Notifier {
 
 							return user.save();
 						}
-					})
+					});
 			}), Promise.resolve());
 		}
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	toSubscriptors(dbname, model, type, value, onlyUsers, params) {
-		return this.site.app.subscriptor
+	toSubscriptors(dbname: string, model: any, type: string, value: any, onlyUsers: boolean, params: any) {
+
 		// si no se facilita asunto, no se envía email a los no usuarios
-			.getSubscriptors(dbname, model, type, value, onlyUsers || !params.subject)
-			.then(subscriptors => {
-				const promises = [];
+		if (!onlyUsers && !params.subject)
+			onlyUsers = true;
+
+		return this.site.app.subscriptor
+			.getSubscriptors(dbname, model, type, value, onlyUsers)
+			.then((subscriptors: Array<any>) => {
+				const promises: Array<any> = [];
 
 				subscriptors.forEach(s => {
 					// el suscriptor es usuario
-					if(s.user){
+					if (s.user) {
 						// si el usuario es el mismo que envía la notificación, no lo incluimos
-						if(!s.user._id.equals(params.from))
-							promises.push(this.toUser(s.user, params));
-					} else {
+						if (!s.user._id.equals(params.from))
+							promises.push(this.toUser(s.user, Object.assign({}, s.subscribed, params)));
+					} else if (!onlyUsers) {
 						this.toEmail({
 							from: params.fromEmail,
 							to: s.email,
@@ -275,103 +278,99 @@ class Notifier {
 			});
 	}
 
-	itemCreated(item, subscribed, options, cb) {
+	itemCreated(item: any, subscribed: Array<any>, options: any, cb: any) {
 		options.key = 'CREATED';
 
 		if (!options.template) {
-			let tpl = item.schema.toString() + '_created';
+			const tpl = item.schema.toString() + '_created';
 
-			options.template = exists(this.site.dir + '/views/mail-templates/es/' + tpl + '.pug') ? tpl : 'item_created';
+			options.template = fs.existsSync(this.site.dir + '/views/mail-templates/es/' + tpl + '.pug') ? tpl : 'item_created';
 		}
 
 		return this._process(item, subscribed, options, cb);
 	}
 
-	itemActivated(item, subscribed, options, cb) {
+	itemActivated(item: any, subscribed: Array<any>, options: any, cb: any) {
 		options.template = options.template || 'item_activated';
 		options.key = 'ACTIVATED';
 
 		this._process(item, subscribed, options, cb);
 	}
 
-	_process(item, subscribed, opt, cb) {
-		opt = opt || {};
-
-		if (subscribed === 'preview')
+	_process(item: any, subscribed: string | Array<any>, opt: any = {}, cb: any) {
+		if (typeof subscribed === 'string')
 			return this.preview(item, opt, cb);
 
 		const site = this.site;
 		const sitename = opt.sitename || opt.content && opt.content.X_SITENAME || site.config.sitename;
-		const subscriptors = [];
+		const subscriptors: Array<string> = subscribed.map((s: any) => s.email);
 
-		subscribed.forEach(function (subscriptor) {
-			subscriptors.push(subscriptor.email);
-		});
+		if (!opt.testmode) {
+			site.db.notilog.create({
+				item: item._id,
+				opt: opt,
+				subscriptors: subscriptors
+			});
+		}
 
-		opt.testmode || site.db.notilog.create({
-			item: item._id,
-			opt: opt,
-			subscriptors: subscriptors
-		});
-
-		site.db.lang.getMlTag(['ecms-notification', 'notification'], (err, texts) => {
+		site.db.lang.getMlTag(['ecms-notification', 'notification'], (err: Error, texts: any) => {
 			const schemaOpt = item.schema.options;
 			const title = schemaOpt.title || schemaOpt.collection;
-			let baseurl = schemaOpt.baseurl || schemaOpt.name || schemaOpt.collection;
+			let baseUrl = schemaOpt.baseurl || schemaOpt.name || schemaOpt.collection;
 
-			if (baseurl.indexOf('/') !== 0)
-				baseurl = '/' + baseurl;
+			if (baseUrl.indexOf('/') !== 0)
+				baseUrl = '/' + baseUrl;
 
 			let count = 0;
-			const customk = '_NOT_' + item.schema + '_' + opt.key;
-			const globalk = '_NOT_ITEM_' + opt.key;
-			let content = {};
+			const customK = '_NOT_' + item.schema + '_' + opt.key;
+			const globalK = '_NOT_ITEM_' + opt.key;
+			const content: any = {};
 
 			subscribed.forEach(subscriptor => {
 				const lang = subscriptor.lang || site.config.language;
-				const itemtype = title[lang] || title.es || title;
+				const itemType = title[lang] || title.es || title;
 				let subject = opt.subject && opt.subject[lang];
 				let unsubscribeUrl = opt.unsubscribeUrl || site.externalProtocol + ':' + site.langUrl(lang) + '/unsubscribe';
 
-				if(typeof unsubscribeUrl === 'function')
+				if (typeof unsubscribeUrl === 'function')
 					unsubscribeUrl = unsubscribeUrl(lang);
 
 				if (!subject) {
 					if (opt.subject && opt.subject.en)
 						subject = opt.subject.en;
 					else
-						subject = (texts[customk] && (texts[customk][lang] || texts[customk][site.config.language])) || texts[globalk][lang] || texts[globalk][site.config.language];
+						subject = (texts[customK] && (texts[customK][lang] || texts[customK][site.config.language])) || texts[globalK][lang] || texts[globalK][site.config.language];
 				}
 
 				subject = subject
 					.replace(/{X_SITENAME}/g, sitename)
 					.replace(/{X_ITEMTITLE}/g, item.title)
-					.replace(/{X_ITEMTYPE}/g, itemtype);
+					.replace(/{X_ITEMTYPE}/g, itemType);
 
 				content.X_ITEM_TITLE = item.title[lang] || item.title['es'] || item.title;
 				content.X_UNAME = subscriptor.email;
-				content.X_ITEM_TYPE = itemtype;
+				content.X_ITEM_TYPE = itemType;
 				content.X_UNSUBSCRIBE_URL = unsubscribeUrl + '?email=' + subscriptor.email;
 				content.X_SITELOGO = site.logo();
 				content.X_SUBJECT = subject;
 
 				if (opt.content)
-					content = merge(content, opt.content);
+					Object.assign(content, opt.content);
 
-				if(!content.X_ITEM_URL)
-					content.X_ITEM_URL = site.externalProtocol + ':' + site.langUrl(lang) + baseurl + '/' + item._id;
-				else if(typeof opt.content.X_ITEM_URL === 'function')
+				if (!content.X_ITEM_URL)
+					content.X_ITEM_URL = site.externalProtocol + ':' + site.langUrl(lang) + baseUrl + '/' + item._id;
+				else if (typeof opt.content.X_ITEM_URL === 'function')
 					content.X_ITEM_URL = opt.content.X_ITEM_URL(lang);
 
 				if (!content.X_SITEURL)
 					content.X_SITEURL = site.externalProtocol + ':' + site.langUrl(lang);
-				else if(typeof opt.content.X_SITEURL === 'function')
+				else if (typeof opt.content.X_SITEURL === 'function')
 					content.X_SITEURL = opt.content.X_SITEURL(lang);
 
-				this.parseContent(lang, content, opt.template, (err, html) => {
+				this.parseContent(lang, content, opt.template, (err2: Error, html: string) => {
 					// no esperamos la respuesta de los toEmail porque tarda demasiado y produce timeouts
-					if (++count === subscribed.length)
-						cb && cb(err, {subject: subject, html: html, subscribed: subscribed});
+					if (++count === subscribed.length && cb)
+						cb(err, {subject: subject, html: html, subscribed: subscribed});
 
 					if (!err)
 						this.toEmail({
@@ -385,33 +384,33 @@ class Notifier {
 		});
 	}
 
-	preview(item, options, cb) {
+	preview(item: any, options: any, cb: any) {
 		options = options || {};
 
 		const site = this.site;
 		const sitename = options.sitename || options.content && options.content.X_SITENAME || site.config.sitename;
 		const schemaOpt = item.schema.options;
 
-		site.db.lang.getMlTag(['ecms-notification', 'notification'], (err, texts) => {
+		site.db.lang.getMlTag(['ecms-notification', 'notification'], (err: Error, texts: any) => {
 			if (err)
 				return cb(err);
 
 			const title = schemaOpt.title || schemaOpt.collection;
-			let baseurl = schemaOpt.baseurl || schemaOpt.name || schemaOpt.collection;
+			let baseUrl = schemaOpt.baseurl || schemaOpt.name || schemaOpt.collection;
 
-			if (baseurl.indexOf('/') !== 0)
-				baseurl = '/' + baseurl;
+			if (baseUrl.indexOf('/') !== 0)
+				baseUrl = '/' + baseUrl;
 
 			const lang = options.lang || site.config.language;
-			const itemtype = title[lang] || title.es || title;
+			const itemType = title[lang] || title.es || title;
 
 			let subject = options.subject && options.subject[lang];
 
-			const customk = '_NOT_' + item.schema + '_' + options.key;
-			const globalk = '_NOT_ITEM_' + options.key;
+			const customK: string = '_NOT_' + item.schema + '_' + options.key;
+			const globalK = '_NOT_ITEM_' + options.key;
 			const identifier = schemaOpt.identifier && item[schemaOpt.identifier] || item.title;
 			const itemTitle = identifier && (identifier[lang] || identifier['es']) || identifier;
-			let content = {
+			const content: any = {
 				X_ITEM_TITLE: itemTitle
 			};
 
@@ -419,41 +418,41 @@ class Notifier {
 				if (options.subject && options.subject.en)
 					subject = options.subject.en;
 				else
-					subject = (texts[customk] && (texts[customk][lang] || texts[customk][site.config.language])) || texts[globalk][lang] || texts[globalk][site.config.language];
+					subject = (texts[customK] && (texts[customK][lang] || texts[customK][site.config.language])) || texts[globalK][lang] || texts[globalK][site.config.language];
 			}
 
 			subject = subject
 				.replace(/{X_SITENAME}/g, sitename)
 				.replace(/{X_ITEMTITLE}/g, itemTitle)
-				.replace(/{X_ITEMTYPE}/g, itemtype);
+				.replace(/{X_ITEMTYPE}/g, itemType);
 
 			content.X_UNAME = 'preview';
-			content.X_ITEM_TYPE = itemtype;
+			content.X_ITEM_TYPE = itemType;
 			content.X_SITELOGO = site.logo();
 			content.X_SUBJECT = subject;
 
 			if (options.content)
-				content = merge(content, options.content);
+				Object.assign(content, options.content);
 
-			if(!content.X_ITEM_URL)
-				content.X_ITEM_URL = site.externalProtocol + ':' + site.langUrl(lang) + baseurl + '/' + item._id;
-			else if(typeof content.X_ITEM_URL === 'function')
+			if (!content.X_ITEM_URL)
+				content.X_ITEM_URL = site.externalProtocol + ':' + site.langUrl(lang) + baseUrl + '/' + item._id;
+			else if (typeof content.X_ITEM_URL === 'function')
 				content.X_ITEM_URL = content.X_ITEM_URL(lang);
 
 			if (!content.X_SITEURL)
 				content.X_SITEURL = site.externalProtocol + ':' + site.langUrl(lang);
-			else if(typeof content.X_SITEURL === 'function')
+			else if (typeof content.X_SITEURL === 'function')
 				content.X_SITEURL = content.X_SITEURL(lang);
 
 			let unsubscribeUrl = options.unsubscribeUrl || site.externalProtocol + ':' + site.langUrl(lang) + '/unsubscribe';
 
-			if(typeof unsubscribeUrl === 'function')
+			if (typeof unsubscribeUrl === 'function')
 				unsubscribeUrl = unsubscribeUrl(lang);
 
 			content.X_UNSUBSCRIBE_URL = unsubscribeUrl + '?email=preview';
 
-			this.parseContent(lang, content, options.template, (err, html) => {
-				cb(err, {
+			this.parseContent(lang, content, options.template, (err2: Error, html: string) => {
+				cb(err2, {
 					from: options.from || this.serverFrom,
 					to: 'preview',
 					subject: subject,
@@ -464,7 +463,7 @@ class Notifier {
 		});
 	}
 
-	parseContent(lang, content, template, cb) {
+	parseContent(lang: string, content: any, template: string, cb: any) {
 		const site = this.site;
 		const tpl = this.templateFile(template, lang);
 
@@ -479,46 +478,27 @@ class Notifier {
 
 		content.lang = lang;
 
-		site.app.render(tpl, content, (err, html) => cb.call(this, err, html));
+		site.app.render(tpl, content, (err, html) => cb(err, html));
 	}
 
-	templateFile(tpl, lang) {
-		if (exists(tpl))
+	templateFile(tpl: string, lang: string) {
+		if (fs.existsSync(tpl))
 			return tpl;
 
 		const site = this.site;
 
 		tpl = tpl + '.pug';
 
-		let route = false;
-		let routes = [
-				tpl,
-				site.dir + '/views/mail-templates/' + lang + '/' + tpl,
-				site.dir + '/views/mail-templates/es/' + tpl,
-				site.lipthusDir + '/views/mail-templates/' + lang + '/' + tpl,
-				site.lipthusDir + '/views/mail-templates/es/' + tpl
-			];
+		const routes: Array<string> = [
+			tpl,
+			site.dir + '/views/mail-templates/' + lang + '/' + tpl,
+			site.dir + '/views/mail-templates/es/' + tpl,
+			site.lipthusDir + '/views/mail-templates/' + lang + '/' + tpl,
+			site.lipthusDir + '/views/mail-templates/es/' + tpl
+		];
 
-		routes.some(function (r) {
-			if (exists(r)) {
-				route = r;
-
-				return true;
-			}
-		});
-
-		return route;
+		return routes.find(fs.existsSync);
 	}
 }
 
-
-module.exports = Notifier;
-
-function exists(fn){
-	try {
-		fs.accessSync(fn);
-		return true;
-	} catch(ex) {
-		return false;
-	}
-}
+export default Notifier;
