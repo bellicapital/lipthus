@@ -10,7 +10,7 @@ export default [
 		updater: (site: Site) => site.db._conn.collection('sessions').removeMany()
 	},
 	{
-		version: "1.7.5",
+		version: "1.8.0",
 		updater: (site: Site) => Promise.resolve(site.db.name)
 	}
 ];
