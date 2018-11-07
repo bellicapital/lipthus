@@ -24,11 +24,11 @@ export class Config {
 	site_credentials?: boolean;
 	sitelogo?: BinDataImage;
 	sitename?: string;
-	siteversion?: string;
+	siteversion!: string;
 	slogan?: MultilangText;
 	startpage = 'home';
 	static_host?: string;
-	version?: string;
+	version!: string;
 	webmastermail?: string;
 	model: ConfigModel | any = {};
 	lang_subdomains?: boolean;
@@ -96,7 +96,7 @@ export class Config {
 	}
 
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update: any, cb = (v: any) => {}) {
+	get(k: string, update?: any, cb = (v: any) => {}) {
 		if (update) {
 			this.model.findOne({name: k}, (err: Error, obj: any) => {
 				if (err) return cb(err);
