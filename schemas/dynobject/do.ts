@@ -166,7 +166,7 @@ class DoSchema extends LipthusSchema {
 				case 'video':
 				case 'file':
 					p.type = LipthusSchemaTypes.Fs;
-					p.multi = dv.multi;
+					p.multi = dv.multi || 0;
 					break;
 				case 'refid':
 					p.ref = dv.schema || dv.colname;

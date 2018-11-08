@@ -125,15 +125,6 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		
 		return this.updateNative.apply(this, arguments);
 	};
-
-	// No tiene sentido. Mongoose Model.findOneAndUpdate es eso
-	schema.statics.findAndModify = function (this: any) {
-		console.log('schema.statics.findAndModify is @deprecated');
-		
-		const col = this.db.collection(this.schema.options.collection);
-		
-		return col.findAndModify.apply(col, arguments);
-	};
 	
 	/**
 	 * Usado para simplificar los comandos desde ajax

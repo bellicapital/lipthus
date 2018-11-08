@@ -21,7 +21,7 @@ export function getSchema() {
 			.then(() => {
 				if (process.env.NODE_ENV !== 'production') {
 					return {
-						message: 'No se ha enviado el email ' + this.id + ' a '	+ this.email.to	+ ' por estar en modo desarrollo'
+						message: 'No se ha enviado el email ' + this._id + ' a '	+ this.email.to	+ ' por estar en modo desarrollo'
 					};
 				}
 				
