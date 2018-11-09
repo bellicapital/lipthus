@@ -190,11 +190,14 @@ class Notifier {
 		this.site.db.notification.create(notification);
 
 		if (user.email_notifications !== false && opt.email) {
+			// specific email parameters
+			const email = opt.email || {};
+
 			this.site.sendMail({
-				from: this.serverFrom,
+				from: email.from || this.serverFrom,
 				to: user.email,
-				subject: opt.subject,
-				html: opt.content
+				subject: email.subject || opt.subject,
+				html: email.body || opt.content
 			});
 		}
 

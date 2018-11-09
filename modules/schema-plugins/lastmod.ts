@@ -6,7 +6,7 @@ export function lastModifiedPlugin(schema: LipthusSchema) {
 
 	schema.pre('save', function (this: any, next: any) {
 		if (this.modifiedPaths().length)
-			this.modified = new Date;
+			this.set('modified', new Date);
 
 		next();
 	});
