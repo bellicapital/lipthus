@@ -55,7 +55,7 @@ module.exports = function payment(Schema){
 		tokenf: String,
 		log: [],
 		amount: Number,
-		delegation: {type: DBRef.schema, default: null},//Delegación, sucursal, franquicia...
+		delegation: DBRef.schema,//Delegación, sucursal, franquicia...
 		customdata: {type: {}, formtype: 'hidden'},
 		merchant_order: {type: String, formtype: 'hidden'},
 		merchant_code: {type: String, formtype: 'hidden'}
