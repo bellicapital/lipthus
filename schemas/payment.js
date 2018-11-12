@@ -1,6 +1,6 @@
 "use strict";
 
-const ShopItem = require('../modules/shopping/shopitem');
+const {ShopItem} = require('../modules/shopping/shop-item');
 const {DBRef} = require('../lib');
 const Sermepa = require('sermepa');
 const debug = require('debug')('site:payment');

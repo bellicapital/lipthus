@@ -1,10 +1,9 @@
-import {LipthusRequest, LipthusResponse} from '../../index';
+import {DBRef, LipthusRequest, LipthusResponse} from '../../index';
+import {ShopItem} from "./shop-item";
 
-const ShopItem = require('./shopitem');
 const ShoppingCartPreferences = require('./shoppingcartpreferences');
 const ShopPayParams = require('./shoppayparams');
 const EucaLocation = require('../geo/location');
-const DBRef = require('../../lib/dbref');
 
 
 class ShoppingCart {
@@ -63,7 +62,7 @@ class ShoppingCart {
 		 * Delegación, sucursal, franquicia...
 		 * @type object DbRef
 		 */
-		delegation: {type: DBRef.schema, default: null},
+		delegation: DBRef.schema,
 		paymentMethod: String,
 		customdata: {}
 	};
@@ -94,7 +93,7 @@ class ShoppingCart {
 			if (obj.items)
 				obj.items = obj.items.map((item: any) => new ShopItem(item));
 			
-			if (obj.modified && !(obj.modified instanceof Date))
+			if (obj.modified && !((obj as any).modified instanceof Date))
 				this.modified = new Date(obj.modified);
 		}
 		
@@ -144,7 +143,7 @@ class ShoppingCart {
 	}
 	
 	itemsInfo() {
-		const items = <any>[];
+		const items: Array<ShopItem> = [];
 		const req = this.req;
 		
 		this.items.forEach((item: any) => items.push(item.getInfo(req, true)));
@@ -207,7 +206,7 @@ class ShoppingCart {
 		if (!address.types)
 			return 'just string address';
 		
-		if (!address.types.some((type: string) => type === 'street_address'))
+		if (!(address.types as Array<any>).some((type: string) => type === 'street_address'))
 			return 'not a street address';
 		
 		if (this.preferences.deliveryAddressRestrictions) {

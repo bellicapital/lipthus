@@ -11,6 +11,7 @@ export default [
 	},
 	{
 		version: "1.8.0",
-		updater: (site: Site) => Promise.resolve(site.db.name)
+		// It removes cart default null
+		updater: (site: Site) => site.db.user.updateMany({cart: null}, {$unset: {cart: true}})
 	}
 ];

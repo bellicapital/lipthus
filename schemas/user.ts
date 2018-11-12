@@ -38,7 +38,7 @@ export function getSchema() {
 		phone: [],
 		nif: String,
 		data: {},
-		cart: {type: ShoppingCart.schema, default: undefined},
+		cart: ShoppingCart.schema,
 		oauth_user_id: String,
 		oauth_data: {},
 		facebook: {}, // @deprecated
@@ -182,7 +182,7 @@ export function getSchema() {
 
 		return this
 			.find(query, fields, options)
-			.then((result: Array<any>) => {
+			.then((result: Array<User>) => {
 				const values: Array<any> = [];
 
 				return Promise.all(result.map(item => item.getValues(req).then((v: any) => values.push(v))))
@@ -239,6 +239,11 @@ export interface User extends Document {
 	baseInfo(includeEmail?: boolean): any;
 
 	isAdmin(): boolean;
+
+	getValues(req: LipthusRequest): Promise<any>;
+
+	// set(key: string, value: any, type: any, options?: any): void;
+	save(): Promise<any>;
 }
 
 export interface UserModel extends Model<User> {
@@ -251,5 +256,4 @@ export interface UserModel extends Model<User> {
 
 	// noinspection JSUnusedLocalSymbols
 	findAndGetValues4Show(params: any): Promise<any>;
-
 }
