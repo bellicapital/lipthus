@@ -26,11 +26,6 @@ const commands = [
 	// 	k: "ffmpeg",
 	// 	install: 'ffmpeg'
 	// }
-	// ,{
-	// 	k: "gd",
-	// 	uri: 'http://www.boutell.com/gd/',
-	// 	install: process.platform === 'darwin' ? 'libgd2-xpm-dev' : 'gd'
-	// }
 ];
 
 const installers: KeyString = {
