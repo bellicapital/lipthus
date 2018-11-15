@@ -324,7 +324,7 @@ export class GridFSFile {
 		return this.update({processLog: this.processLog})
 			.then(() => this.tmpFile())
 			.then(tmpFile => {
-				let cmd = 'avconv -i "' + tmpFile + '" -y -loglevel error -b:v 1M';
+				let cmd = 'ffmpeg -i "' + tmpFile + '" -y -loglevel error -b:v 1M';
 
 				if (this.metadata.width % 2 || this.metadata.height % 2)
 					cmd += ' -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"';
@@ -583,7 +583,7 @@ export class GridFSFile {
 				return this.tmpFile()
 					.then((tmpFile: any) => {
 						const tmpFile2 = tmpdir + 'frame_' + number + '_' + this._id + '.jpg';
-						const cmd = 'avconv -i "' + tmpFile + '" -f image2 -frames:v 1 -ss ' + ((number - 1) / this.fps!) + ' ' + tmpFile2;
+						const cmd = 'ffmpeg -i "' + tmpFile + '" -f image2 -frames:v 1 -ss ' + ((number - 1) / this.fps!) + ' ' + tmpFile2;
 
 						debug(cmd);
 

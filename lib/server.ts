@@ -23,9 +23,8 @@ const commands = [
 	// 	install: 'imagemagick'
 	// },
 	// {
-	// 	k: "avconv",
-	// 	uri: 'https://libav.org/',
-	// 	install: 'libav'
+	// 	k: "ffmpeg",
+	// 	install: 'ffmpeg'
 	// }
 	// ,{
 	// 	k: "gd",
