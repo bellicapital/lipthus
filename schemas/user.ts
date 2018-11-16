@@ -54,7 +54,8 @@ export function getSchema() {
 	}, {
 		identifier: 'uname',
 		collection: 'user',
-		created: true
+		created: true,
+		versionKey: '--v'	// needed in mongoose 3.5.x when authenticating the user
 	});
 
 	/**
