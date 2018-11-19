@@ -189,7 +189,7 @@ class Notifier {
 
 		this.site.db.notification.create(notification);
 
-		if (user.email_notifications !== false && opt.email) {
+		if (user.email_notifications !== false && opt.subscribed.email) {
 			// specific email parameters
 			const email = opt.email || {};
 
@@ -201,7 +201,7 @@ class Notifier {
 			});
 		}
 
-		if (opt.device && user.devices && user.devices.length) {
+		if (opt.subscribed.device && user.devices && user.devices.length) {
 			const firebase = this.site.config.firebase;
 
 			if (!firebase || !firebase.serverkey)
@@ -266,7 +266,7 @@ class Notifier {
 					if (s.user) {
 						// si el usuario es el mismo que envía la notificación, no lo incluimos
 						if (!s.user._id.equals(params.from))
-							promises.push(this.toUser(s.user, Object.assign({}, s.subscribed, params)));
+							promises.push(this.toUser(s.user, Object.assign({}, {subscribed: s.subscribed}, params)));
 					} else if (!onlyUsers) {
 						this.toEmail({
 							from: params.fromEmail,
