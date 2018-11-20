@@ -58,28 +58,6 @@ module.exports = function translated(Schema){
 				cb(null, ret);
 			});
 		},
-		getFullTree: function(lang, cb){
-			this.find({to: lang}, function(err, r){
-				if(err)
-					return cb(err);
-
-				const ret = {};
-
-				r.forEach(function(t){
-					const k = t.dbname + '.' + t.colname;
-
-					if(!ret[k])
-						ret[k] = {};
-
-					if(!ret[k][t.itemid])
-						ret[k][t.itemid] = {};
-
-					ret[k][t.itemid][t.field] = true;
-				});
-
-				cb(null, ret);
-			});
-		},
 		switch: function(query, uid, translated){
 			if(!translated)
 				return this.remove(query).then(r => !!r);

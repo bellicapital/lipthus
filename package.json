@@ -79,7 +79,6 @@
 		"less": "^3.8.1",
 		"local-lang-names": "^1.0.0",
 		"md5": "^2.2.1",
-		"merge-descriptors": "^1.0.1",
 		"mime": "^2.3.1",
 		"moment": "^2.22.1",
 		"mongoose": "^5.3.12",

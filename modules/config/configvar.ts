@@ -3,7 +3,6 @@ import {LipthusRequest} from "../../index";
 import {Types} from "mongoose";
 import ObjectId = Types.ObjectId;
 
-const merge = require('merge-descriptors');
 const {MultilangText} = require('../schema-types/mltext');
 
 
@@ -20,7 +19,7 @@ export class ConfigVar {
 
 	constructor(options: any, public site: Site) {
 		this._id = options._id;
-		merge(this, options);
+		Object.assign(this, options);
 
 		this.setValue(this.value);
 	}

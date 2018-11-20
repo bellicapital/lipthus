@@ -199,7 +199,7 @@ export class Multilang {
 			.then((r: KeyAny) => {
 				const rr: any = {};
 
-				Object.keys(r).forEach(i => rr[r[i]._k] = r[i].get(this.lang));
+				Object.keys(r).forEach(i => rr[r[i].get('_k')] = r[i].get(this.lang));
 
 				return this._checkResult(rr, tag)
 					.then(result => {
