@@ -23,6 +23,9 @@ const debug = Debug('site:db');
 debug.log = console.log.bind(console);
 
 (mongoose as any).dbs = {};
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
 
 export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
@@ -67,14 +70,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		if (!options.promiseLibrary)
 			options.promiseLibrary = global.Promise;
 
-		// Avoid a Deprecation warning
+		// Avoid a Deprecation warning (connect.mongodb-session sigue con warning si quitamos esto de aqui 20/11/18 · jj)
 		if (options.useNewUrlParser === undefined)
 			options.useNewUrlParser = true;
 
-		// Avoid a Deprecation warning
-		if (options.useCreateIndex === undefined)
-			options.useCreateIndex = true;
-		
 		return {uri: uri, options: options};
 	}
 

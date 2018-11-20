@@ -48,7 +48,7 @@
 		"compare-versions": "^3.4.0",
 		"connect-favicons": "^0.1.5",
 		"connect-flash": "^0.1.1",
-		"connect-mongodb-session": "^2.0.4",
+		"connect-mongodb-session": "^2.0.5",
 		"cookie-jar": "^0.3.0",
 		"cookie-parser": "^1.4.3",
 		"cookie-signature": "^1.1.0",
@@ -81,14 +81,14 @@
 		"md5": "^2.2.1",
 		"mime": "^2.3.1",
 		"moment": "^2.22.1",
-		"mongoose": "^5.3.12",
+		"mongoose": "^5.3.13",
 		"morgan": "^1.9.1",
 		"mstranslator": "^3.0.0",
 		"multer": "^1.4.0",
 		"multimedia-helper": "^1.0.8",
 		"mz": "^2.7.0",
 		"node-gcm": "^1.0.2",
-		"nodemailer": "^4.6.8",
+		"nodemailer": "^4.7.0",
 		"nodemailer-ses-transport": "^1.5.0",
 		"passport": "^0.4.0",
 		"passport-facebook-token": "^3.3.0",
@@ -110,6 +110,6 @@
 		"underscore": "^1.9.1",
 		"unidecode": "^0.1.8",
 		"w3cjs": "^0.4.0",
-		"ws": "^6.0.0"
+		"ws": "^6.1.2"
 	}
 }
