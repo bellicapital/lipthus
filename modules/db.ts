@@ -74,7 +74,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		// Avoid a Deprecation warning
 		if (options.useCreateIndex === undefined)
 			options.useCreateIndex = true;
-
+		
 		return {uri: uri, options: options};
 	}
 

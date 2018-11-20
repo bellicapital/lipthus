@@ -30,7 +30,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 
 	if (!collection || !req.params.id || !Types.ObjectId.isValid(req.params.id) || !req.params.field)
 		return res.status(404).end();
-
+console.log(req.params.id, req.params.field);
 	collection
 		.findOneField(req.params.id, req.params.field)
 		.then((obj: any) => {
