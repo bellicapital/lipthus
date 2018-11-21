@@ -2,17 +2,20 @@ import {FileInfo} from "./file-info";
 import {Collection, Types} from "mongoose";
 import * as path from "path";
 import {exec} from "child_process";
-import {BinDataFile, BinDataImage} from "../../modules";
+import {BinDataFile, BinDataImage, LipthusDb} from "../../modules";
 import * as md5 from "md5";
 import * as debug0 from "debug";
 import {LipthusRequest, LipthusResponse} from "../../index";
 import {LipthusError} from "../../classes/lipthus-error";
 import {optimage} from "../optimage";
+import {GridFSBucket} from "mongodb";
+import * as fs from "fs";
+import {promisify} from "util";
 
-const GridStore = require('mongodb').GridStore;
 const multimedia = require('multimedia-helper');
 const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
+const pExec = promisify(exec);
 
 let tmpdir = require('os').tmpdir();
 
@@ -37,15 +40,20 @@ export class GridFSFile {
 	public loaded = false;
 	public error?: GridFSFileNotFoundError;
 	public duration?: number;
-	private _collection?: Collection;
+	private bucket: GridFSBucket;
 	private processLog: any = {};
 	private fps?: number;
 
-	constructor(public _id: string | Types.ObjectId, public gridStore: any) {
+	constructor(public _id: string | Types.ObjectId, public db: LipthusDb) {
+		this.bucket = new GridFSBucket(this.db._conn.db);
 	}
 
 	static get videoExt() {
 		return videoExt;
+	}
+
+	get id(): Types.ObjectId {
+		return <Types.ObjectId> this._id;
 	}
 
 	mTime(): Date {
@@ -59,14 +67,22 @@ export class GridFSFile {
 	}
 
 	get databaseName(): string {
-		return this.gridStore.db.databaseName;
+		return this.db.name;
+	}
+
+	get namespace(): string {
+		return this.db.fs.ns;
+	}
+
+	get collection(): Collection {
+		return this.db.collection(this.namespace);
 	}
 
 	info(full: boolean = false): FileInfo {
 		const ret = new FileInfo({
 			id: this._id + '',
-			uri: '/' + this.gridStore.root + '/' + this._id,
-			db: this.gridStore.db.eucaDb.name
+			uri: '/' + this.namespace + '/' + this._id,
+			db: this.databaseName
 		});
 
 		if (this.filename) { // loaded
@@ -113,8 +129,6 @@ export class GridFSFile {
 	}
 
 	send(req: LipthusRequest, res: LipthusResponse) {
-		const gs = this.gridStore;
-
 		return this.load()
 			.then(() => {
 				if (!this.contentType)
@@ -154,12 +168,8 @@ export class GridFSFile {
 				if (this.metadata)
 					res.set('X-Content-Duration', this.metadata.duration);
 
-				return gs.open()
-					.then((file: any) => file.seek(start))
-					.then((file: any) => file.read(length));
-			})
-			.then((data: any) => {
-				res.send(data);
+				return this.bucket.openDownloadStream(this.id, {start: start, end: end})
+					.pipe(res);
 			})
 			.catch((err: LipthusError) => {
 				if (err.message === 'File does not exist')
@@ -170,7 +180,7 @@ export class GridFSFile {
 	}
 
 	toString() {
-		let ret = '/' + this.gridStore.root + '/' + this._id;
+		let ret = '/' + this.namespace + '/' + this._id;
 
 		if (this.loaded)
 			ret += '/' + this.filename;
@@ -189,19 +199,20 @@ export class GridFSFile {
 		this.loaded = true;
 
 		if (!this._id)
-			return Promise.reject(new Error('eeee'));
+			return Promise.reject(new Error('No id!'));
 
-		return this.collection()
-			.then(collection => collection.findOne({_id: this._id}))
-			.then((obj: any) => {
-				if (!obj)
+		return this.bucket.find({_id: this._id}).toArray()
+			.then((r: Array<any>) => {
+				if (!r.length)
 					return this.setNotFound();
+
+				const obj = r[0];
 
 				Object.keys(obj).forEach(i => (this as any)[i] = obj[i]);
 
 				if (this.thumb)
 					this.thumb = BinDataFile.fromMongo(this.thumb, {
-						collection: this.gridStore.root + '.files',
+						collection: this.namespace + '.files',
 						id: this._id,
 						field: 'thumb',
 						db: this.databaseName
@@ -242,7 +253,7 @@ export class GridFSFile {
 	setVideoVersions() {
 		videoExt.forEach(k => {
 			if (this.versions && this.versions[k]) {
-				this.versions[k] = new GridFSFile(this.versions[k] as Types.ObjectId, new GridStore(this.gridStore.db, this.versions[k], "r", {root: this.gridStore.root}));
+				this.versions[k] = new GridFSFile(this.versions[k] as Types.ObjectId, this.db);
 				(this.versions[k] as GridFSFile).folder = 'videoversions';
 				// } else {
 				// 	this.createVideoVersion(k);
@@ -269,35 +280,23 @@ export class GridFSFile {
 	}
 
 	tmpFile(): Promise<string> {
-		const file = tmpdir + this._id + '_' + this.filename;
+		return new Promise((ok, ko) => {
+			const file = tmpdir + this._id + '_' + this.filename;
 
-		return fsp.access(file)
-			.then(() => file)
-			.catch(() => {
-				return new Promise((ok, ko) => {
-					this.gridStore.open((err: Error, gs: any) => {
-						if (err)
-							return ko(err);
+			if (fs.existsSync(file))
+				return ok(file);
 
-						gs.seek(0, () => {
-							gs.read((err2: Error, data: any) => {
-								if (err2)
-									return ko(err2);
-
-								fsp.writeFile(file, data)
-									.then(() => {
-										debug('tmp file created: ' + file);
-										ok(file);
-									})
-									.catch(ko);
-							});
-						});
-					});
+			this.bucket.openDownloadStream(this.id)
+				.pipe(fs.createWriteStream(file))
+				.on('error', ko)
+				.on('end', () => {
+					debug('tmp file created: ' + file);
+					ok(file);
 				});
-			});
+		});
 	}
 
-	createVideoVersion(k: string, force: boolean) {
+	createVideoVersion(k: string, force: boolean): Promise<any> {
 		if (!this.processLog[k])
 			this.processLog[k] = {};
 
@@ -323,7 +322,7 @@ export class GridFSFile {
 
 		return this.update({processLog: this.processLog})
 			.then(() => this.tmpFile())
-			.then(tmpFile => {
+			.then((tmpFile: string) => {
 				let cmd = 'ffmpeg -i "' + tmpFile + '" -y -loglevel error -b:v 1M';
 
 				if (this.metadata.width % 2 || this.metadata.height % 2)
@@ -336,9 +335,8 @@ export class GridFSFile {
 				else
 					cmd += ' -an';
 
-				const id = new Types.ObjectId();
 				const filename = this.basename(k);
-				const newTmpFile = tmpdir + id + '_' + filename;
+				const newTmpFile = tmpdir + new Types.ObjectId() + '_' + filename;
 
 				cmd += ' "' + newTmpFile + '"';
 
@@ -346,93 +344,75 @@ export class GridFSFile {
 
 				debug('executing cmd: ' + cmd);
 
-				return new Promise((ok, ko) => {
-					exec(cmd, (err, stdout, stderr) => {
-						this.processLog[k].result = stderr || stdout || 'ok';
+				return this.update({processLog: this.processLog})
+					.then(() => pExec(cmd))
+					.then((r: any) => {
+						this.processLog[k].result = r || 'ok';
+						this.update({processLog: this.processLog}).catch(console.error.bind(console));
 
-						if (err)
-							return ko(err);
+						if (!fs.existsSync(newTmpFile))
+							throw new Error('tmp file not created: ' + newTmpFile);
 
-						fsp.exists(newTmpFile)
-							.then((exists: boolean) => {
-								if (!exists)
-									return ko(new Error('tmp file not created: ' + newTmpFile));
+						const bulkOptions: any = {contentType: 'video/' + k};
 
-								const gs = new GridStore(this.gridStore.db, id, filename, "w", {
-									root: this.gridStore.root,
-									content_type: 'video/' + k
+						return multimedia(newTmpFile)
+							.then((metadata: any) => bulkOptions.metadata = metadata)
+							.then(() => {
+								return new Promise((ok, ko) => {
+									debug("Version " + k + " created. Inserting it into db...");
+
+									fs.createReadStream(newTmpFile)
+										.pipe(this.bucket.openUploadStream(filename, bulkOptions))
+										.on('error', ko)
+										.on('finish', (r2: any) => {
+											debug('version ' + k + ' written into db: ' + r2._id);
+
+											return ok(r2._id);
+										});
+								});
+							})
+							.then((id: Types.ObjectId) => {
+								if (!this.versions)
+									this.versions = {};
+
+								this.versions[k] = id;
+								this.processLog[k].end = new Date();
+
+								const update = {
+									versions: <any>{},
+									processLog: this.processLog
+								};
+
+								Object.keys(this.versions).forEach(i => {
+									if (this.versions![i])
+										update.versions[i] = (this.versions![i] as GridFSFile)._id || this.versions![i];
 								});
 
-								gs.open((err2: Error, gs2: any) => {
-									if (err2)
-										return ko(err2);
-
-									gs2.writeFile(newTmpFile, (err3: Error) => {
-										if (err3)
-											return ko(err3);
-
-										debug('version ' + k + ' written into db: ' + id);
-
-										if (!this.versions)
-											this.versions = {};
-
-										this.versions[k] = id;
-										this.processLog[k].end = new Date();
-
-										const update = {
-											versions: <any>{},
-											processLog: this.processLog
+								return this.update(update)
+									.then(() => {
+										const params = {
+											folder: 'videoversions',
+											parent: this._id
 										};
 
-										Object.keys(this.versions).forEach(i => {
-											if (this.versions![i])
-												update.versions[i] = (this.versions![i] as GridFSFile)._id || this.versions![i];
-										});
+										return this.db.fsfiles.updateOne({_id: id}, {$set: params})
+											.then(() => {
+												this.versions![k] = new GridFSFile(id, this.db);
 
-										this.update(update)
-											.then(() => this.collection())
-											.then(collection =>
-												multimedia(newTmpFile)
-													.then((metadata: any) => {
-														const params = {
-															folder: 'videoversions',
-															parent: this._id,
-															metadata: metadata
-														};
-
-														collection.updateOne({_id: id}, {$set: params}, (err4: Error) => {
-															if (err4)
-																return ko(err4);
-
-															fsp.unlink(tmpFile)
-																.catch(console.error.bind(console));
-
-															this.versions![k] = new GridFSFile(id, new GridStore(this.gridStore.db, id, "r", {root: this.gridStore.root}));
-
-															if (videoExt.every(ext => {
-																return !!this.versions![ext];
-															})) {
-																this.gridStore.db.emit('videoProcessed', this);
-															}
-
-															ok(this.versions![k]);
-														});
-
-														return fsp.unlink(newTmpFile);
-													})
-											)
-											.catch(ko);
-									});
-								});
+												if (videoExt.every(ext => !!this.versions![ext]))
+													this.db.emit('videoProcessed', this);
+											});
+									})
+									.then(() => fsp.unlink(tmpFile))
+									.then(() => fsp.unlink(newTmpFile));
 							});
 					});
-				});
-			});
+			})
+			.then((): any => this.versions![k]);
 	}
 
 	update(params: any) {
-		return this.collection()
-			.then(collection => collection.update({_id: this._id}, {$set: params}))
+		return this.db.fsfiles.updateOne({_id: this._id}, {$set: params})
 			.then(() => Object.assign(this, params))
 			.then(() => this);
 	}
@@ -441,31 +421,17 @@ export class GridFSFile {
 	 * elimina un archivo
 	 */
 	unlink(): Promise<void> {
+		const _delete = promisify(this.bucket.delete);
+
 		if (this.folder === 'videos') {
 			return this.load()
 				.then(() => Promise.all(Object.keys(this.versions || {}).map(k => (this.versions![k] as GridFSFile).unlink()))
 				// permite continuar si la versión no existe
 					.catch(err => console.error('Trying to remove a video version... ' + err.message)))
-				.then(() => this.gridStore.open())
-				.then(gs => gs.unlink());
+				.then(() => _delete(this.id));
 		}
 
-		return this.gridStore.open()
-			.then((gs: any) => gs.unlink());
-	}
-
-	collection(): Promise<Collection> {
-		return new Promise((ok, ko) => {
-			if (this._collection)
-				return ok(this._collection);
-
-			this.gridStore.collection((err: Error, c: Collection) => {
-				if (err)
-					return ko(err);
-
-				ok(this._collection = c);
-			});
-		});
+		return _delete(this.id);
 	}
 
 	// alias
@@ -497,7 +463,7 @@ export class GridFSFile {
 			.then(() => this.getVideoFrame(position))
 			.then(bdf => {
 				const ref = {
-					collection: this.gridStore.root + '.files',
+					collection: this.namespace + '.files',
 					id: this._id,
 					field: 'frame_' + position
 				};
@@ -537,7 +503,7 @@ export class GridFSFile {
 		return ret.then((bdf: any) => {
 			if (bdf) {
 				bdf.setColRef({
-					collection: this.gridStore.root + '.files',
+					collection: this.namespace + '.files',
 					id: this._id,
 					field: 'thumb'
 				});
@@ -563,7 +529,7 @@ export class GridFSFile {
 	}
 
 	getVideoFrameByNumber(number: number): Promise<BinDataImage> {
-		const Cache = this.gridStore.db.eucaDb.cache;
+		const Cache = this.db.cache;
 		const opt = {
 			name: number + '_' + this.basename('jpg'),
 			tag: 'videoframe',

@@ -30,10 +30,12 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		let files: Array<any> = [];
 
 		const promises = fileFields.map((field: string) => {
-			if (!this[field])
+			const file = this.get(field);
+
+			if (!file)
 				return;
 
-			return this[field].loadFiles()
+			return file.loadFiles()
 				.then((_files: Array<any>) => files = files.concat(_files));
 		});
 

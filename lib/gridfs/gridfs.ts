@@ -1,6 +1,6 @@
 import {Types} from "mongoose";
 import * as fs from "fs";
-import {Db} from "mongodb";
+import {Db, GridFSBucket} from "mongodb";
 import {GridFSFile} from "./gridfs-file";
 import * as debug0 from "debug";
 
@@ -9,23 +9,22 @@ const path = require('path');
 const request = require('request');
 const Mime = require('mime');
 const multimedia = require('multimedia-helper');
-const {GridStore} = require('mongodb');
+
 
 export class GridFS {
 
 	public loaded = false;
 	public err?: Error;
 
-	constructor(public db: Db, public ns: string = GridStore.DEFAULT_ROOT_COLLECTION) {
+	constructor(public db: Db, public ns: string = 'fs') {
 		this.db = db;
-		this.ns = ns || GridStore.DEFAULT_ROOT_COLLECTION;
 	}
 
 	get(id: string | Types.ObjectId) {
 		if (typeof id === 'string')
 			id = Types.ObjectId(id);
 
-		return new GridFSFile(id, new GridStore(this.db, id, "r", {root: this.ns}));
+		return new GridFSFile(id, (this.db as any).lipthusDb);
 	}
 
 	findById(id: string) {
@@ -113,23 +112,23 @@ export class GridFS {
 							return;
 					}
 
-					const id = new Types.ObjectId();
-					const gs = new GridStore(this.db, id, file.fileName, "w", {root: this.ns, content_type: file.type});
+					const bucket = new GridFSBucket(this.db);
 
-					gs.open((err: Error, gs2: any) => {
-						if (err)
-							return ko(err);
-
-						gs2.writeFile(file.path, (err2: Error, doc: any) => {
-							if (err2)
-								return ko(err2);
-
-							this.get(doc.fileId).load()
+					fs.createReadStream(file.path)
+						.pipe(bucket.openUploadStream(file.fileName))
+						.on('error', ko)
+						.on('finish', (result: {
+							_id: Types.ObjectId;
+							length: number;
+							chunkSize: number;
+							uploadDate: Date;
+							filename: string;
+							md5: string;
+						}) => {
+							this.get(result._id).load()
 								.then(gsFile => gsFile.update(fileOptions))
-								.then(ok)
-								.catch(ko);
+								.then(ok, ko);
 						});
-					});
 				});
 		});
 	}

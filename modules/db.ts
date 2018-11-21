@@ -122,9 +122,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 			app: {value: this.app}
 		});
 
-		Object.defineProperty(ndb, 'eucaDb', {value: this});
-
-		ndb.on('videoProcessed', (item: any) => this.emit('videoProcessed', item));
+		Object.defineProperty(ndb, 'lipthusDb', {value: this});
 
 		this.emit('ready', this);
 	}
@@ -278,7 +276,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		this.schemas[file.name].plugin(file.getPlugin, this);
 	}
 
-	collection(name: string, options: any, cb: Function) {
+	collection(name: string, options?: any, cb?: Function) {
 		let n;
 
 		try {

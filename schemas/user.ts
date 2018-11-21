@@ -89,8 +89,8 @@ export function getSchema() {
 
 			return ret;
 		},
-		getName: function (this: any, usereal?: boolean) {
-			return (usereal ? this.name || this.uname : this.uname || this.name) || '';
+		getName: function (this: any, useReal?: boolean) {
+			return (useReal ? this.name || this.uname : this.uname || this.name) || '';
 		},
 		/**
 		 * @returns {boolean}
