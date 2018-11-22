@@ -491,16 +491,6 @@ export class Site extends EventEmitter {
 
 		return MultilangModule(app)
 			.then(() => {
-				app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-					if (req.ml && req.ml.lang && req.subdomains.length) {
-						const luri = this.langUrl(req.ml.lang);
-
-						if (luri.substr(2) !== req.headers.host && (req.headers.host || '').indexOf(this.domainName) > 0)
-							return res.redirect(this.externalProtocol + ':' + luri + req.url);
-					}
-
-					next();
-				});
 				app.use(flash());
 				app.use(HtmlPageMiddleware);
 				app.use(session(this));
