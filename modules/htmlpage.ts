@@ -226,8 +226,9 @@ export class HtmlPage {
 			})
 			.then(() => {
 				// load layout module
-				if (this.layout && fs.existsSync(req.site.dir + '/modules/' + this.layout + '.js'))
+				try {
 					return require(req.site.dir + '/modules/' + this.layout).call(this, req, res);
+				} catch (e) {}
 			})
 			.then(() => {
 				// layout
