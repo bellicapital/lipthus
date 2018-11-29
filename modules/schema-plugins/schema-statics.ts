@@ -3,20 +3,6 @@ import {LipthusSchema} from "../../lib";
 import {KeyAny} from "../../interfaces/global.interface";
 
 export function schemaGlobalStatics(schema: LipthusSchema) {
-	// temp solution for mongoose upgrade
-	/*
-	try {
-		schema.statics.countDocuments = function (this: any, filter?: any) {
-			return this.count(filter);
-		};
-		schema.statics.updateOne = function (this: any, filter?: any) {
-			return this.update.apply(this, arguments);
-		};
-		schema.statics.updateMany = function (this: any, filter: any, update: any) {
-			return this.update.call(this, filter, update, {multi: true});
-		};
-	} catch (e) {}
-	*/
 
 	schema.statics._updateNative = function (this: any, multiple: boolean, filter: any, update: any) {
 		const col = this.db.collection(this.schema.options.collection);
@@ -268,14 +254,15 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 	
 	if (!schema.statics.getList)
 		schema.statics.getList = function (this: any, query: any = {}) {
-			const identifier = this.schema.options.identifier || 'title';
+			const identifier = this.schema.get('identifier') || 'title';
 
 			return this
-				.find(query, identifier)
+				.find(query)
+				.select(identifier)
 				.then((list: Array<any>) => {
 					const ret: KeyAny = {};
 					
-					list.forEach(item => ret[item.get('_id')] = item.get('identifier'));
+					list.forEach(item => ret[item.get('_id')] = item.get(identifier));
 					
 					return ret;
 				});

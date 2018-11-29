@@ -42,8 +42,8 @@ module.exports = function dynobject() {
 			this.schema.options.schemas = {};
 
 			return this.find()
-				.then((objs: Array<any>) => {
-					objs.forEach(o => {
+				.then((arr: Array<any>) => {
+					arr.forEach(o => {
 						const schema = DoSchema.fromModel(o);
 
 						this.schema.options.schemas[schema.options.name] = schema;

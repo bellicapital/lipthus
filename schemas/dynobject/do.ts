@@ -55,6 +55,8 @@ class DoSchema extends LipthusSchema {
 	}
 
 	static fromModel(obj: any) {
+		obj = obj.toObject();
+
 		const def: any = {
 			rating: {type: Number, index: 1},
 			ratingCount: Number,

@@ -294,8 +294,8 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	 * @param {object|function} fields ({title: 1, active: -1})
 	 * @returns {Promise}
 	 */
-	deReference(ref: DBRef, fields: any) {
-		const modelname = ref.namespace.replace('dynobjects.', '');
+	deReference(ref: DBRef, fields?: any) {
+		const modelName = ref.namespace.replace('dynobjects.', '');
 
 		const dbname = ref.db || this.name;
 		const db = this.site.dbs[dbname];
@@ -303,9 +303,9 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		if (!db)
 			return Promise.reject(new Error('db ' + dbname + ' not found or not defined in this site'));
 
-		if (!db[modelname])
-			return Promise.reject(new Error('model ' + modelname + ' not found in db ' + this));
+		if (!db[modelName])
+			return Promise.reject(new Error('model ' + modelName + ' not found in db ' + this));
 
-		return db[modelname].findById(ref.oid, fields);
+		return db[modelName].findById(ref.oid, fields);
 	}
 }
