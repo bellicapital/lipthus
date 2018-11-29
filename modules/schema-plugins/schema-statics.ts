@@ -267,27 +267,15 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 	};
 	
 	if (!schema.statics.getList)
-		schema.statics.getList = function (this: any, query: any, cb: any) {
-			if (!cb && typeof query === 'function') {
-				cb = query;
-				query = {};
-			}
-			
-			if (cb)
-				console.log('@deprecated cb in schema.statics.getList');
-			
+		schema.statics.getList = function (this: any, query: any = {}) {
 			const identifier = this.schema.options.identifier || 'title';
-			
+
 			return this
 				.find(query, identifier)
 				.then((list: Array<any>) => {
 					const ret: KeyAny = {};
 					
-					list.forEach(item => {
-						ret[item.id] = item[identifier];
-					});
-					
-					if (cb) cb(null, ret);
+					list.forEach(item => ret[item.get('_id')] = item.get('identifier'));
 					
 					return ret;
 				});
