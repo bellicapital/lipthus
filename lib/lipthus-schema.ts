@@ -29,6 +29,9 @@ export class LipthusSchema extends Schema {
 	constructor(obj: any, public options: any = {}) {
 		super(obj, options);
 
+		if (!options.versionKey)
+			options.versionKey = '__v';
+
 		this.__setExtraOptions();
 		this.__setEvents();
 	}
