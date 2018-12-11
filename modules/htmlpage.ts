@@ -251,7 +251,7 @@ export class HtmlPage {
 			});
 	}
 
-	send(view?: string, locals: any = {}) {
+	send(view?: string, locals: any = {}): Promise<any> {
 		if (this.sent)
 			return Promise.reject(new Error('HtmlPage already sent'));
 
@@ -268,7 +268,7 @@ export class HtmlPage {
 		return this.checkUserLevel()
 			.then(this.init.bind(this))
 			.then(this.load.bind(this))
-			.then(() => {
+			.then((): any => {
 				locals = Object.assign({
 					page: this.key,
 					metas: this.head.metas,
@@ -351,7 +351,7 @@ export class HtmlPage {
 			.catch(this.req.next);
 	}
 
-	render() {
+	render(): any {
 		const res = this.res;
 
 		if (this.html) {

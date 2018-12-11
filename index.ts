@@ -89,7 +89,7 @@ export interface LipthusResponse extends express.Response {
 }
 
 export interface LipthusApplication extends express.Application {
-	use: ApplicationRequestHandler<this>;
+	use: any | ApplicationRequestHandler<this>;
 	db: LipthusDb;
 	site: Site;
 	wss: LipthusWebSocketServer;

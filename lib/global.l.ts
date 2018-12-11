@@ -1,7 +1,7 @@
 
 
-function l (this: any, ...args: any[]): void {
-	console.log.apply(this, arguments);
+function l (this: any, ...args: any): void {
+	console.log.apply(this, args);
 
 	const orig = Error.prepareStackTrace;
 	Error.prepareStackTrace = function (_, stack) {
