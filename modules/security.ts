@@ -65,7 +65,7 @@ export namespace security {
 			res.header('Access-Control-Allow-Origin', origin + '');
 			res.header('Access-Control-Allow-Credentials', 'true');
 			res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Authorization, Accept');
+			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Authorization, Accept, If-None-Match');
 		}
 
 		// intercept OPTIONS method
