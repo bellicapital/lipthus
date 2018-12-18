@@ -74,12 +74,12 @@ export function getSchema() {
 	s.methods = {
 		baseInfo: function (this: any, includeEmail = false) {
 			const ret: any = {
-				id: this.id,
+				id: this.get('_id').toString(),
 				uname: this.getName(),
 				name: this.getName(true),
 				isAdmin: this.isAdmin(),
 				level: this.level,
-				type: this.type || undefined,
+				type: this.get('type') || undefined,
 				picture: this.getImage('square'),
 				fbid: this.facebook && this.facebook.id
 			};

@@ -258,27 +258,25 @@ class Notifier {
 
 		return this.site.app.subscriptor
 			.getSubscriptors(dbname, model, type, value, onlyUsers)
-			.then((subscriptors: Array<any>) => {
-				const promises: Array<any> = [];
-
-				subscriptors.forEach(s => {
-					// el suscriptor es usuario
-					if (s.user) {
-						// si el usuario es el mismo que envía la notificación, no lo incluimos
-						if (!s.user._id.equals(params.from))
-							promises.push(this.toUser(s.user, Object.assign({}, {subscribed: s.subscribed}, params)));
-					} else if (!onlyUsers) {
-						this.toEmail({
-							from: params.fromEmail,
-							to: s.email,
-							subject: params.subject,
-							html: params.content
-						});
-					}
-				});
-
-				return Promise.all(promises);
-			});
+			.then((subscriptors: Array<any>) =>
+				subscriptors.reduce((p, s) =>
+						p.then(() => {
+							// el suscriptor es usuario
+							if (s.user) {
+								// si el usuario es el mismo que envía la notificación, no lo incluimos
+								if (!s.user._id.equals(params.from))
+									return this.toUser(s.user, Object.assign({}, {subscribed: s.subscribed}, params));
+							} else if (!onlyUsers) {
+								return this.toEmail({
+									from: params.fromEmail,
+									to: s.email,
+									subject: params.subject,
+									html: params.content
+								});
+							}
+						})
+					, Promise.resolve())
+			);
 	}
 
 	itemCreated(item: any, subscribed: Array<any>, options: any, cb: any) {

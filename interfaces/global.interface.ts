@@ -32,6 +32,7 @@ export interface DbParams {
 	user?: string;
 	pass?: string;
 	host?: string;
+	port?: string;
 	options?: any;
 	authSource?: string;
 }

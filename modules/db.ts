@@ -63,7 +63,12 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		if (this.params.user && this.params.pass)
 			uri += this.params.user + ':' + this.params.pass + '@';
 
-		uri += (this.params.host || 'localhost') + '/' + this.name;
+		uri += (this.params.host || 'localhost');
+
+		if (this.params.port)
+			uri += ':' + this.params.port;
+
+		uri += '/' + this.name;
 
 		const options = this.params.options || {};
 
@@ -107,7 +112,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
 	onConnOpen() {
 		this.connected = true;
-		debug('Connected to db ' + this.name);
+		debug('Connected to db ' + this.name + ' on ' + (this.params.host || 'localhost') + ':' + (this.params.port || '27017'));
 
 		// native db
 		const ndb = this._conn.db;
