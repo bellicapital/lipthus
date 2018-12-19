@@ -19,6 +19,7 @@ export class BinDataImage extends BinDataFile {
 	public height: number;
 	public alt: KeyString;
 	public title: KeyString;
+	public hidden: boolean;
 
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
@@ -27,6 +28,7 @@ export class BinDataImage extends BinDataFile {
 		this.height = data.height;
 		this.alt = data.alt || {};
 		this.title = data.title || {};
+		this.hidden = !!data.hidden;
 	}
 
 	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -58,7 +60,8 @@ export class BinDataImage extends BinDataFile {
 			alt: this.alt ? this.alt[lang] : undefined,
 			title: this.title ? this.title[lang] : undefined,
 			md5: this.md5,
-			key: this.getKey()
+			key: this.getKey(),
+			hidden: this.hidden
 		});
 
 		ret.uri = ret.path;
@@ -334,6 +337,7 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	naturalHeight: number;
 	alt?: string;
 	title?: string;
+	hidden?: boolean;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -344,6 +348,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	naturalHeight: number;
 	alt?: string;
 	title?: string;
+	hidden?: boolean;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
@@ -354,6 +359,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		this.naturalHeight = p.naturalHeight;
 		this.alt = p.alt;
 		this.title = p.title;
+		this.hidden = p.hidden;
 	}
 
 	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg'): DbfThumb {

@@ -41,8 +41,14 @@ function checkAppVersion(site: Site) {
 	if (!existsSync(file))
 		return;
 
+	const versionUpdates = require(file).default;
+	
+	// Old way updates are deprecated
+	if (!versionUpdates.length)
+		return;
+	
 	return checkRequireScript(
-		require(file).default,
+		versionUpdates,
 		'siteversion',
 		site.config.siteversion,
 		site.package.version,
