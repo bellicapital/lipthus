@@ -108,6 +108,9 @@ export class BinDataImage extends BinDataFile {
 		if (this.title)
 			ret.title = this.title;
 
+		if (this.hidden)
+			ret.hidden = this.hidden;
+
 		return ret;
 	}
 
