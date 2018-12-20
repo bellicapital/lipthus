@@ -14,7 +14,7 @@ export class BinDataFileList {
 		if (!keys.length)
 			return;
 
-		return Object.keys(this).map(key => (this as any)[key]).sort((a, b) => a.weight - b.weight)[0];
+		return Object.keys(this).map(key => (this as any)[key]).filter((im: any) => !im.hidden).sort((a, b) => a.weight - b.weight)[0];
 	}
 
 	getThumb(width: number, height: number, crop: boolean, enlarge: boolean) {
