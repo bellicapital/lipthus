@@ -215,7 +215,7 @@ export class BinDataFile {
 		const obj = {
 			name: p.originalname,
 			contentType: p.mimetype,
-			mtime: p.mtime,
+			mtime: p.mtime || new Date(),
 			uploadDate: new Date(),
 			size: p.size || p.buffer.length,
 			md5: md5(p.buffer),
