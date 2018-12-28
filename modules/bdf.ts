@@ -97,7 +97,7 @@ export class BinDataFile {
 		if (!this.MongoBinData)
 			return Promise.reject(new Error('MongoBinData is empty'));
 
-		const data = this.MongoBinData.buffer;
+		const data = Buffer.from(this.MongoBinData.buffer);
 
 		if (this.contentType)
 			res.type(this.contentType);
@@ -213,8 +213,8 @@ export class BinDataFile {
 
 	static fromBuffer(p: any, opt?: any): Promise<BinDataFile | BinDataImage> {
 		const obj = {
-			name: p.originalname,
-			contentType: p.mimetype,
+			name: p.name || p.originalname,
+			contentType: p.contentType || p.mimetype,
 			mtime: p.mtime || new Date(),
 			uploadDate: new Date(),
 			size: p.size || p.buffer.length,
