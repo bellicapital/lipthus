@@ -129,7 +129,7 @@ Date.prototype.toUserDateString = function (intl: string, sep = '/') {
 };
 
 
-Date.prototype.hmFull = Date.prototype.toUserDatetimeString = function (intl: string, sep: string) {
+Date.prototype.hmFull = Date.prototype.toUserDatetimeString = function (intl?: string, sep?: string) {
 	return this.toUserDateString(intl, sep) + ' ' + this.toUserTimeString();
 };
 
