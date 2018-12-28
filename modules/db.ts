@@ -27,7 +27,7 @@ mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 
-export class LipthusDb extends (EventEmitter as { new(): any; }) {
+export class LipthusDb extends (EventEmitter as new() => any) {
 
 	public name: string;
 	public connected = false;
