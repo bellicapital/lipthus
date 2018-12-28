@@ -113,7 +113,7 @@ Date.prototype.addDays = function (days: number) {
 	return this;
 };
 
-Date.prototype.toUserDateString = function (intl: string, sep = '/') {
+Date.prototype.toUserDateString = function (intl?: string, sep = '/') {
 	let ret;
 	const date = this.getDate();
 	const month = this.getMonth() + 1;
