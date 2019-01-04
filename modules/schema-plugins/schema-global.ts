@@ -139,7 +139,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 					return Promise.resolve();
 
 				Object.keys(val).forEach(i => {
-					if (val[i].info) {
+					if (!val[i].hidden && val[i].info) {
 						info = val[i].info(req);
 						info.uri = site.staticHost + info.uri;
 						ret.push(info);
