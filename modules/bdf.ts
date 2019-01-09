@@ -133,7 +133,7 @@ export class BinDataFile {
 			: new BinDataFile(mongo, colRef);
 	}
 
-	static fromString(str: string, colRef: any, datetime = new Date()) {
+	static fromString(str: string, colRef: any, datetime = new Date()): BinDataImage | BinDataFile | void {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
 
 		if (!r)

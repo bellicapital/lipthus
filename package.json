@@ -1,6 +1,6 @@
 {
 	"name": "lipthus",
-	"version": "1.8.8",
+	"version": "1.8.9",
 	"private": true,
 	"scripts": {
 		"start": "ts-node index",
@@ -88,7 +88,7 @@
 		"multimedia-helper": "^1.0.8",
 		"mz": "^2.7.0",
 		"node-gcm": "^1.0.2",
-		"nodemailer": "^5.0.0",
+		"nodemailer": "^5.1.0",
 		"nodemailer-ses-transport": "^1.5.0",
 		"passport": "^0.4.0",
 		"passport-facebook-token": "^3.3.0",

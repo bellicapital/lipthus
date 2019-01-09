@@ -17,7 +17,7 @@ export class BinDataFileList {
 		return Object.keys(this).map(key => (this as any)[key]).filter((im: any) => !im.hidden).sort((a, b) => a.weight - b.weight)[0];
 	}
 
-	getThumb(width: number, height: number, crop: boolean, enlarge: boolean) {
+	getThumb(width: number, height: number, crop?: boolean, enlarge?: boolean) {
 		const first = this.getFirst();
 
 		return first ? first.info(width, height, crop === undefined ? true : crop, enlarge) : null;
