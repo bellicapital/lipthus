@@ -269,7 +269,7 @@ class Notifier {
 							} else if (!onlyUsers) {
 								return this.toEmail({
 									from: params.fromEmail,
-									to: s.email,
+									to: s.get('email'),
 									subject: params.subject,
 									html: params.content
 								});

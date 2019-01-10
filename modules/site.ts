@@ -5,7 +5,7 @@ import * as Debug from "debug";
 import {LipthusDb} from "./db";
 import * as express from "express";
 import * as path from "path";
-import * as bodyParser from "body-parser";
+import {urlencoded} from "body-parser";
 import * as cookieParser from "cookie-parser";
 import * as os from "os";
 import {checkVersions} from "./updater";
@@ -459,11 +459,11 @@ export class Site extends EventEmitter {
 		app.use(device.capture());
 		device.enableDeviceHelpers(app);
 
-		app.use(bodyParser.urlencoded({
+		app.use(urlencoded({
 			limit: '1gb',
 			extended: true
 		}));
-		app.use(bodyParser.json({type: 'application/json', limit: '1gb'}));
+		app.use(express.json({limit: '1gb'}));
 		// asigna req.multipart()
 		app.use(multipart);
 		app.use(cookieParser());
