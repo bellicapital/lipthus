@@ -205,7 +205,7 @@ export function getSchema() {
 			});
 	};
 
-	s.virtual('formatEmailTo', function(this: User) {
+	s.virtual('formatEmailTo').get(function(this: User) {
 		return this.getName(true) + '<' + this.get('email') + '>';
 	});
 
