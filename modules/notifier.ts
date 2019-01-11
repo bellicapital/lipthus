@@ -195,7 +195,7 @@ class Notifier {
 
 			this.site.sendMail({
 				from: email.from || opt.fromEmail || this.serverFrom,
-				to: user.email,
+				to: user.formatEmailTo,
 				subject: email.subject || opt.subject,
 				html: email.body || opt.content
 			});

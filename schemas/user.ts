@@ -205,6 +205,10 @@ export function getSchema() {
 			});
 	};
 
+	s.virtual('formatEmailTo', function(this: User) {
+		return this.getName(true) + '<' + this.get('email') + '>';
+	});
+
 	return s;
 }
 
@@ -223,6 +227,7 @@ export interface User extends Document {
 	subscriptions: any;
 	type?: string;
 	email_notifications?: boolean;
+	formatEmailTo?: string;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
