@@ -194,7 +194,7 @@ class Notifier {
 			const email = opt.email || {};
 
 			this.site.sendMail({
-				from: email.from || this.serverFrom,
+				from: email.from || opt.fromEmail || this.serverFrom,
 				to: user.email,
 				subject: email.subject || opt.subject,
 				html: email.body || opt.content
