@@ -109,11 +109,11 @@ export function getSchema() {
 			if (this.facebook && this.facebook.username)
 				return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
 
-			if (this.picture)
-				return this.picture;
+			if (this.get('picture'))
+				return this.get('picture');
 
-			if (this.image)
-				return this.image + q;
+			if (this.get('image'))
+				return this.get('image') + q;
 
 			return 'http://www.gravatar.com/avatar/' + md5(this.email) + '?s=90';
 		},
