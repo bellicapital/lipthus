@@ -112,7 +112,7 @@ export class GridFS {
 							return;
 					}
 
-					const bucket = new GridFSBucket(this.db);
+					const bucket = this.getBucket();
 
 					fs.createReadStream(file.path)
 						.pipe(bucket.openUploadStream(file.fileName))
@@ -131,6 +131,18 @@ export class GridFS {
 						});
 				});
 		});
+	}
+
+	getBucket() {
+		return new GridFSBucket(this.db, {bucketName: this.ns});
+	}
+
+	/** Deletes a file with the given id
+	 *
+	 * @param id
+	 */
+	deleteOne(id: Types.ObjectId) {
+		return this.getBucket().delete(id);
 	}
 
 	fromUrl(url: string, fileOptions: any = {}) {

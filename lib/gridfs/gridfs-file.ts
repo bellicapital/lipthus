@@ -411,8 +411,8 @@ export class GridFSFile {
 			.then((): any => this.versions![k]);
 	}
 
-	update(params: any) {
-		return this.db.fsfiles.updateOne({_id: this._id}, {$set: params})
+	update(params: any): Promise<GridFSFile> {
+		return this.db.fsfiles.updateOne({_id: this._id}, {$set: params}).exec()
 			.then(() => Object.assign(this, params))
 			.then(() => this);
 	}

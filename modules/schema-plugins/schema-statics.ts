@@ -273,7 +273,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		if (field.indexOf('$') !== -1)
 			return new Promise((ok, ko) => this.distinctCount_(field, query, (err: Error, r: number) => err ? ko(err) : ok(r)));
 		
-		const agg = this.aggregate();
+		const agg: any = this.aggregate();
 		
 		if (query && Object.keys(query).length)
 			agg.match(query);
