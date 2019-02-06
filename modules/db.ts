@@ -120,12 +120,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		this.fs = new GridFS(ndb, 'fs');
 
 		this._conn.lipthusDb = this;
-
-		Object.defineProperties(this._conn, {
-			eucaDb: {value: this}, // deprecated
-			site: {value: this.site},
-			app: {value: this.app}
-		});
+		this._conn.eucaDb = this; // deprecated
+		this._conn.site = this.site;
+		this._conn.app = this.app;
 
 		Object.defineProperty(ndb, 'lipthusDb', {value: this});
 
@@ -214,7 +211,8 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		if (!schema.options.collection)
 			schema.options.collection = name;
 
-		Object.defineProperty(this, name, {get: () => this.model(name)});
+		(this as any)[name] = this.model(name);
+
 		Object.defineProperty(schema, 'site', {value: this.site});
 		this.schemas[name] = schema;
 
