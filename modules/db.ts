@@ -211,8 +211,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		if (!schema.options.collection)
 			schema.options.collection = name;
 
-		(this as any)[name] = this.model(name);
-
+		Object.defineProperty(this, name, {get: () => this.model(name)});
 		Object.defineProperty(schema, 'site', {value: this.site});
 		this.schemas[name] = schema;
 
