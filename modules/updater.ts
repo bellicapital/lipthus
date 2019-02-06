@@ -61,6 +61,7 @@ function checkRequireScript(versionUpdates: Array<VersionUpdate>, varName: strin
 
 	return versionUpdates
 		.filter(update => compareVersions(update.version, from) === 1)
+		.sort((a, b) => compareVersions(a.version, b.version))
 		.reduce((p, update) => p
 				.then(() => update.updater(site))
 				// Store the current update version
