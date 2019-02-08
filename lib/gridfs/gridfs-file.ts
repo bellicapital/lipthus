@@ -138,7 +138,6 @@ export class GridFSFile {
 				const disposition = req.query.dl ? 'attachment' : 'inline';
 				let start = 0;
 				let end = this.length - 1;
-				let length = this.length;
 
 				res.type(this.contentType);
 				res.set('Accept-Ranges', 'bytes');
@@ -157,15 +156,14 @@ export class GridFSFile {
 
 					res.status(206); // HTTP/1.1 206 Partial Content
 					res.set('Content-Range', 'bytes ' + start + '-' + end + '/' + this.length);
-					length = end - start + 1;
-				}
+				} else
+					res.set('Content-Length', this.length.toString());
 
 				res.set('Last-modified', date.toUTCString());
-				res.set('Content-Length', length.toString());
 				res.set('Etag', this.length + '-' + date.getTime());
 				res.set('Expires', new Date().addDays(60).toUTCString());
 
-				if (this.metadata)
+				if (this.metadata && this.metadata.duration)
 					res.set('X-Content-Duration', this.metadata.duration);
 
 				return this.bucket.openDownloadStream(this.id, {start: start, end: end})
