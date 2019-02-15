@@ -1,18 +1,20 @@
-"use strict";
 
-class Image {
-	constructor(file) {
-		this.width;
-		this.height;
+export default class Image {
 
+	public width: number;
+	public height: number;
+
+	constructor(file: any) {
 		Object.assign(this, file);
+		this.width = file.width;
+		this.height = file.height;
 	}
 
-	fitCalc(max_width, max_height, crop) {
+	fitCalc(max_width: number, max_height: number, crop: boolean) {
 		return Image.fitCalc(this.width, this.height, max_width, max_height, crop);
 	}
 
-	static fitCalc(width, height, max_width, max_height, crop) {
+	static fitCalc(width: number, height: number, max_width: number, max_height: number, crop: boolean) {
 		if (width <= max_width && height <= max_height)
 			return {
 				width: width,
@@ -23,8 +25,8 @@ class Image {
 			const s = Math.min(max_width / width, max_height / height);
 
 			return {
-				width: parseInt(s * width),
-				height: parseInt(s * height)
+				width: Math.round(s * width),
+				height: Math.round(s * height)
 			};
 		}
 
@@ -34,5 +36,3 @@ class Image {
 		};
 	}
 }
-
-module.exports = Image;

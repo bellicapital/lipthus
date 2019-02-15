@@ -1,16 +1,16 @@
-"use strict";
+import {LipthusRequest} from "../index";
 
 const Facebook = require('facebook-node-sdk');
 
 class FB extends Facebook {
-	constructor(appId, secret) {
+	constructor(appId: string, secret: string) {
 		super({});
 		this.appId = appId;
 		this.secret = secret;
 	}
 
-	activate(req) {
-		if(!this.appId)
+	activate(req: LipthusRequest) {
+		if (!this.appId)
 			return console.error('Facebook: no appId');
 
 		req.res.htmlPage
@@ -20,6 +20,6 @@ class FB extends Facebook {
 	}
 }
 
-module.exports = function (app){
+export default (app: any) => {
 	app.set('fb', new FB(app.site.config.fb_app_id, app.site.config.fb_app_secret));
 };

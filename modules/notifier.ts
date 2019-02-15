@@ -7,7 +7,7 @@ const FCM = require('fcm-push');
 const fs = require('fs');
 const debug = require('debug')('site:gcm');
 
-class Notifier {
+export class Notifier {
 
 	public serverFrom: string;
 
@@ -101,7 +101,7 @@ class Notifier {
 		});
 	}
 
-	toAdmin(subject: string, content: string, tpl: string | null, tag: string, extra?: any) {
+	toAdmin(subject: string, content: string | any, tpl: string | null, tag: string, extra?: any) {
 		if (tpl) {
 			return this.parseContent(this.site.config.language, content, tpl, (err: Error, r: any) => {
 				this.toAdmin(subject, r, null, tag, extra);
@@ -279,7 +279,7 @@ class Notifier {
 			);
 	}
 
-	itemCreated(item: any, subscribed: Array<any>, options: any, cb: any) {
+	itemCreated(item: any, subscribed: Array<any>, options: any = {}, cb?: any) {
 		options.key = 'CREATED';
 
 		if (!options.template) {
@@ -291,14 +291,14 @@ class Notifier {
 		return this._process(item, subscribed, options, cb);
 	}
 
-	itemActivated(item: any, subscribed: Array<any>, options: any, cb: any) {
+	itemActivated(item: any, subscribed: Array<any>, options: any = {}, cb?: any) {
 		options.template = options.template || 'item_activated';
 		options.key = 'ACTIVATED';
 
 		this._process(item, subscribed, options, cb);
 	}
 
-	_process(item: any, subscribed: string | Array<any>, opt: any = {}, cb: any) {
+	_process(item: any, subscribed: string | Array<any>, opt: any = {}, cb?: any) {
 		if (typeof subscribed === 'string')
 			return this.preview(item, opt, cb);
 
@@ -501,5 +501,3 @@ class Notifier {
 		return routes.find(fs.existsSync);
 	}
 }
-
-export default Notifier;

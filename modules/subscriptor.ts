@@ -1,26 +1,27 @@
-"use strict";
+import debug0 from "debug";
+import {existsSync} from "fs";
+import {LipthusDb} from "./db";
+import {User} from "../schemas/user";
 
-const debug = require('debug')('site:subscriptor');
-const fs = require('fs');
+const debug = debug0('site:subscriptor');
 
+export class Subscriptor {
 
-class Subscriptor {
-	constructor(app) {
-		Object.defineProperty(this, 'app', {value: app});
+	public models: any = {};
+
+	constructor(public app: any) {
 		Object.defineProperty(app, 'subscriptor', {value: this});
 
-		const unsubscribe = (fs.existsSync(app.get('dir') + '/routes/unsubscribe.js') ? app.get('dir') : '..') + '/routes/unsubscribe';
+		const unsubscribe = (existsSync(app.get('dir') + '/routes/unsubscribe.js') ? app.get('dir') : '..') + '/routes/unsubscribe';
 
 		app.use('/unsubscribe/:id', require(unsubscribe));
 
 		this.manageComments();
 
-		this.models = {};
-
 		this.subscribeDb(app.db);
 	}
 
-	subscribeDb(db) {
+	subscribeDb(db: LipthusDb) {
 		Object.each(db.schemas, (name, s) => {
 			if (s.options.subscriptions)
 				this.subscribeModel(name, db);
@@ -29,23 +30,23 @@ class Subscriptor {
 
 	summary() {
 		const db = this.app.db;
-		const ret = {};
+		const ret: { [s: string]: any } = {};
 
 		return db.subscription
 			.estimatedDocumentCount()
-			.then(total => ret.total = total)
+			.then((total: number) => ret.total = total)
 			.then(() => db.user.countDocuments({subscriptions: {$exists: true}}))
-			.then(total => ret.total += total)
+			.then((total: number) => ret.total += total)
 			.then(() => db.loggerSubscription.summary({event: 'request'}))
-			.then(request => ret.request = request)
+			.then((request: any) => ret.request = request)
 			.then(() => db.subscriptionRequest.countDocuments())
-			.then(c => ret.request.total = c)
+			.then((c: number) => ret.request.total = c)
 			.then(() => db.loggerSubscription.summary({event: 'join'}))
-			.then(join => ret.join = join)
+			.then((join: any) => ret.join = join)
 			// .then(() => db.subscriptionRequest.countDocuments({confirmed: true}))
 			// .then(c => ret.join.total = c)
 			.then(() => db.loggerSubscription.summary({event: 'unsubscribe'}))
-			.then(unsubscribe => ret.unsubscribe = unsubscribe)
+			.then((unsubscribe: any) => ret.unsubscribe = unsubscribe)
 			.then(() => ret);
 	}
 
@@ -57,8 +58,8 @@ class Subscriptor {
 	 * @param {String} [dbname=this.app.site.db]
 	 * @returns {Promise}
 	 */
-	subscriptorsCount(model, value = 'newItem', type = 'events', dbname) {
-		const query = {};
+	subscriptorsCount(model: any, value = 'newItem', type = 'events', dbname?: string) {
+		const query: any = {};
 		const db = this.app.site.db;
 
 		dbname = dbname || db.name;
@@ -67,13 +68,14 @@ class Subscriptor {
 
 		query[key] = value;
 
-		return db.subscription.countDocuments(query, count => db.user.countDocuments(query, count2 => count + count2));
+		return db.subscription.countDocuments(query)
+			.then((count: number) => db.user.countDocuments(query).then((count2: number) => count + count2));
 	}
 
-	getSubscriptors(dbname, model, type, value, onlyUsers) {
-		let query = {};
+	getSubscriptors(dbname: string, model: any, type: string, value: any, onlyUsers?: boolean) {
+		let query: any = {};
 		const db = this.app.site.db;
-		const byEmail = {};
+		const byEmail: any = {};
 
 		if (typeof dbname === 'object') {
 			query = dbname;
@@ -83,14 +85,15 @@ class Subscriptor {
 
 		return db.user.find(query)
 			.select('email language name uname email_notifications devices subscriptions')
-			.then(users =>
+			.exec()
+			.then((users: Array<User>) =>
 				users.forEach(u => byEmail[u.email] = {
 					email: u.email,
 					lang: u.language,
 					name: u.getName(true),
 					email_notifications: u.email_notifications,
 					devices: u.devices,
-					subscribed: u.get('subscriptions')[dbname][model][type].find(s => s.key === value),
+					subscribed: u.get('subscriptions')[dbname][model][type].find((su: any) => su.key === value),
 					user: u
 				}))
 			.then(() => {
@@ -98,9 +101,9 @@ class Subscriptor {
 					return db.subscription
 						.find(query)
 						.select('email lang subscriptions')
-						.then(subscribed => subscribed.forEach(s => {
+						.then((subscribed: Array<any>) => subscribed.forEach(s => {
 							byEmail[s.email] = s.toObject();
-							byEmail[s.email].subscribed = s.get('subscriptions')[dbname][model][type].find(s => s.key === value);
+							byEmail[s.email].subscribed = s.get('subscriptions')[dbname][model][type].find((su: any) => su.key === value);
 						}));
 				}
 			})
@@ -111,61 +114,55 @@ class Subscriptor {
 		const site = this.app.site;
 		const commentCol = site.db.comment;
 
-		commentCol.on('itemCreated', commentId => {
-			commentCol.findById(commentId, (err, comment) => {
-				if (err)
-					return console.error(err);
+		commentCol.on('itemCreated', (commentId: any) => {
+			commentCol.findById(commentId)
+				.then((comment: any) => {
+					const modelName = comment.ref.namespace.replace('dynobjects.', '');
+					const itemScript = this.getItemScript(modelName);
 
-				const modelname = comment.ref.namespace.replace('dynobjects.', '');
-				const itemScript = this.getItemScript(modelname);
+					return comment.getItem()
+						.then((item: any) => {
+							if (!item)
+								return console.error('Comment Item not found');
 
-				comment.getItem((err, item) => {
-					if (err)
-						return console.error(err);
+							if (itemScript && itemScript.newComment)
+								return itemScript.newComment.call(this, comment, item);
 
-					if (!item)
-						return console.error('Comment Item not found');
-
-					if (itemScript && itemScript.newComment)
-						return itemScript.newComment.call(this, comment, item);
-
-					this.newComment(comment, item);
-				});
-			});
+							this.newComment(comment, item);
+						});
+				})
+				.catch(console.error.bind(console));
 		});
 
-		commentCol.on('itemActivated', commentId => {
-			this.findById(commentId, (err, comment) => {
-				if (err)
-					return console.error(err);
+		commentCol.on('itemActivated', (commentId: any) => {
+			commentCol.findById(commentId)
+				.then((comment: any) => {
+					const modelName = comment.ref.namespace.replace('dynobjects.', '');
+					const itemScript: any = this.getItemScript(modelName);
 
-				const modelname = comment.ref.namespace.replace('dynobjects.', '');
-				const itemScript = this.getItemScript(modelname);
+					return comment.getItem()
+						.then((item: any) => {
+							if (!item)
+								return console.error('Comment Item not found');
 
-				comment.getItem((err, item) => {
-					if (err)
-						return console.error(err);
+							if (itemScript && itemScript.newComment)
+								return itemScript.newComment(comment, item);
 
-					if (!item)
-						return console.error('Comment Item not found');
-
-					if (itemScript && itemScript.newComment)
-						return itemScript.newComment(comment, item);
-
-					this.newComment(comment, item);
-				});
-			});
+							this.newComment(comment, item);
+						});
+				})
+				.catch(console.error.bind(console));
 		});
 	}
 
-	subscribeModel(name, db) {
+	subscribeModel(name: string, db?: any) {
 		debug('subscribe to ' + name + ' in ' + db.name);
 
 		const itemScript = this.getItemScript(name);
 
 		db = db || this.app.site.db;
 
-		if(!this.models[db.name])
+		if (!this.models[db.name])
 			this.models[db.name] = {};
 
 		this.models[db.name][name] = {
@@ -177,21 +174,21 @@ class Subscriptor {
 			return itemScript.init.call(this);
 
 		db.model(name)
-			.on('itemCreated', item => this._onItemCreated(item, name, db))
-			.on('itemActivated', item => this._onItemActivated(item, name, db));
+			.on('itemCreated', (item: any) => this._onItemCreated(item, name, db))
+			.on('itemActivated', (item: any) => this._onItemActivated(item, name, db));
 	}
 
-	getItemScript(name) {
+	getItemScript(name: string): any {
 		const site = this.app.site;
 
-		if (fs.existsSync(site.dir + '/subscriptions/' + name + '.js'))
+		if (existsSync(site.dir + '/subscriptions/' + name + '.js'))
 			return require(site.dir + '/subscriptions/' + name);
 
-		if(site.plugins && site.plugins[name])
+		if (site.plugins && site.plugins[name])
 			return site.plugins[name].itemScript;
 	}
 
-	_onItemCreated(item, name, db) {
+	_onItemCreated(item: any, name: string, db: LipthusDb) {
 		const site = this.app.site;
 		const itemScript = this.getItemScript(name);
 
@@ -200,41 +197,43 @@ class Subscriptor {
 
 		if (!item.active) return;
 
-		this.getSubscriptors(db.name, name, 'events', 'newItem', function (err, subscribed) {
-			if (err)
+		this.getSubscriptors(db.name, name, 'events', 'newItem', false)
+			.then((subscribed: Array<any>) => {
+				if (!subscribed.length) return;
+
+				site.notifier.itemCreated(item, subscribed);
+			})
+			.catch((err: Error) => {
 				throw err;
-
-			if (!subscribed.length) return;
-
-			site.notifier.itemCreated(item, subscribed);
-		});
+			});
 	}
 
-	_onItemActivated(item, name, db) {
+	_onItemActivated(item: any, name: string, db: LipthusDb) {
 		if (!item.active) return;
 
 		const site = this.app.site;
 		const itemScript = this.getItemScript(name);
 
-		this.getSubscriptors(db.name, name, 'items', item._id, (err, subscribed) => {
-			if (err)
+		this.getSubscriptors(db.name, name, 'items', item._id, false)
+			.then((subscribed: Array<any>) => {
+				if (!subscribed.length) return;
+
+				if (itemScript)
+					return itemScript.itemActivated.call(this, item, subscribed);
+
+				site.notifier.itemActivated(item, subscribed);
+			})
+			.catch((err: Error) => {
 				throw err;
-
-			if (!subscribed.length) return;
-
-			if (itemScript)
-				return itemScript.itemActivated.call(this, item, subscribed);
-
-			site.notifier.itemActivated(item, subscribed);
-		});
+			});
 	}
 
-	userConfirm(id) {
+	userConfirm(id: any) {
 		const db = this.app.site.db;
 
 		return db.subscriptionRequest
 			.findById(id)
-			.then(pending => {
+			.then((pending: any) => {
 				if (!pending)
 					return;
 
@@ -245,8 +244,8 @@ class Subscriptor {
 
 				return db.user
 					.findOne(query)
-					.then(user => {
-						if (user) {//es usuario
+					.then((user: any) => {
+						if (user) { // is user
 							if (user.subscriptions.constructor.name !== 'Object')
 								user.subscriptions = subscriptions;
 							else
@@ -259,10 +258,10 @@ class Subscriptor {
 							return user.save();
 						}
 
-						//No es usuario
+						// not user
 						return db.subscription
 							.findOne(query)
-							.then(subscription => {
+							.then((subscription: any) => {
 								if (!subscription)
 									return db.subscription.create({
 										email: pending.get('email'),
@@ -289,7 +288,7 @@ class Subscriptor {
 			});
 	}
 
-	getItemOptions(schema, item, cb) {
+	getItemOptions(schema: string, item: any, cb: any) {
 		const script = this.getItemScript(schema);
 
 		if (!script || !script.getOptions)
@@ -303,8 +302,8 @@ class Subscriptor {
 	 * @param {String} email
 	 * @returns {Promise}
 	 */
-	unsubscribe(email) {
-		if(!email)
+	unsubscribe(email: string) {
+		if (!email)
 			return Promise.reject();
 
 		const db = this.app.site.db;
@@ -313,7 +312,7 @@ class Subscriptor {
 
 		return db.subscription
 			.findOne(query)
-			.then(r => {
+			.then((r: any) => {
 				if (!r)
 					return;
 
@@ -324,7 +323,7 @@ class Subscriptor {
 				found++;
 			})
 			.then(() => db.user.findOne(query))
-			.then(user => {
+			.then((user: any) => {
 				if (!user)
 					return;
 
@@ -339,11 +338,11 @@ class Subscriptor {
 			.then(() => found);
 	}
 
-	newComment(comment, item) {
+	newComment(comment: any, item: any) {
 		const site = this.app.site;
 
-		if (!comment.active) {//notify to admin
-			return site.db.lang.get('_CM_NEWCOM', function (err, _CM_NEWCOM) {
+		if (!comment.active) {	// notify to admin
+			return site.db.lang.get('_CM_NEWCOM', function (err: Error, _CM_NEWCOM: any) {
 				site.notifier.toAdmin(
 					_CM_NEWCOM[site.config.language],
 					{X_COMMENTURL: site.protocol + '://' + site.mainHost + '/approve-comment?id=' + comment.id + '&hash=' + comment.getHash()},
@@ -357,7 +356,7 @@ class Subscriptor {
 			});
 		}
 
-		site.db.lang.get('_NOT_COMMENT_NOTIFYSBJ', function (err, _NOT_COMMENT_NOTIFYSBJ) {
+		site.db.lang.get('_NOT_COMMENT_NOTIFYSBJ', (err: Error, _NOT_COMMENT_NOTIFYSBJ: any) => {
 			site.db.user.find({
 				subscriptions: {
 					$elemMatch: {
@@ -365,9 +364,9 @@ class Subscriptor {
 						id: comment.ref.oid
 					}
 				}
-			}, function (err, users) {
-				if (err)
-					throw err;
+			}, (err2: Error, users: Array<any>) => {
+				if (err2)
+					throw err2;
 
 				if (!users)
 					return;
@@ -377,10 +376,10 @@ class Subscriptor {
 
 				users.forEach(function (user) {
 					const lang = user.language || site.config.language;
-					const itemtype = title[lang] || title.en || title;
+					const itemType = title[lang] || title.en || title;
 					const subject = (_NOT_COMMENT_NOTIFYSBJ.get(lang) || _NOT_COMMENT_NOTIFYSBJ.get(site.config.language))
 						.replace('{X_ITEMTITLE}', item.title)
-						.replace('{X_ITEMTYPE}', itemtype)
+						.replace('{X_ITEMTYPE}', itemType)
 						.replace('{X_SITENAME}', site.config.sitename);
 					const content = {
 						X_UNAME: user.getName(true),
@@ -389,24 +388,28 @@ class Subscriptor {
 						X_COMM_ID: comment._id,
 						X_UNSUBSCRIBE_URL: site.protocol + ':' + site.langUrl(lang) + '/subscriptions/' + user._id
 					};
-					const body = site.notifier.parseContent(site, lang, content, 'comment_notify');
 
-					site.notifier.toUser(user, subject, body);
+					site.notifier.parseContent(lang, content, 'comment_notify', (err3: Error, body: any) =>
+						site.notifier.toUser(user, {subject: subject, content: body})
+					);
+
 				});
 			});
 		});
 	}
 
-	log(event, email, content, lang) {
+	log(event: string, email: string, content?: any, lang?: string) {
 		this.app.db.loggerSubscription.log(event, email, content, lang);
 	}
 
-//ajax functions
-	static ajaxRemoveUserItem(req, res, uid, db, col, itemid, cb) {
+
+	// ajax functions
+
+	static ajaxRemoveUserItem(req: any, res: any, uid: any, db: string, col: string, itemId: string, cb: any) {
 		if (req.method !== 'POST')
 			return cb();
 
-		req.db.user.findById(uid, function (err, user) {
+		req.db.user.findById(uid, function (err: Error, user: User) {
 			if (err)
 				return cb(err);
 
@@ -417,8 +420,8 @@ class Subscriptor {
 				const items = user.subscriptions[db][col].items;
 				let idx = -1;
 
-				items.some(function (item, i) {
-					if (item.toString() === itemid) {
+				items.some((item: any, i: number) => {
+					if (item.toString() === itemId) {
 						idx = i;
 						return true;
 					}
@@ -432,17 +435,12 @@ class Subscriptor {
 				user.set('subscriptions.' + db + '.' + col + '.items', items);
 				user.markModified('subscriptions');
 
-				user.save(function (err) {
-					if (err)
-						return cb(err);
-
-					cb(null, {ok: true});
-				});
+				user.save()
+					.then(() => ({ok: true}))
+					.catch(cb);
 			} catch (e) {
 				cb(e);
 			}
 		});
 	}
 }
-
-module.exports = Subscriptor;

@@ -1,14 +1,14 @@
-"use strict";
+import * as Debug from "debug";
 
+const debug = Debug('site:w3c');
 const fs = require('mz/fs');
 const os = require('os');
 const md5 = require('md5');
 const w3cjs = require('w3cjs');
-const debug = require('debug')('site:w3c');
 const {util} = require('./util');
 const tmpdir = os.tmpdir() + '/w3cv/';
 
-fs.mkdir(tmpdir).catch(err => {
+fs.mkdir(tmpdir).catch((err: any) => {
 	if (err.code !== 'EEXIST')
 		throw err;
 });
@@ -16,15 +16,15 @@ fs.mkdir(tmpdir).catch(err => {
 const w3c = {
 	results: {},
 
-	getUrl(uri) {
-		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri
+	getUrl(this: any, uri: string) {
+		return this.req.site.externalProtocol + '://' + this.req.headers.host + uri;
 	},
 
-	get(uri, sec) {
+	get(uri: string, sec: number) {
 		const file = w3c.getUrl.call(this, uri);
 
 		return w3c.getCached(file)
-			.then(cached => {
+			.then((cached: any) => {
 				debug('cached', !!cached);
 
 				if (cached && (!sec || cached.time > Date.now() - sec * 1000))
@@ -34,24 +34,24 @@ const w3c = {
 			});
 	},
 
-	ajaxErrorCount(uri) {
-		return w3c.get.call(this, uri, 30).then(r => ({count: r.errors}));
+	ajaxErrorCount(uri: string) {
+		return w3c.get.call(this, uri, 30).then((r: any) => ({count: r.errors}));
 	},
 
-	validate(uri) {
+	validate(uri: string) {
 		debug('validating', uri);
 
 		return util.urlContent(uri)
-			.then(str => new Promise((ok, ko) => {
+			.then((str: string) => new Promise((ok, ko) => {
 				w3cjs.validate({
 					input: str,
-					callback: (err, c) => {
+					callback: (err: Error, c: any) => {
 						try {
 							c.url = uri;
 							c.time = Date.now();
 							c.errors = 0;
 
-							c.messages.forEach(m => {
+							c.messages.forEach((m: any) => {
 								if (m.type === 'error' || m.subType)
 									c.errors++;
 							});
@@ -66,7 +66,7 @@ const w3c = {
 			}));
 	},
 
-	cach(uri, content) {
+	cach(uri: string, content: any) {
 		const filename = tmpdir + md5(uri);
 
 		debug('writing tmp file', filename);
@@ -79,19 +79,19 @@ const w3c = {
 			});
 	},
 
-	getCached(uri) {
-		let file = tmpdir + md5(uri);
+	getCached(uri: string) {
+		const file = tmpdir + md5(uri);
 
 		return fs.access(file)
 			.then(() => {
 				return fs.readFile(file, 'utf8')
-					.then(r => {
+					.then((r: any) => {
 						debug('read cached', uri);
 
 						return JSON.parse(r);
 					});
-			}, () => true);// no devolvemos el error porque no esté cacheado
+			}, () => true); // no devolvemos el error porque no esté cacheado
 	}
 };
 
-module.exports = w3c;
+export default w3c;

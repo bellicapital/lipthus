@@ -1,11 +1,13 @@
-"use strict";
+import {Site} from "./site";
 
 const nodemailer = require('nodemailer');
 const sesTransport = require('nodemailer-ses-transport');
 const path = require('path');
 
-class Mailer {
-	constructor(conf, site) {
+export class Mailer {
+	public transport: any;
+
+	constructor(conf: any, public site: Site) {
 		conf = conf || {};
 
 		if (conf.sesTransport) {
@@ -17,23 +19,23 @@ class Mailer {
 		Object.defineProperty(this, 'site', {value: site});
 	}
 
-	send(opt) {
+	send(opt: any) {
 		this.checkOptions(opt);
 
 		return this.transport.sendMail(opt);
 	}
 
-	checkOptions(opt) {
+	checkOptions(opt: any) {
 		this.ensureForceEmbeddedImages(opt);
 		this.ensureFrom(opt);
 	}
 
-	ensureFrom(opt) {
+	ensureFrom(opt: any) {
 		if (!opt.from)
 			opt.from = this.site + " <noreply@" + (this.site.domainName.replace(/^\w+\.([^.]+\.\w+)$/, '$1')) + ">";
 	}
 
-	ensureForceEmbeddedImages(opt) {
+	ensureForceEmbeddedImages(opt: any) {
 		if (opt.forceEmbeddedImages === undefined)
 			opt.forceEmbeddedImages = true;
 
@@ -41,7 +43,7 @@ class Mailer {
 			return;
 
 		const re = /<img[^>]+src="([^"]+)"/gi;
-		const unique = {};
+		const unique: any = {};
 		let match;
 
 		while (!!(match = re.exec(opt.html))) {
@@ -65,5 +67,3 @@ class Mailer {
 		});
 	}
 }
-
-module.exports = Mailer;

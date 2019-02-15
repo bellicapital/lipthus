@@ -27,22 +27,22 @@ import {exists as exists_, existsSync} from "fs";
 import {promisify} from "util";
 import listen from "./listen";
 import sitemap from "./sitemap";
-import Notifier from "./notifier";
+import {Notifier} from "./notifier";
+import multipart from './multipart';
+import {Subscriptor} from './subscriptor';
+import {Mailer} from "./mailer";
+import facebook from "./facebook";
+import Ng from './ng2';
+import {GPageSpeedMiddleWare} from "./g-page-speed";
+import {LipthusDevPanel} from "./cmjspanel";
 
 const pExists = promisify(exists_);
 const debug = Debug('site:site');
 const device = require('express-device');
-const multipart = require('./multipart');
-const Subscriptor = require('./subscriptor');
-const Mailer = require("./mailer");
-const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
-const Ng = require('./ng2');
 // no se puede con import
 const flash = require('connect-flash');
-const favicons = require("connect-favicons");
-
-debug.log = console.log.bind(console);
+const favicon = require("connect-favicons");
 
 export class Site extends EventEmitter {
 
@@ -437,7 +437,7 @@ export class Site extends EventEmitter {
 		app.locals.basedir = '/';
 
 		app.use(logger_req);
-		app.use(favicons(this.dir + '/public/img/icons'));
+		app.use(favicon(this.dir + '/public/img/icons'));
 
 		if (process.env.NODE_ENV === 'development') {
 			app.locals.development = true;
@@ -464,7 +464,6 @@ export class Site extends EventEmitter {
 			extended: true
 		}));
 		app.use(express.json({limit: '1gb'}));
-		// asigna req.multipart()
 		app.use(multipart);
 		app.use(cookieParser());
 
@@ -484,7 +483,7 @@ export class Site extends EventEmitter {
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);
 
-		app.use(require('./g-page-speed'));
+		app.use(GPageSpeedMiddleWare);
 		app.use(require('./client')(app));
 
 		app.locals.sitename = this.config.sitename;
@@ -495,7 +494,7 @@ export class Site extends EventEmitter {
 				app.use(HtmlPageMiddleware);
 				app.use(session(this));
 				LipthusLogger.init(app);
-				app.use(require('./cmjspanel'));
+				app.use(LipthusDevPanel);
 
 				if (!this.environment.customSitemap)
 					app.use(sitemap(this));

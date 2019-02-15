@@ -1,22 +1,28 @@
-/* global process, module */
+import {BinDataFile, LipthusDb} from "../modules";
+import debug0 from "debug";
+import {LipthusRequest, LipthusSchema, LipthusSchemaTypes} from "../index";
+import {Model, Types} from "mongoose";
 
-"use strict";
-
-const mongoose = require('mongoose');
-const {BinDataFile} = require('../modules');
-const debug = require('debug')('site:form');
+const debug = debug0('site:form');
 
 
-class EucaForm
-{
-	constructor(req)
-	{
-		this.req = req;
-		this.itemid = req.params.itemid;
+class EucaForm {
 
-		let collection = req.params.schema.split(/\.(.+)?/);
+	public db: LipthusDb;
+	public itemId: string;
+	public schemaName: string;
+	public schema: LipthusSchema;
+	private readonly itemModel: any;
+	private readonly isTmp: boolean;
+	private query!: any;
+	private model!: Model<any>;
 
-		if(collection.length === 1){
+	constructor(public req: LipthusRequest) {
+		this.itemId = req.params.itemid;
+
+		const collection = req.params.schema.split(/\.(.+)?/);
+
+		if (collection.length === 1) {
 			this.db = req.db;
 			this.schemaName = req.params.schema;
 		} else {
@@ -27,13 +33,12 @@ class EucaForm
 		this.schema = this.db.schemas[this.schemaName];
 		this.itemModel = this.db.model(this.schemaName);
 
-		this.isTmp = !this.itemid;
+		this.isTmp = !this.itemId;
 
 		this.isTmp ? this.initSessionForm(req.sessionID) : this.initItemForm();
 	}
 
-	static processReq(req)
-	{
+	static processReq(req: LipthusRequest) {
 		const f = new EucaForm(req);
 
 		if (!req.params.cmd)
@@ -51,25 +56,23 @@ class EucaForm
 			case 'sortfield':
 				return f.sortField(req.body.name, req.body.keys);
 			default:
-				const err = new Error('Not found');
+				const err: any = new Error('Not found');
 				err.http_code = 404;
 				return Promise.reject(err);
-			}
+		}
 	}
 
-	initSessionForm(sessionID)
-	{
+	initSessionForm(sessionID: string) {
 		this.model = this.db.tmp;
 		this.query = {key: this.schemaName + '_' + sessionID};
 	}
 
-	initItemForm()
-	{
+	initItemForm() {
 		this.model = this.db[this.schemaName];
-		this.query = {_id: mongoose.Schema.Types.ObjectId.prototype.cast(this.itemid)};
+		this.query = {_id: Types.ObjectId(this.itemId)};
 	}
-	get()
-	{
+
+	get() {
 		return this.model.findOne(this.query)
 			.then(r => {
 				if (!r || (this.isTmp && !r.value))
@@ -78,23 +81,23 @@ class EucaForm
 				if (!this.isTmp)
 					return r.jsonInfoIncFiles();
 
-				let v = r.value;
+				const v = r.value;
 
-				let obj = new this.itemModel(r.value);
+				const obj = new this.itemModel(r.value);
 
 				Object.keys(v).forEach(k => {
 					if (!obj.schema.paths[k])
 						console.error('Error: Field ' + k + ' not found in schema ' + this.schemaName);
 					else {
 						switch (obj.schema.paths[k].options.type) {
-							case mongoose.Schema.Types.Bdf:
+							case LipthusSchemaTypes.Bdf:
 								v[k] = BinDataFile.fromMongo(v[k], {
 									collection: 'tmp',
 									id: r._id,
 									field: 'value.' + k
 								});
 								break;
-							case mongoose.Schema.Types.BdfList:
+							case LipthusSchemaTypes.BdfList:
 								Object.keys(v[k]).forEach(i => {
 									v[k][i] = BinDataFile.fromMongo(v[k][i], {
 										collection: 'tmp',
@@ -105,7 +108,7 @@ class EucaForm
 								break;
 						}
 
-						//obj.set(v) no funciona con los multi-idioma
+						// obj.set(v) no funciona con los multi-idioma
 						obj[k] = v[k];
 					}
 				});
@@ -113,10 +116,11 @@ class EucaForm
 				return obj.jsonInfoIncFiles();
 			});
 	}
-	set(name, value) {
+
+	set(name: string, value: any) {
 		const match = name.match(/^(.+)\[(.+)]\.(.+)$/);
 
-		if(match)
+		if (match)
 			return this.setArraySubdocValue(match[1], match[2], match[3], value);
 
 		return new Promise((ok, ko) => {
@@ -124,7 +128,7 @@ class EucaForm
 				return ko(new Error('No key provided'));
 
 			const key = this.isTmp ? 'value.' + name : name;
-			let update = {};
+			const update: any = {};
 			let func = 'update';
 
 			if (typeof value === 'string') {
@@ -147,7 +151,7 @@ class EucaForm
 						break;
 					case 'MlSelector':
 					case 'MlCheckboxes':
-						func = 'updateNative';//5/5/14. jj. findOneAndUpdate no inserta MlSelector
+						func = 'updateNative';	// 5/5/14. jj. findOneAndUpdate no inserta MlSelector
 						break;
 					case 'Bdf':
 						value = BinDataFile.fromString(value, {
@@ -160,8 +164,8 @@ class EucaForm
 						if (value) {
 							let date = new Date(value);
 
-							if(isNaN(date))
-								date = new Date(parseInt(value));
+							if (isNaN(date.getTime()))
+								date = new Date(parseInt(value, 10));
 
 							value = date;
 						}
@@ -170,16 +174,16 @@ class EucaForm
 						if (schemaDef.type.prototype.cast)
 							value = schemaDef.type.prototype.cast(value);
 				}
-			} else if(name === 'parents'){
-				value.forEach((v, i) => {
-					v = JSON.parse(v);
-					v.$id = mongoose.Schema.Types.ObjectId.prototype.cast(v.$id);
+			} else if (name === 'parents') {
+				value.forEach((val: string, i: number) => {
+					const v = JSON.parse(val);
+					v.$id = Types.ObjectId(v.$id);
 					value[i] = v;
 				});
 			}
 
 			if (key.lastIndexOf('.') > 0)
-				func = 'updateNative';//5/5/14. jj. findOneAndUpdate no inserta subobjetos
+				func = 'updateNative';	// 5/5/14. jj. findOneAndUpdate no inserta subobjetos
 
 			update[key] = value;
 
@@ -196,14 +200,12 @@ class EucaForm
 					update.modifier = this.req.user._id;
 			}
 
-			update = {$set: update};
+			const $set = {$set: update};
 
-			debug(this.schemaName, func, this.query, update, options);
+			debug(this.schemaName, func, this.query, $set, options);
 
-			this.model[func](this.query, update, options, (err, r) => {
-				if (err)
-					return ko(err);
-
+			(this.model as any)[func](this.query, $set, options)
+				.then((r: any) => {
 				const result = r.result || r;
 
 				debug(result);
@@ -211,13 +213,14 @@ class EucaForm
 				this.logUpdate(name, value);
 
 				ok(!!(result.nModified || result.upserted));
-			});
+			})
+				.catch(ko);
 		});
 	}
 
-	setArraySubdocValue(field, idx, name, value){
+	setArraySubdocValue(field: string, idx: string, name: string, value: any) {
 		const query = Object.assign({}, this.query);
-		const update = {$set: {}};
+		const update: any = {$set: {}};
 
 		update.$set[field + '.$.' + name] = value;
 
@@ -231,14 +234,14 @@ class EucaForm
 			});
 	}
 
-	unset(name) {
-		const update = {$unset: {}};
+	unset(name: string) {
+		const update: any = {$unset: {}};
 		const key = this.isTmp ? 'value.' + name : name;
 		const fields = name.split('.');
 
 		update.$unset[key] = true;
 
-		if (this.schema.tree[fields[0]].type !== mongoose.Schema.Types.Fs) {
+		if (this.schema.tree[fields[0]].type !== LipthusSchemaTypes.Fs) {
 			return this.model.findOneAndUpdate(this.query, update).then(r => {
 				this.logUpdate(name);
 
@@ -257,7 +260,7 @@ class EucaForm
 						field = field[fields[1]];
 
 					this.model.findOneAndUpdate(this.query, update)
-						.then(r => {
+						.then((r2: any) => {
 							this.logUpdate(name);
 
 							if (!field || !field.unlink) {
@@ -267,9 +270,7 @@ class EucaForm
 								return ok(true);
 							}
 
-							field.unlink(function (err) {
-								err ? ko(err) : ok(!!r);
-							});
+							field.unlink((err: Error) => err ? ko(err) : ok(!!r2));
 						})
 						.catch(ko);
 				})
@@ -283,12 +284,12 @@ class EucaForm
 				if (!tmp)
 					return ko(new Error('Tmp form not found'));
 
-				let model = this.db[this.schemaName];
+				const model = this.db[this.schemaName];
 
 				if (!model)
 					return ko(new Error('Schema ' + this.schemaName + ' not found'));
 
-				let extra = this.req.body.extra;
+				const extra = this.req.body.extra;
 
 				if (extra)
 					Object.keys(extra).forEach(i => tmp.value[i] = extra[i]);
@@ -298,14 +299,13 @@ class EucaForm
 				if (this.schema.options.modifier && this.req.user)
 					doc.submitter = this.req.user._id;
 
-				//solucion temporal para los mlcheckboxes y mlselectors
-				let Types = mongoose.Schema.Types;
-				let update = {};
+				// solución temporal para los mlCheckbox y mlSelector
+				const update: any = {};
 
-				doc.schema.eachPath(function (k, path) {
+				doc.schema.eachPath((k: string, path: any) => {
 					switch (path.options.type) {
-						case Types.MlSelector:
-						case Types.MlCheckboxes:
+						case LipthusSchemaTypes.MlSelector:
+						case LipthusSchemaTypes.MlCheckboxes:
 							if (doc[k]) {
 								update[k] = doc[k].val;
 								doc[k] = null;
@@ -313,46 +313,46 @@ class EucaForm
 							break;
 					}
 				});
-				//end solucion temporal para los mlcheckboxes y mlselectors
+				// end solución temporal para los mlCheckbox y mlSelector
 
-				//No hace falta añadir el hijo al posible padre.
-				//El schema dynobject se encarga post save
+				// No hace falta añadir el hijo al posible padre.
+				// El schema dynobject se encarga post save
 				doc.save()
-					.then(doc => {
+					.then((doc2: any) =>
 						tmp.remove(err => {
 							if (err)
 								console.warn(err);
 
 							if (!Object.keys(update).length)
-								return doc.jsonInfoIncFiles().then(ok, ko);
+								return doc2.jsonInfoIncFiles().then(ok, ko);
 
-							//solucion temporal para los mlcheckboxes y mlselectors
-							model.updateNative({_id: doc._id}, {$set: update}, () => {
-								//end solucion temporal para los mlcheckboxes y mlselectors
-								doc.set(update);
+							// solución temporal para los mlCheckbox y mlSelector
+							model.collection.updateOne({_id: doc2._id}, {$set: update}, () => {
+								// end solución temporal para los mlCheckbox y mlSelector
+								doc2.set(update);
 
-								doc.jsonInfoIncFiles().then(ok, ko);
+								doc2.jsonInfoIncFiles().then(ok, ko);
 							});
-						});
-					})
+						})
+					)
 					.catch(ko);
 			});
 		});
 	}
 
-	sortField (name, keys) {
+	sortField(name: string, keys: Array<string>) {
 		return new Promise((ok, ko) => {
-			const update = {$set: {}};
+			const update: any = {$set: {}};
 
 			keys.forEach((k, i) => update.$set[name + '.' + k + '.weight'] = i);
 
-			this.model.updateNative(this.query, update, err => {
+			this.model.collection.updateOne(this.query, update, err => {
 				err ? ko(err) : ok(true);
 			});
 		});
 	}
 
-	logUpdate (name, value) {
+	logUpdate(name: string, value?: any) {
 		const logUpdates = this.schema.options.logUpdates;
 
 		if (!this.isTmp && logUpdates && (logUpdates === true || logUpdates.indexOf(name.replace(/\..+$/, '')) !== -1))

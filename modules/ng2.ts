@@ -142,7 +142,7 @@ const pExists = (file: string): Promise<boolean> => {
 	return Promise.resolve(fs.existsSync(file));
 };
 
-export = (app: LipthusApplication): Promise<void> => {
+export default (app: LipthusApplication): Promise<void> => {
 	return methods.build(app.get('dir'))
 		.then(() => methods.serve(app));
 };

@@ -5,8 +5,6 @@ import {existsSync} from 'fs';
 import * as compareVersions from 'compare-versions';
 
 const debug = Debug('site:version');
-debug.log = console.log.bind(console);
-
 
 export function checkVersions(site: Site): Promise<any> {
 	return Promise.all([

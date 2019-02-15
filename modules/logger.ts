@@ -31,7 +31,7 @@ export class LipthusLogger {
 			.then(() => obj);
 	}
 	
-	logError(err: LipthusError): Promise<any> {
+	logError(err: LipthusError): Promise<void | Error> {
 		const type = err.type || 'error';
 		const col = this.collection(type);
 		const obj: any = {
@@ -44,17 +44,20 @@ export class LipthusLogger {
 				if (error2) {
 					return col
 						.updateOne({_id: error2._id}, {$set: {last: obj.last, repeated: ++error2.repeated}})
-						.then(() => {
-						});
+						.then(() => {});
 				} else {
 					if (err.status)
 						obj.status = err.status;
 					
 					obj.repeated = 0;
 					
-					return this.log(type, obj).then(() => {
-					});
+					return this.log(type, obj).then(() => {});
 				}
+			})
+			.catch((err2: Error) => {
+				console.error.bind(console);
+
+				return err2;
 			});
 	}
 	

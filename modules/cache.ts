@@ -1,35 +1,42 @@
-"use strict";
+import * as Debug from "debug";
 
-const debug = require('debug')('site:cache');
+const debug = Debug('site:cache');
 
 class Cache {
-	constructor(s) {
+
+	public varyDevice: string;
+	public uris: {[s: string]: string};
+
+	constructor(s: any) {
 		Object.assign(this, s);
+
+		this.varyDevice = s.varyDevice;
+		this.uris = s.uris;
 	}
 
-	getType(res) {
+	getType(res: any) {
 		if (res.cacheType)
 			return res.cacheType;
 
 		res.cacheType = 'all';
 
-		if(this.varyDevice) {
+		if (this.varyDevice) {
 			const dt = res.req.device.type;
 
-			if(this.varyDevice.indexOf(dt) !== -1)
+			if (this.varyDevice.indexOf(dt) !== -1)
 				res.cacheType = dt;
 		}
 
 		if (res.locals.justContent)
 			res.cacheType += '-justContent';
 
-		if(res.locals.gpsi)
+		if (res.locals.gpsi)
 			res.cacheType += '-gpsi';
 
 		return res.cacheType;
 	}
 
-	getExpireMinutes(url) {
+	getExpireMinutes(url: string) {
 		let ret = null;
 
 		Object.keys(this.uris).some(re => {
@@ -38,31 +45,28 @@ class Cache {
 
 				return true;
 			}
+
+			return false;
 		});
 
 		return ret;
 	}
 
-	static setResponse(res, body, expireMinutes) {
-		res.cached.MongoBinData = Buffer.from(body);
-		res.cached.expires = Date.now() + expireMinutes * 60000;
+	static setResponse(res: any, body: string, expireMinutes: number) {
+		res.cached.set('MongoBinData', Buffer.from(body));
+		res.cached.set('expires', Date.now() + expireMinutes * 60000);
 
 		const ct = res.get('Content-Type');
 
-		if(ct)
-			res.cached.contentType = ct;
+		if (ct)
+			res.cached.set('contentType', ct);
 
-		res.cached.save(err => {
+		res.cached.save()
+			.catch((err: any) => {
 			/**
 			 * Catching E11000 duplicate key error
 			 * to avoid simultaneous request processing unique index error
-			 *
-			 * jj - 20/12/2017
-			 * Using callback because Promise catching doesn't work
 			 */
-
-			if (!err)
-				return;
 
 			if (err.code !== 11000)
 				console.error(err);
@@ -72,25 +76,26 @@ class Cache {
 	}
 }
 
-module.exports = function cache(cache){
-	if(!cache)
+
+export default (cache: any) => {
+	if (!cache)
 		return;
 
 	cache = new Cache(cache);
 
-	return (req, res, next) => {
-		if(req.method !== 'GET')
+	return (req: any, res: any, next: any) => {
+		if (req.method !== 'GET')
 			return next();
 
-		if(req.query._c)
+		if (req.query._c)
 			req.url = req.url.replace(/[?&]_c=[^&]*/, '');
 
-		if(/^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|bot)/.test(req.path))
+		if (/^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|bot)/.test(req.path))
 			return next();
 
 		const expireMinutes = cache.getExpireMinutes(req.url);
 
-		if(!expireMinutes)
+		if (!expireMinutes)
 			return next();
 
 		const query = {
@@ -99,13 +104,13 @@ module.exports = function cache(cache){
 			lang: req.ml.lang
 		};
 
-		if(req.user)
+		if (req.user)
 			return req.db.cacheResponse.remove(query, next);
 
 		req.db.cacheResponse
 			.findOne(query)
-			.then(cached => {
-				if(req.query._c && cached)
+			.then((cached: any) => {
+				if (req.query._c && cached)
 					cached.remove();
 
 				res.cached = cached;
@@ -113,21 +118,22 @@ module.exports = function cache(cache){
 				// capturar los envíos
 				res.___send = res.send;
 
-				res.send = body => {
-					if(body && [200, 304].indexOf(res.statusCode) !== -1){
-						if(!cached)
+				res.send = (body: string) => {
+					if (body && [200, 304].indexOf(res.statusCode) !== -1) {
+						if (!cached)
 							res.cached = new req.db.cacheResponse(query);
 
 						Cache.setResponse(res, body, expireMinutes);
 					}
 
-					res.headersSent || res.___send(body);
+					if (!res.headersSent)
+						res.___send(body);
 				};
 
-				if(!cached)
+				if (!cached)
 					return next();
 
-				if(req.query._c)
+				if (req.query._c)
 					return next();
 
 				res.set({
@@ -136,14 +142,14 @@ module.exports = function cache(cache){
 					'X-CMJS-Cached': true
 				});
 
-				if(res.cached.contentType)
+				if (res.cached.contentType)
 					res.set('Content-Type', res.cached.contentType);
 
 				res.___send(res.cached.MongoBinData.toString());
 
-				debug(((res.cached.expires - new Date)/60000).toFixed(2) + ' minutos para limpiar cache de %s', res.cached.uri);
+				debug(((res.cached.expires.getTime() - Date.now()) / 60000).toFixed(2) + ' minutos para limpiar cache de %s', res.cached.uri);
 
-				if(res.cached.expires < new Date)
+				if (res.cached.expires < new Date)
 					next();
 			})
 			.catch(next);

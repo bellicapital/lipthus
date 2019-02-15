@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import {Site} from "./site";
-import {DBRef} from "bson";
 import {LipthusSchema} from '../lib';
 import {schemaGlobalMethods} from "./schema-plugins/schema-global";
 import {schemaGlobalStatics} from "./schema-plugins/schema-statics";
@@ -19,8 +18,6 @@ import {DbParams} from "../interfaces/global.interface";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
-
-debug.log = console.log.bind(console);
 
 (mongoose as any).dbs = {};
 mongoose.set('useNewUrlParser', true);
@@ -296,7 +293,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	 * @param {object|function} fields ({title: 1, active: -1})
 	 * @returns {Promise}
 	 */
-	deReference(ref: DBRef, fields?: any) {
+	deReference(ref: any, fields?: any) {
 		const modelName = ref.namespace.replace('dynobjects.', '');
 
 		const dbname = ref.db || this.name;

@@ -20,6 +20,7 @@ export class BinDataImage extends BinDataFile {
 	public alt: KeyString;
 	public title: KeyString;
 	public hidden: boolean;
+	public text: string;
 
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
@@ -29,6 +30,7 @@ export class BinDataImage extends BinDataFile {
 		this.alt = data.alt || {};
 		this.title = data.title || {};
 		this.hidden = !!data.hidden;
+		this.text = data.text;
 	}
 
 	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -61,12 +63,13 @@ export class BinDataImage extends BinDataFile {
 			title: this.title ? this.title[lang] : undefined,
 			md5: this.md5,
 			key: this.getKey(),
-			hidden: this.hidden
+			hidden: this.hidden,
+			text: this.text
 		});
 
 		ret.uri = ret.path;
 
-		// los svg no se redimensionan
+		// svg -> don't resize
 		if (this.contentType.indexOf('svg') === -1) {
 			if (width) {
 				if (!height) { //noinspection JSSuspiciousNameCombination
@@ -110,6 +113,9 @@ export class BinDataImage extends BinDataFile {
 
 		if (this.hidden)
 			ret.hidden = this.hidden;
+
+		if (this.text)
+			ret.text = this.text;
 
 		return ret;
 	}
@@ -243,7 +249,7 @@ export class BinDataImage extends BinDataFile {
 				.catch(req.next);
 	}
 
-	postFromFile(opt: any = {}): Promise<BinDataImage> {
+	postFromFile(opt: PostParams = {}): Promise<BinDataImage> {
 		const gmi = gm(this.MongoBinData.buffer)
 			.strip();
 
@@ -257,8 +263,8 @@ export class BinDataImage extends BinDataFile {
 
 				gmi.autoOrient();
 
-				if (this.width > opt.maxwidth || this.height > opt.maxheight) {
-					const s = Math.min(opt.maxwidth / this.width, opt.maxheight / this.height);
+				if (this.width > opt.maxwidth! || this.height > opt.maxheight!) {
+					const s = Math.min(opt.maxwidth! / this.width, opt.maxheight! / this.height);
 
 					this.width = Math.round(s * this.width);
 					this.height = Math.round(s * this.height);
@@ -341,6 +347,7 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	alt?: string;
 	title?: string;
 	hidden?: boolean;
+	text?: string;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -352,6 +359,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	alt?: string;
 	title?: string;
 	hidden?: boolean;
+	text?: string;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
@@ -363,6 +371,7 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 		this.alt = p.alt;
 		this.title = p.title;
 		this.hidden = p.hidden;
+		this.text = p.text;
 	}
 
 	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg'): DbfThumb {
@@ -374,7 +383,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 			alt: this.alt,
 			title: this.title,
 			originalWidth: this.width,
-			originalHeight: this.height
+			originalHeight: this.height,
+			text: this.text
 		});
 
 		if (width) {
@@ -409,10 +419,10 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	}
 
 	uriName(ext: string) {
-		const curext = path.extname(this.name);
-		const bn = path.basename(this.name, curext);
+		const curExt = path.extname(this.name);
+		const bn = path.basename(this.name, curExt);
 
-		return encodeURIComponent(bn.replace(/\s/g, '')) + (ext || curext);
+		return encodeURIComponent(bn.replace(/\s/g, '')) + (ext || curExt);
 	}
 }
 
@@ -426,6 +436,7 @@ export class DbfThumb {
 	originalHeight: number;
 	alt: KeyString;
 	title: KeyString;
+	text: string;
 
 	constructor(values: any) {
 		this.uri = values.uri;
@@ -436,11 +447,18 @@ export class DbfThumb {
 		this.originalHeight = values.originalHeight;
 		this.alt = values.alt;
 		this.title = values.title;
+		this.text = values.text;
 	}
 
 	toHtml() {
 		return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';
 	}
+}
+
+export interface PostParams {
+	noResize?: boolean;
+	maxwidth?: number;
+	maxheight?: number;
 }
 
 export default BinDataImage;

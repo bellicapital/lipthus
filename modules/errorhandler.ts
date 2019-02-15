@@ -61,7 +61,6 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 
 	(req.logger || new LipthusLogger(req)).logError(err).then(() => {
 		console.error("Exception at " + req.originalUrl);
-		console.error(err);
 	});
 
 	res.render(getView(err.status.toString(), req), {
