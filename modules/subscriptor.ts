@@ -1,9 +1,9 @@
-import debug0 from "debug";
+import * as Debug from "debug";
 import {existsSync} from "fs";
 import {LipthusDb} from "./db";
 import {User} from "../schemas/user";
 
-const debug = debug0('site:subscriptor');
+const debug = Debug('site:subscriptor');
 
 export class Subscriptor {
 

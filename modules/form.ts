@@ -1,9 +1,9 @@
 import {BinDataFile, LipthusDb} from "../modules";
-import debug0 from "debug";
+import * as Debug from "debug";
 import {LipthusRequest, LipthusSchema, LipthusSchemaTypes} from "../index";
 import {Model, Types} from "mongoose";
 
-const debug = debug0('site:form');
+const debug = Debug('site:form');
 
 
 class EucaForm {
