@@ -549,7 +549,7 @@
 			"googleSecret": [
 				"string",
 				"Google Secret key",
-				"wthnKIOzJ1lmOFQ354k8cPlY",
+				"",
 				"<a href='https://console.developers.google.com/apis/credentials'>Google Apis Credentials</a>"
 			],
 			"detect_gpsi": [
