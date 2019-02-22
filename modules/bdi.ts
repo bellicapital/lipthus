@@ -1,16 +1,15 @@
 import {KeyString} from "../interfaces/global.interface";
-
-const Image = require('./image');
-const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 import {BinDataFile, DbfInfo, DbfInfoParams} from './bdf';
 import {promisify} from 'util';
 import {LipthusRequest} from "../index";
 import {IncomingMessage} from "http";
+import Image from "./image";
 
 const path = require('path');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
 const debug = require('debug')('site:bdi');
+const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 
 
 export class BinDataImage extends BinDataFile {
@@ -80,7 +79,7 @@ export class BinDataImage extends BinDataFile {
 					ret.width = width;
 					ret.height = height;
 				} else
-					Object.assign(ret, Image.fitCalc(this.width, this.height, width, height, crop));
+					Object.assign(ret, Image.fitCalc(this.width, this.height, width, height, !!crop));
 			}
 
 			ret.uri += ret.width + 'x' + ret.height;
