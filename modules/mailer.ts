@@ -7,16 +7,13 @@ const path = require('path');
 export class Mailer {
 	public transport: any;
 
-	constructor(conf: any, public site: Site) {
-		conf = conf || {};
-
+	constructor(conf: any = {mail: {"sendmail": true}}, public site: Site) {
 		if (conf.sesTransport) {
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 			conf = sesTransport(conf.sesTransport);
 		}
 
 		this.transport = nodemailer.createTransport(conf);
-		Object.defineProperty(this, 'site', {value: site});
 	}
 
 	send(opt: any) {
