@@ -108,6 +108,14 @@ export class MlSelector extends SchemaType {
 	toString() {
 		return this.val;
 	}
+
+	toObject() {
+		return this.val;
+	}
+
+	toJSON() {
+		return this.val;
+	}
 }
 
 
