@@ -449,11 +449,13 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			if (!doc.isSelected(k))
 				return;
 
+			// noinspection FallThroughInSwitchStatementJS
 			switch (path.options.type) {
-				case LipthusSchemaTypes.MlSelector:
 				case LipthusSchemaTypes.MlCheckboxes:
 					ret[k] = ret[k] && ret[k].val;
 					break;
+				case LipthusSchemaTypes.MlSelector:
+					ret[k] = doc.get(k);
 				case LipthusSchemaTypes.BdfList:
 					ret[k] = ret[k] && ret[k].toObject();
 					break;
