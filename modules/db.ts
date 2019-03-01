@@ -27,14 +27,20 @@ mongoose.set('useCreateIndex', true);
 export class LipthusDb extends (EventEmitter as new() => any) {
 
 	public name: string;
+	public params: DbParams;
 	public connected = false;
 	public schemas: {[s: string]: LipthusSchema} = {};
 	public models: {[s: string]: any} = {};
 	public mongoose = mongoose;
+	public _conn: any;
 
-	constructor(public params: DbParams, public site: Site) {
+	constructor(params: DbParams | string, public site: Site) {
 		super();
 
+		if (typeof params === "string")
+			params = {name: params};
+
+		this.params = params;
 		this.name = params.name;
 		(mongoose as any).dbs[this.name] = this;
 
@@ -132,6 +138,10 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 	db(dbname: string) {
 		return this.site.dbs[dbname];
+	}
+
+	useDb(dbName: string) {
+		return this._conn.useDb(dbName);
 	}
 
 	get dynobject() {
