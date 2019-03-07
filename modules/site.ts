@@ -139,8 +139,8 @@ export class Site extends EventEmitter {
 
 		if (process.env.NODE_ENV === 'production')
 			file += '.prod';
-		else if (process.env.NODE_ENV === 'stage')
-			file += '.stage';
+		else if (process.env.NODE_ENV === 'staging')
+			file += '.staging';
 
 		return require(file).environment;
 	}
