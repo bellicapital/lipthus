@@ -135,12 +135,12 @@ export class Site extends EventEmitter {
 			return ret.include ? require(this.dir + '/' + ret.include) : ret;
 		}
 
-		const prod = process.env.NODE_ENV === 'production';
-
 		let file = this.dir + '/environments/environment';
 
-		if (prod)
+		if (process.env.NODE_ENV === 'production')
 			file += '.prod';
+		else if (process.env.NODE_ENV === 'stage')
+			file += '.stage';
 
 		return require(file).environment;
 	}
