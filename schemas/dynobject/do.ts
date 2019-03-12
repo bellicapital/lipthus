@@ -170,7 +170,8 @@ class DoSchema extends LipthusSchema {
 					p.type = LipthusSchemaTypes.Fs;
 					p.multi = dv.multi || 0;
 					break;
-				case 'refid':
+				case 'refid':	// @deprecated -> use ref
+				case 'ref':
 					p.ref = dv.schema || dv.colname;
 					p.index = 1;
 
