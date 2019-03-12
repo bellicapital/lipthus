@@ -43,7 +43,6 @@ class DoSchema extends LipthusSchema {
 			});
 		};
 
-		this.post('save', postSave);
 		this.pre('remove', preRemove);
 		this.virtual('dbRef').get(function (this: any) {
 			return {
@@ -224,54 +223,6 @@ class DoSchema extends LipthusSchema {
 	}
 }
 
-
-// Check hierarchy
-const postSave = function (this: any, doc: any) {
-	// puede ser un subdocumento
-	if (!this.db)
-		return;
-
-	if (!doc.parents)
-		return;
-
-	doc.parents.forEach((dbref: any) => {
-		if (!dbref.db)
-			dbref.db = this.db.name;
-
-		const parentModel = this.db.models[dbref.namespace.replace('dynobjects.', '')];
-
-		if (!parentModel)
-			return;
-
-		this.db.eucaDb.deReference(dbref)
-			.then((parent: any) => {
-				if (!parent)
-					return;
-
-				parent = parentModel(parent);
-
-				let found = false;
-
-				parent.children.forEach((child: any) => {
-					if (child.oid + '' === doc._id + '') {
-						found = true;
-
-						return false;
-					}
-				});
-
-				if (!found) {
-					parent.children.push(doc.getDBRef());
-
-					Promise.resolve(parent.update({children: parent.children})).catch(err => {
-						throw err;
-					});
-				}
-			});
-	});
-
-	// TODO: check children
-};
 
 module.exports = DoSchema;
 
