@@ -142,6 +142,8 @@ export class Site extends EventEmitter {
 		else if (process.env.NODE_ENV === 'staging')
 			file += '.staging';
 
+		console.log('Loading environment', file);
+
 		return require(file).environment;
 	}
 
