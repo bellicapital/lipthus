@@ -228,6 +228,7 @@ export interface User extends Document {
 	type?: string;
 	email_notifications?: boolean;
 	formatEmailTo?: string;
+	data?: any;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
