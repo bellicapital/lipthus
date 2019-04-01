@@ -137,9 +137,8 @@ export class GridFS {
 		return new GridFSBucket(this.db, {bucketName: this.ns});
 	}
 
-	/** Deletes a file with the given id
-	 *
-	 * @param id
+	/**
+	 *  Deletes a file with the given id
 	 */
 	deleteOne(id: Types.ObjectId) {
 		return this.getBucket().delete(id);

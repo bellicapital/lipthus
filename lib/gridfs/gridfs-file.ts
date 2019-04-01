@@ -40,12 +40,10 @@ export class GridFSFile {
 	public loaded = false;
 	public error?: GridFSFileNotFoundError;
 	public duration?: number;
-	private bucket: GridFSBucket;
 	private processLog: any = {};
 	private fps?: number;
 
 	constructor(public _id: string | Types.ObjectId, public db: LipthusDb) {
-		this.bucket = new GridFSBucket(this.db._conn.db);
 	}
 
 	static get videoExt() {
@@ -53,7 +51,11 @@ export class GridFSFile {
 	}
 
 	get id(): Types.ObjectId {
-		return <Types.ObjectId> this._id;
+		return <Types.ObjectId>this._id;
+	}
+
+	getBucket(): GridFSBucket {
+		return this.db.fs.getBucket();
 	}
 
 	mTime(): Date {
@@ -166,7 +168,7 @@ export class GridFSFile {
 				if (this.metadata && this.metadata.duration)
 					res.set('X-Content-Duration', this.metadata.duration);
 
-				return this.bucket.openDownloadStream(this.id, {start: start, end: end})
+				return this.getBucket().openDownloadStream(this.id, {start: start, end: end})
 					.pipe(res);
 			})
 			.catch((err: LipthusError) => {
@@ -199,7 +201,7 @@ export class GridFSFile {
 		if (!this._id)
 			return Promise.reject(new Error('No id!'));
 
-		return this.bucket.find({_id: this._id}).toArray()
+		return this.getBucket().find({_id: this._id}).toArray()
 			.then((r: Array<any>) => {
 				if (!r.length)
 					return this.setNotFound();
@@ -284,7 +286,7 @@ export class GridFSFile {
 			if (fs.existsSync(file))
 				return ok(file);
 
-			this.bucket.openDownloadStream(this.id)
+			this.getBucket().openDownloadStream(this.id)
 				.pipe(fs.createWriteStream(file))
 				.on('error', ko)
 				.on('end', () => {
@@ -360,7 +362,7 @@ export class GridFSFile {
 									debug("Version " + k + " created. Inserting it into db...");
 
 									fs.createReadStream(newTmpFile)
-										.pipe(this.bucket.openUploadStream(filename, bulkOptions))
+										.pipe(this.getBucket().openUploadStream(filename, bulkOptions))
 										.on('error', ko)
 										.on('finish', (r2: any) => {
 											debug('version ' + k + ' written into db: ' + r2._id);
@@ -412,24 +414,36 @@ export class GridFSFile {
 	update(params: any): Promise<GridFSFile> {
 		return this.db.fsfiles.updateOne({_id: this._id}, {$set: params}).exec()
 			.then(() => Object.assign(this, params))
-			.then(() => this);
+			.then(() => this as GridFSFile);
 	}
 
 	/**
 	 * elimina un archivo
 	 */
 	unlink(): Promise<void> {
-		const _delete = promisify(this.bucket.delete);
+		if (this.folder === 'videos')
+			return this._unlink();
 
-		if (this.folder === 'videos') {
-			return this.load()
-				.then(() => Promise.all(Object.keys(this.versions || {}).map(k => (this.versions![k] as GridFSFile).unlink()))
-				// permite continuar si la versión no existe
-					.catch(err => console.error('Trying to remove a video version... ' + err.message)))
-				.then(() => _delete(this.id));
-		}
+		return this.load()
+			.then(() =>
+				Object.keys(this.versions || {}).reduce((p, k) => p.then(() =>
+						(this.versions![k] as GridFSFile)._unlink()
+						// continue if the version does not exists
+							.catch(err => console.error(err)))
+					, Promise.resolve())
+			)
+			.then(() => this._unlink());
+	}
 
-		return _delete(this.id);
+	private _unlink(): Promise<void> {
+		return new Promise((ok, ko) => {
+			this.getBucket().delete(this.id, (err) => {
+				if (err)
+					ko(err);
+				else
+					ok();
+			});
+		});
 	}
 
 	// alias

@@ -240,7 +240,7 @@ export interface User extends Document {
 	subscribe2Item(ref: any): Promise<any>;
 
 	// noinspection JSUnusedLocalSymbols
-	getName(usereal?: boolean): string;
+	getName(useReal?: boolean): string;
 
 	// noinspection JSUnusedLocalSymbols
 	baseInfo(includeEmail?: boolean): any;

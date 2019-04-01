@@ -8,7 +8,7 @@ export class FsList {
 	constructor(val: any, type: string, collection: string, itemId: Types.ObjectId, path: string, dbname: string) {
 		Object.each(val, (i, v) => {
 			if (v.constructor.name === 'ObjectID') {
-				(this as any)[i] = new GridFSFile(v, (mongoose as any).dbs[dbname]);
+				(this as any)[i] = new GridFSFile(v, (mongoose as any).dbs[dbname].lipthusDb);
 				
 				if (type === 'video')
 					(this as any)[i].folder = 'videos';
