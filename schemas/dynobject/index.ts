@@ -116,7 +116,7 @@ module.exports = function dynobject() {
 			
 			return ret;
 		},
-		getNodeTree: function (req: any, filter: Array<string> | string, levels = 1, incOrphans = true) {
+		getNodeTree: function (req: any, filter: Array<string> | string, levels: number = 1, incOrphans: boolean = true) {
 			if (!filter)
 				filter = [];
 			else if (typeof filter === 'string')

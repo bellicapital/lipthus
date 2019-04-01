@@ -43,7 +43,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			.then(() => files);
 	};
 
-	schema.methods.getValues = function (this: any, req: LipthusRequest, virtuals: boolean, forceTranslate = true) {
+	schema.methods.getValues = function (this: any, req: LipthusRequest, virtuals: boolean, forceTranslate: boolean = true) {
 		const ret = new DocValues();
 		const promises: Array<Promise<any>> = [];
 
@@ -96,7 +96,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		return ret;
 	};
 
-	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate = true) {
+	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate: boolean = true) {
 		const val = this.get(k);
 
 		if (val === undefined)

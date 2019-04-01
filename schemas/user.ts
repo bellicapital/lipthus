@@ -72,7 +72,7 @@ export function getSchema() {
 	});
 
 	s.methods = {
-		baseInfo: function (this: any, includeEmail = false) {
+		baseInfo: function (this: any, includeEmail: boolean = false) {
 			const ret: any = {
 				id: this.get('_id').toString(),
 				uname: this.getName(),
@@ -98,7 +98,7 @@ export function getSchema() {
 		isAdmin: function (this: any) {
 			return this.level > 1;
 		},
-		getImage: function (this: any, type = 'normal', height?: number | string) {
+		getImage: function (this: any, type: any = 'normal', height?: number | string) {
 			let q = '?';
 
 			if (height)

@@ -421,7 +421,7 @@ export class GridFSFile {
 	 * elimina un archivo
 	 */
 	unlink(): Promise<void> {
-		if (this.folder === 'videos')
+		if (this.folder !== 'videos')
 			return this._unlink();
 
 		return this.load()
