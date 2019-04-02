@@ -1,6 +1,7 @@
 import {LipthusSchema} from "../lib";
 import {LipthusRequest} from "../index";
 import {Document, Model} from "mongoose";
+import {GoogleOauth2Data} from "../modules/auth";
 
 const md5 = require('md5');
 const ShoppingCart = require('../modules/shopping/shoppingcart');
@@ -145,16 +146,17 @@ export function getSchema() {
 		htmlLink: function (this: any) {
 			return '<a href="' + this.getLink() + '">' + this.uname + '</a>';
 		},
-		fromOAuth2: function (this: any, p: any) {
+		fromOAuth2: function (this: any, p: GoogleOauth2Data) {
+
 			const obj = {
-				name: p.displayName || this.uname,
-				given_name: p.name.givenName,
-				family_name: p.name.familyName,
-				picture: p.image.url,
-				oauth_user_id: p.id,
-				language: p.language,
+				name: p.name || this.uname,
+				given_name: p.given_name,
+				family_name: p.family_name,
+				picture: p.picture,
+				oauth_user_id: p.sub,
+				language: p.locale,
 				gender: p.gender,
-				url: p.url,
+				url: p.profile,
 				last_login: new Date(),
 				mailok: true,
 				oauth_data: {}
@@ -162,14 +164,15 @@ export function getSchema() {
 
 			const data = Object.assign({}, p);
 
-			delete data.displayName;
+			delete data.sub;
 			delete data.name;
+			delete data.given_name;
+			delete data.family_name;
 			delete data.email;
-			delete data.image;
-			delete data.id;
-			delete data.language;
+			delete data.picture;
+			delete data.locale;
 			delete data.gender;
-			delete data.url;
+			delete data.profile;
 
 			obj.oauth_data = data;
 

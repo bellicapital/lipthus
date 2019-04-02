@@ -69,7 +69,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 				(accessToken: string, refreshToken: string, profile: any, done: any) => {
 					const data = profile._json;
 
-					data.token = {value: accessToken};
+					data.accessToken = accessToken;
 
 					done(null, data);
 				}
@@ -91,10 +91,10 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					callbackURL: site.mainUrl() + '/oauth2cb'
 				},
 				(accessToken: string, refreshToken: string, profile: any, done: any) => {
-					const data = profile._json;
+					// console.log(profile);
+					const data: GoogleOauth2Data = profile._json;
 
-					data.token = {value: accessToken};
-					data.email = profile.email;
+					data.accessToken = accessToken;
 
 					site.userCollection.fromOAuth2(data)
 						.then(user => done(null, user))
@@ -112,10 +112,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					next();
 				},
 				passport.authenticate('google', {
-					scope: [
-						'https://www.googleapis.com/auth/plus.login',
-						'https://www.googleapis.com/auth/plus.profile.emails.read'
-					]
+					scope: ['openid', 'email', 'profile']
 				}));
 
 			// GET /auth/google/callback
@@ -180,3 +177,17 @@ export default (site: Site): any => {
 		next();
 	};
 };
+
+export interface GoogleOauth2Data {
+	sub: string;
+	name: string;
+	given_name: string;
+	family_name: string;
+	profile: string; // url
+	picture: string;	// url
+	email: string;
+	email_verified: boolean;
+	gender: string;
+	locale: string;
+	accessToken: string;
+}
