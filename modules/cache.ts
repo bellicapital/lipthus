@@ -8,8 +8,6 @@ class Cache {
 	public uris: {[s: string]: string};
 
 	constructor(s: any) {
-		Object.assign(this, s);
-
 		this.varyDevice = s.varyDevice;
 		this.uris = s.uris;
 	}

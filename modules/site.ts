@@ -35,6 +35,7 @@ import facebook from "./facebook";
 import Ng from './ng2';
 import {GPageSpeedMiddleWare} from "./g-page-speed";
 import {LipthusDevPanel} from "./cmjspanel";
+import cache from "./cache";
 
 const pExists = promisify(exists_);
 const debug = Debug('site:site');
@@ -504,8 +505,8 @@ export class Site extends EventEmitter {
 				facebook(app);
 				app.use(auth(this));
 
-				if ('production' === app.get('env') && this.environment.cache)
-					app.use(require('./cache')(this.environment.cache));
+				if (this.environment.cache)
+					app.use(cache(this.environment.cache));
 
 				app.use((req: LipthusRequest, res: any, next: NextFunction) => {
 					res.timer.end('cmjs');
