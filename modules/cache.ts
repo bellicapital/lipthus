@@ -112,27 +112,28 @@ export default (cache: any) => {
 					cached.remove();
 
 				res.cached = cached;
+				const expired = cached && cached.expired;
 
-				// capturar los envíos
-				res.___send = res.send;
+				// send capture
+				if (!cached || expired) {
+					res.on('render', (err: Error, body: string) => {
+						if (!err && body && [200, 304].includes(res.statusCode)) {
+							if (!cached)
+								res.cached = new req.db.cacheResponse(query);
 
-				res.send = (body: string) => {
-					if (body && [200, 304].indexOf(res.statusCode) !== -1) {
-						if (!cached)
-							res.cached = new req.db.cacheResponse(query);
+							debug(!cached ? 'Storing a new cache response from %s' : 'Updating cache response for %s', res.cached.uri);
 
-						Cache.setResponse(res, body, expireMinutes);
-					}
+							Cache.setResponse(res, body, expireMinutes);
+						}
+					});
+				}
 
-					if (!res.headersSent)
-						res.___send(body);
-				};
-
-				if (!cached)
+				if (!cached || req.query._c)
 					return next();
 
-				if (req.query._c)
-					return next();
+				const status = expired ? 'Expired' : ((res.cached.expires.getTime() - Date.now()) / 60000).toFixed(2) + ' minutes to clear';
+
+				debug('Sending cached page %s. ' + status, res.cached.uri);
 
 				res.set({
 					'Last-Modified': res.cached.modified.toUTCString(),
@@ -143,11 +144,10 @@ export default (cache: any) => {
 				if (res.cached.contentType)
 					res.set('Content-Type', res.cached.contentType);
 
-				res.___send(res.cached.MongoBinData.toString());
+				res.send(res.cached.MongoBinData.toString());
 
-				debug(((res.cached.expires.getTime() - Date.now()) / 60000).toFixed(2) + ' minutos para limpiar cache de %s', res.cached.uri);
-
-				if (res.cached.expires < new Date)
+				// render again. It will be visible on the next request
+				if (expired)
 					next();
 			})
 			.catch(next);
