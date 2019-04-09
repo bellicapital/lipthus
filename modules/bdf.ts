@@ -140,7 +140,7 @@ export class BinDataFile {
 			return;
 
 		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], r[2]);
+		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
 		const obj = {
 			contentType: r[1],
 			size: buffer.length,

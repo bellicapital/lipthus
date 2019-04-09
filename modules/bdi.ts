@@ -314,7 +314,7 @@ export class BinDataImage extends BinDataFile {
 			return Promise.reject(new Error('No valid data'));
 
 		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], r[2]);
+		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
 		const date = params.lastModified || new Date();
 		const obj = {
 			contentType: r[1],
