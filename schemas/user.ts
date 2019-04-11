@@ -76,8 +76,8 @@ export function getSchema() {
 		baseInfo: function (this: any, includeEmail: boolean = false) {
 			const ret: any = {
 				id: this.get('_id').toString(),
-				uname: this.getName(),
-				name: this.getName(true),
+				uname: this.uname,
+				name: this.name,
 				isAdmin: this.isAdmin(),
 				level: this.level,
 				type: this.get('type') || undefined,
@@ -237,7 +237,7 @@ export interface User extends Document {
 	fromOAuth2(params: any): Promise<any>;
 
 	// noinspection JSUnusedLocalSymbols
-	getImage(width: number, height?: number): string;
+	getImage(typeOrWidth: string | number, height?: number): string;
 
 	// noinspection JSUnusedLocalSymbols
 	subscribe2Item(ref: any): Promise<any>;
