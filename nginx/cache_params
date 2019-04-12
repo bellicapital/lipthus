@@ -1,0 +1,6 @@
+proxy_cache bc_cache;
+proxy_cache_revalidate on;
+proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504;
+proxy_cache_background_update on;
+proxy_cache_lock on;
+add_header X-Proxy-Cache $upstream_cache_status;
