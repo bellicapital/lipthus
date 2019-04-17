@@ -179,15 +179,22 @@ export default (site: Site): any => {
 };
 
 export interface GoogleOauth2Data {
-	sub: string;
-	name: string;
-	given_name: string;
-	family_name: string;
-	profile: string; // url
-	picture: string;	// url
-	email: string;
-	email_verified: boolean;
-	gender: string;
-	locale: string;
-	accessToken: string;
+	kind?: string;
+	etag?: string;
+	sub?: string;
+	id?: string;
+	name?: string;
+	displayName?: string;
+	given_name?: string;
+	family_name?: string;
+	profile?: string; // url
+	picture?: string;	// url
+	image?: {url: string, isDefault: boolean};
+	email?: string;
+	emails?: Array<{value: string; type: string}>;
+	email_verified?: boolean;
+	gender?: string;
+	locale?: string;
+	language?: string;
+	accessToken?: string;
 }

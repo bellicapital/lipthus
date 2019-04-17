@@ -147,36 +147,20 @@ export function getSchema() {
 			return '<a href="' + this.getLink() + '">' + this.uname + '</a>';
 		},
 		fromOAuth2: function (this: any, p: GoogleOauth2Data) {
-
-			const obj = {
-				name: p.name || this.uname,
+			return this.set({
+				name: p.name || p.displayName || this.uname,
 				given_name: p.given_name,
 				family_name: p.family_name,
-				picture: p.picture,
-				oauth_user_id: p.sub,
-				language: p.locale,
+				picture: p.picture || p.image && p.image.url,
+				oauth_user_id: p.sub || p.id,
+				language: p.locale || p.language,
 				gender: p.gender,
 				url: p.profile,
 				last_login: new Date(),
 				mailok: true,
-				oauth_data: {}
-			};
-
-			const data = Object.assign({}, p);
-
-			delete data.sub;
-			delete data.name;
-			delete data.given_name;
-			delete data.family_name;
-			delete data.email;
-			delete data.picture;
-			delete data.locale;
-			delete data.gender;
-			delete data.profile;
-
-			obj.oauth_data = data;
-
-			return this.set(obj).save();
+				oauth_data: p
+			})
+				.save();
 		}
 	};
 
@@ -194,13 +178,15 @@ export function getSchema() {
 			});
 	};
 
-	s.statics.fromOAuth2 = function (this: any, params: any) {
-		return this.findOne({email: params.email})
+	s.statics.fromOAuth2 = function (this: any, params: GoogleOauth2Data) {
+		const email = params.email || params.emails && params.emails[0].value;
+
+		return this.findOne({email: email})
 			.then((u: User) => {
 				if (!u)
 					u = new this({
-						email: params.email,
-						uname: params.email,
+						email: email,
+						uname: email,
 						level: 1
 					});
 
@@ -208,7 +194,7 @@ export function getSchema() {
 			});
 	};
 
-	s.virtual('formatEmailTo').get(function(this: User) {
+	s.virtual('formatEmailTo').get(function (this: User) {
 		return this.getName(true) + '<' + this.get('email') + '>';
 	});
 
