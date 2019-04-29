@@ -72,7 +72,9 @@ export class NationalitiesStatics {
 
 		sort['title.' + lang] = 1;
 
+		// noinspection TypeScriptValidateJSTypes
 		return (this as any).find()
+			.collation( { locale: lang } )
 			.sort(sort)
 			.then((r: Array<any>) => r.map(t => t.title
 				.getLangOrTranslate(lang)
@@ -87,7 +89,7 @@ export class NationalitiesStatics {
 
 		update.$set["title." + lang] = value;
 
-		return (this as any).updateNative({code: code}, update, {upsert: true})
+		return (this as any).updateOne({code: code}, update, {upsert: true})
 			.then((r: any) => {
 				if (!r.result || !(r.result.nModified || r.result.upserted))
 					return false;

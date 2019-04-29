@@ -1,5 +1,5 @@
 import {LipthusSchema} from "../lib";
-import {LipthusRequest} from "../index";
+import {LipthusRequest, Site} from "../index";
 import {Document, Model} from "mongoose";
 import {GoogleOauth2Data} from "../modules/auth";
 
@@ -8,7 +8,7 @@ const ShoppingCart = require('../modules/shopping/shoppingcart');
 
 export const name = 'user';
 
-export function getSchema() {
+export function getSchema(site: Site) {
 	const s = new LipthusSchema({
 		uname: {type: String, size: 20, maxlength: 25, index: {unique: true}},
 		name: String,
@@ -183,12 +183,16 @@ export function getSchema() {
 
 		return this.findOne({email: email})
 			.then((u: User) => {
-				if (!u)
+				if (!u) {
+					if (!site.config.allow_register)
+						return;
+
 					u = new this({
 						email: email,
 						uname: email,
 						level: 1
 					});
+				}
 
 				return u.fromOAuth2(params);
 			});

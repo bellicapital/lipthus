@@ -13,6 +13,7 @@ export class Config {
 	[key: string]: any;
 
 	adminmail?: string;
+	allow_register?: boolean;
 	external_protocol = 'https';
 	fb_app_id?: string;
 	googleApiKey?: string;

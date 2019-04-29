@@ -120,12 +120,14 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   request.  If authentication fails, the user will be redirected back to the
 			//   login page.  Otherwise, the primary route function  will be called,
 			//   which, in this example, will redirect the user to the home page.
-			app.get('/oauth2cb', clearCookiesMiddleware as any, (req, res, next) => {
-				passport.authenticate('google', {
-					failureRedirect: '/login',
-					successRedirect: (req as any).session.redirect_to || '/'
-				})(req, res, next);
-			});
+			app.get('/oauth2cb', (req, res, next) =>
+				(req as LipthusRequest).ml.load('ecms-user')
+					.then((LC) => passport.authenticate('google', {
+							failureRedirect: '/login/?msg=' + LC._US_REGISTERNG,
+							successRedirect: (req as any).session.redirect_to || '/'
+						})(req, res, next)
+					)
+			);
 		}
 	};
 
@@ -144,12 +146,6 @@ const getUser = (req: LipthusRequest) => {
 	console.warn('Unknown user id format:', req.user);
 
 	return Promise.resolve();
-};
-
-const clearCookiesMiddleware = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-	Object.keys(req.cookies).filter(k => k !== 'clubmanager.sid').forEach((k => res.clearCookie(k)));
-
-	next();
 };
 
 export default (site: Site): any => {
@@ -189,9 +185,9 @@ export interface GoogleOauth2Data {
 	family_name?: string;
 	profile?: string; // url
 	picture?: string;	// url
-	image?: {url: string, isDefault: boolean};
+	image?: { url: string, isDefault: boolean };
 	email?: string;
-	emails?: Array<{value: string; type: string}>;
+	emails?: Array<{ value: string; type: string }>;
 	email_verified?: boolean;
 	gender?: string;
 	locale?: string;
