@@ -77,7 +77,7 @@ export function getSchema(site: Site) {
 			const ret: any = {
 				id: this.get('_id').toString(),
 				uname: this.uname,
-				name: this.name,
+				name: this.name || '',
 				isAdmin: this.isAdmin(),
 				level: this.level,
 				type: this.get('type') || undefined,
