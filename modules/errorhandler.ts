@@ -63,10 +63,12 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 		console.error("Exception at " + req.originalUrl);
 	});
 
-	res.render(getView(err.status.toString(), req), {
-		message: err.message, // @deprecated
-		error: err
-	});
+	if (!res.headersSent) {
+		res.render(getView(err.status.toString(), req), {
+			message: err.message, // @deprecated
+			error: err
+		});
+	}
 }
 
 interface StatusError extends Error {

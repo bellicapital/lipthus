@@ -163,7 +163,7 @@ export class Notifier {
 			else if (opt.html)
 				options.html = opt.html;
 
-			return this.site.sendMail(options, cb);
+			return this.site.sendMail(options);
 		}
 	}
 

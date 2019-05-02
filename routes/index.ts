@@ -59,6 +59,8 @@ module.exports = function(app: LipthusApplication) {
 	require('./admin')(app, router);
 	require('./config')(app);
 
+	router.all('/_test/:method', require('./test'));
+
 	router.all('/ajax', AjaxMiddleware as any);
 	router.post('/upload', multipart, upload);
 	router.post('/form/:schema/:itemid/:cmd', form as any);
