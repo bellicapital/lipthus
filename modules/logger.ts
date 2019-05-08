@@ -129,6 +129,10 @@ export class LipthusLogger {
 	}
 	
 	static init(app: LipthusApplication): void {
+		app.db.collection('logger.updates')
+			.createIndex({itemid: 1})
+			.catch(console.warn.bind(console));
+
 		app.use(LipthusLogger.middleware);
 		app.use(LipthusLogger.botMiddleware);
 	}
