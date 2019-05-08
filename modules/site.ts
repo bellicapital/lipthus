@@ -153,7 +153,7 @@ export class Site extends EventEmitter {
 			.on('error', this.emit.bind(this, 'error'))
 			.on('ready', (db: LipthusDb) => {
 				db.addLipthusSchemas()
-					.then(() => this.db.addSchemasDir(this.dir + '/schemas'))
+					.then(() => existsSync(this.dir + '/schemas') && this.db.addSchemasDir(this.dir + '/schemas'))
 					.then(() => this.init())
 					.catch(this.emit.bind(this, 'error'));
 			})

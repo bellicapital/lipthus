@@ -92,6 +92,7 @@ export class AjaxGlobalMethods {
 	}
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default AjaxGlobalMethods;
 
 export interface LoginInfo {
@@ -101,6 +102,6 @@ export interface LoginInfo {
 	registerMethods: {
 		site: boolean;
 		google: boolean;
-		fecebook: boolean;
+		facebook: boolean;
 	};
 }

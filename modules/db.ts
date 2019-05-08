@@ -157,7 +157,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	}
 
 	get user(): UserModel {
-		return this.model('uset');
+		return this.model('user');
 	}
 
 	get settings(): SettingModel {
