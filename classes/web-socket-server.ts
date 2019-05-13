@@ -30,6 +30,7 @@ export class LipthusWebSocketServer extends WebSocketServer {
 		});
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	broadcast (data: any, path: string) {
 		this.getClients(path).forEach((client: any) =>
 			client.send(JSON.stringify(data), (err: Error) => err && console.error(err))

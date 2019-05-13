@@ -1,10 +1,12 @@
 import {LipthusApplication} from "../index";
 import * as fs from "fs";
 import {LipthusWebSocketServer} from "../classes/web-socket-server";
+import {Server as SServer} from "https";
+import {Server as Server} from "https";
 
 export default (app: LipthusApplication) => {
 	const secure = app.site.protocol === 'https';
-	let server: any;
+	let server: Server | SServer;
 
 	if (secure) {
 		let ssl = app.get('conf').ssl;

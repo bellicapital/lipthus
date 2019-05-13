@@ -10,6 +10,8 @@ import {LipthusLogger} from "./modules/logger";
 import {Multilang} from "./modules/multilang";
 import {HtmlPage} from "./modules/htmlpage";
 import {LipthusWebSocketServer} from "./classes/web-socket-server";
+import {Server as SServer} from "https";
+import {Server as Server} from "https";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -94,6 +96,7 @@ export interface LipthusApplication extends express.Application {
 	db: LipthusDb;
 	site: Site;
 	wss: LipthusWebSocketServer;
+	server: SServer | Server;
 	subscriptor: any;
 
 	getModule: (name: string) => any;
