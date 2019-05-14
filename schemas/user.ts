@@ -1,5 +1,5 @@
 import {LipthusSchema} from "../lib";
-import {LipthusRequest} from "../index";
+import {LipthusRequest, Site} from "../index";
 import {Document, Model} from "mongoose";
 
 const md5 = require('md5');
@@ -7,7 +7,7 @@ const ShoppingCart = require('../modules/shopping/shoppingcart');
 
 export const name = 'user';
 
-export function getSchema() {
+export function getSchema(site: Site) {
 	const s = new LipthusSchema({
 		uname: {type: String, size: 20, maxlength: 25, index: {unique: true}},
 		name: String,
@@ -71,7 +71,7 @@ export function getSchema() {
 	});
 
 	s.methods = {
-		baseInfo: function (this: any, includeEmail = false) {
+		baseInfo: function (this: any, includeEmail: boolean = false) {
 			const ret: any = {
 				'id': this.id,
 				'uname': this.getName(),
@@ -88,8 +88,8 @@ export function getSchema() {
 
 			return ret;
 		},
-		getName: function (this: any, usereal?: boolean) {
-			return (usereal ? this.name || this.uname : this.uname || this.name) || '';
+		getName: function (this: any, useReal?: boolean) {
+			return (useReal ? this.name || this.uname : this.uname || this.name) || '';
 		},
 		/**
 		 * @returns {boolean}
@@ -97,7 +97,7 @@ export function getSchema() {
 		isAdmin: function (this: any) {
 			return this.level > 1;
 		},
-		getImage: function (this: any, type = 'normal', height?: number | string) {
+		getImage: function (this: any, type: any = 'normal', height?: number | string) {
 			let q = '?';
 
 			if (height)
@@ -108,10 +108,13 @@ export function getSchema() {
 			if (this.facebook && this.facebook.username)
 				return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
 
-			if (this.picture)
-				return this.picture;
+			if (this.get('picture'))
+				return this.get('picture');
 
-			return this.image ? this.image + q : undefined;
+			if (this.get('image'))
+				return this.get('image') + q;
+
+			return 'http://www.gravatar.com/avatar/' + md5(this.email) + '?s=90';
 		},
 		subscribe2Item: function (this: any, ref: any) {
 			if (ref.toJSON)
@@ -188,18 +191,28 @@ export function getSchema() {
 	};
 
 	s.statics.fromOAuth2 = function (this: any, params: any) {
-		return this.findOne({email: params.email})
+		const email = params.email || params.emails && params.emails[0].value;
+
+		return this.findOne({email: email})
 			.then((u: User) => {
-				if (!u)
+				if (!u) {
+					if (!site.config.allow_register)
+						return;
+
 					u = new this({
-						email: params.email,
-						uname: params.email,
+						email: email,
+						uname: email,
 						level: 1
 					});
+				}
 
 				return u.fromOAuth2(params);
 			});
 	};
+
+	s.virtual('formatEmailTo').get(function (this: User) {
+		return this.getName(true) + '<' + this.get('email') + '>';
+	});
 
 	return s;
 }
@@ -212,11 +225,15 @@ export interface User extends Document {
 	level: number;
 	cart: any;
 	email: string;
+	language: string;
 	phone: Array<string>;
 	address: any;
 	devices: Array<any>;
 	subscriptions: any;
 	type?: string;
+	email_notifications?: boolean;
+	formatEmailTo?: string;
+	data?: any;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
@@ -228,12 +245,17 @@ export interface User extends Document {
 	subscribe2Item(ref: any): Promise<any>;
 
 	// noinspection JSUnusedLocalSymbols
-	getName(usereal?: boolean): string;
+	getName(useReal?: boolean): string;
 
 	// noinspection JSUnusedLocalSymbols
 	baseInfo(includeEmail?: boolean): any;
 
 	isAdmin(): boolean;
+
+	getValues(req: LipthusRequest): Promise<any>;
+
+	// set(key: string, value: any, type: any, options?: any): void;
+	save(): Promise<any>;
 }
 
 export interface UserModel extends Model<User> {
@@ -246,5 +268,4 @@ export interface UserModel extends Model<User> {
 
 	// noinspection JSUnusedLocalSymbols
 	findAndGetValues4Show(params: any): Promise<any>;
-
 }
