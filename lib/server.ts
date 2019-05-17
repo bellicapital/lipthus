@@ -4,9 +4,6 @@ import {KeyString} from "../interfaces/global.interface";
 const exec = require("child_process").exec;
 const debug = require('debug')('site:server');
 
-// 		if(process.platform === 'darwin')
-// 			console.warn("  \u001b[33m warn  -\u001b[0m No se ha implementado la subida de videos en OSX");
-
 const commands = [
 	{
 		k: "mediainfo",

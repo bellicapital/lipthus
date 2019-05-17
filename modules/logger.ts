@@ -20,13 +20,16 @@ export class LipthusLogger {
 		return this.db.collection('logger.' + type);
 	}
 	
-	log(type: string, extra?: { [s: string]: any }): Promise<InsertOneWriteOpResult> {
+	log(collection: string | Collection, extra?: { [s: string]: any }): Promise<InsertOneWriteOpResult> {
 		const obj = this.baseObj();
 		
 		if (extra)
 			Object.assign(obj, extra);
+
+		if (typeof collection === 'string')
+			collection = this.collection(collection);
 		
-		return this.collection(type)
+		return collection
 			.insertOne(obj)
 			.then(() => obj);
 	}

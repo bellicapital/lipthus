@@ -5,25 +5,25 @@ import {GridFSFile} from "../lib";
 import {Types} from "mongoose";
 
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
-	let colname = req.params.col.replace('dynobjects.', '');
-	let collection = req.db[colname];
+	let colName = req.params.col.replace('dynobjects.', '');
+	let collection = req.db[colName];
 
 	if (!collection) {
-		if (colname.indexOf('.') > 0) {
-			const m = colname.match(/(^[^.]+)\.(.+)$/);
-			const dbname = m[1];
+		if (colName.indexOf('.') > 0) {
+			const m = colName.split('.', 2);
+			const dbName = m[0];
 
-			colname = m[2];
+			colName = m[1];
 
-			collection = req.site.dbs[dbname][colname];
+			collection = req.site.dbs[dbName][colName];
 		} else {
 			const dbs = req.site.dbs;
 
 			Object.values(dbs).some(db => {
-				if (db[colname])
-					collection = db[colname];
+				if (db[colName])
+					collection = db[colName];
 
-				return !!db[colname];
+				return !!db[colName];
 			});
 		}
 	}
@@ -39,13 +39,13 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 
 			if (typeof obj === 'string')
 				obj = BinDataFile.fromString(obj, {
-					collection: colname,
+					collection: colName,
 					id: new Types.ObjectId(req.params.id),
 					field: req.params.field
 				});
 			else { // noinspection SuspiciousInstanceOfGuard
 				if (!(obj instanceof BinDataFile) && !(obj instanceof GridFSFile))
-								obj = BinDataFile.fromMongo(obj);
+					obj = BinDataFile.fromMongo(obj);
 			}
 
 			if (!obj)
@@ -105,9 +105,9 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			if (wm && (!opt.wm.type || (opt.nwm && opt.nwm === obj.md5)))
 				opt.wm = false;
 			else {
-				const minsize = req.site.config.wm_minsize.split('x');
+				const minSize = req.site.config.wm_minsize.split('x');
 
-				if (minsize[0] > opt.width || minsize[1] > opt.height)
+				if (minSize[0] > opt.width || minSize[1] > opt.height)
 					opt.wm = false;
 			}
 
