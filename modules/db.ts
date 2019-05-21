@@ -15,6 +15,7 @@ import {UserModel} from "../schemas/user";
 import {SettingModel} from "../schemas/settings";
 import {NationalitiesModel} from "../schemas/nationalities";
 import {DbParams} from "../interfaces/global.interface";
+import {NotificationModel} from "../schemas/notification";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -176,6 +177,10 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.model('nationalities');
 	}
 
+	get notification(): NotificationModel {
+		return this.model('notification');
+	}
+
 	model(name: string) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
@@ -265,6 +270,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 								getPlugin: file
 							};
 						}
+
+						if (!file.name)
+							file.name = basename;
 
 						this.addPlugin(file);
 					});
