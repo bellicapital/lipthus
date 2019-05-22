@@ -1,11 +1,8 @@
 import {LipthusSchema, LipthusSchemaTypes} from "../lib";
 import {LipthusRequest} from "../index";
-import {KeyAny, KeyString} from "../interfaces/global.interface";
+import {KeyString} from "../interfaces/global.interface";
 import {Document, Model} from "mongoose";
 import {MultilangText} from "../modules/schema-types/mltext";
-
-let cache: KeyAny = {};
-const lastUpdates: KeyAny = {};
 
 export const name = 'nationalities';
 
@@ -40,30 +37,10 @@ export class NationalitiesMethods {
 
 export class NationalitiesStatics {
 
-	getList(req: LipthusRequest, lang?: string, forceReload?: boolean) {
+	getList(req: LipthusRequest, lang?: string) {
 		const _lang = lang || req.ml.lang;
 
-		// 10 min cache per language
-		if (lastUpdates[_lang] && (lastUpdates[_lang] < (Date.now() - 600000)))
-			delete cache[_lang];
-
-		const end = () => {
-			if (_lang === req.ml.lang && !req.nationalities)
-				req.nationalities = cache[_lang];
-
-			return cache[_lang];
-		};
-
-		if (!forceReload && cache[_lang])
-			return Promise.resolve(end());
-
-		return this.getLangList(_lang)
-			.then((list: any) => {
-				cache[_lang] = list;
-				lastUpdates[_lang] = Date.now();
-
-				return end();
-			});
+		return this.getLangList(_lang);
 	}
 
 	getLangList(lang: string) {
@@ -84,19 +61,13 @@ export class NationalitiesStatics {
 			.then(() => list);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	setVal(code: string, lang: string, value: string) {
 		const update = {$set: <any>{}};
 
 		update.$set["title." + lang] = value;
 
 		return (this as any).updateOne({code: code}, update, {upsert: true})
-			.then((r: any) => {
-				if (!r.result || !(r.result.nModified || r.result.upserted))
-					return false;
-
-				cache = {};
-
-				return true;
-			});
+			.then((r: any) => !(!r.result || !(r.result.nModified || r.result.upserted)));
 	}
 }
