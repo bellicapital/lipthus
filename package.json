@@ -1,6 +1,6 @@
 {
 	"name": "lipthus",
-	"version": "2.1.0-rc2",
+	"version": "2.1.0",
 	"private": true,
 	"scripts": {
 		"start": "ts-node index",

@@ -78,7 +78,6 @@ export function getSchema(site: Site) {
 				id: this.get('_id').toString(),
 				uname: this.uname,
 				name: this.name || '',
-				isAdmin: this.isAdmin(),
 				level: this.level,
 				type: this.get('type') || undefined,
 				picture: this.getImage('square'),
