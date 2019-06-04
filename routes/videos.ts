@@ -22,16 +22,16 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		}
 	}
 
-	const m = id.match(/(^[^.]+)\.(.+)$/);
-	const dbname = m && m[1] || req.site.db.name;
+	const m = id.split('.');
+	const dbName = m[1] && m[0] || req.site.db.name;
 
-	if (m)
-		id = m[2];
+	if (m[1])
+		id = m[1];
 
-	if (!req.site.dbs[dbname] || !Types.ObjectId.isValid(id))
+	if (!req.site.dbs[dbName] || !Types.ObjectId.isValid(id))
 		return next();
 	
-	req.site.dbs[dbname].fs.get(id).load()
+	req.site.dbs[dbName].fs.get(id).load()
 		.then((file: GridFSVideo) => {
 			if (!file)
 				return next();
@@ -40,7 +40,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 				throw file.error.status || file.error;
 
 			if (!ext)
-				return res.redirect('/videos/' + (dbname !== req.site.db.name ? dbname + '.' : '') + id + '/' + file.filename);
+				return res.redirect('/videos/' + (dbName !== req.site.db.name ? dbName + '.' : '') + id + '/' + file.filename);
 
 			let opt;
 

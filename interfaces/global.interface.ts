@@ -47,7 +47,6 @@ export interface EnvironmentParams {
 	port?: number;
 	socket?: string;
 	mail?: any;
-	cache?: any;
 	language?: string;
 	urls?: KeyString;	// base url 4 language code
 	translator?: {
@@ -61,6 +60,7 @@ export interface EnvironmentParams {
 		privateKey: string
 	};
 	authDb?: string;
+	customData?: any;
 }
 
 export interface ColRef {
