@@ -3,6 +3,10 @@ import {LipthusRequest} from "../index";
 const Facebook = require('facebook-node-sdk');
 
 class FB extends Facebook {
+
+	appId: string;
+	secret: string;
+
 	constructor(appId: string, secret: string) {
 		super({});
 		this.appId = appId;

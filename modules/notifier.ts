@@ -214,7 +214,7 @@ export class Notifier {
 				// to: ids.length === 1 ? ids[0] : undefined,
 				// registration_ids: ids,//.length > 1 ? ids : undefined,
 				collapse_key: this.site.key,
-				// dry_run: process.env.NODE_ENV !== 'production',
+				dry_run: process.env.NODE_ENV !== 'production',
 				// data: noti,
 				notification: {
 					title: opt.subject,

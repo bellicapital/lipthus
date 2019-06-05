@@ -17,4 +17,9 @@ export class GridFSVideo extends GridFSFile {
 
 		return ret;
 	}
+
+	load(): Promise<GridFSVideo> {
+		return super.load()
+			.then((file: GridFSFile) => <GridFSVideo>file);
+	}
 }

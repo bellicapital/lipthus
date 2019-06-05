@@ -188,10 +188,6 @@ export class GridFSFile {
 		return ret;
 	}
 
-	/**
-	 *
-	 * @returns {Promise.any}
-	 */
 	load(): Promise<GridFSFile> {
 		if (this.loaded)
 			return Promise.resolve(this);

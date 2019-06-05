@@ -1,4 +1,4 @@
-import {ConfigVarInstance} from "./configvar";
+import {ConfigVar, ConfigVarInstance} from "./configvar";
 import {Site} from "../site";
 import {BinDataImage} from "../bdi";
 import {MultilangText} from "../schema-types/mltext";
@@ -12,6 +12,8 @@ const debug = Debug('site:config');
 export class Config {
 	[key: string]: any;
 
+	groups: {[key: string]: { title: string; configs: {[configKey: string]: ConfigVar}; }} = {};
+	configs: {[configKey: string]: ConfigVar} = {};
 	adminmail?: string;
 	allow_register?: boolean;
 	external_protocol = 'https';
@@ -36,8 +38,6 @@ export class Config {
 	auto_hreflang?: boolean;
 
 	constructor(public site: Site) {
-		this.groups = {};
-		this.configs = {};
 	}
 
 	load() {

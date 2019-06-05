@@ -3,6 +3,7 @@ import * as fs from "fs";
 import {Db, GridFSBucket} from "mongodb";
 import {GridFSFile} from "./gridfs-file";
 import * as debug0 from "debug";
+import {GridFSVideo} from "./gridfs-video";
 
 const debug = debug0('site:gridfs');
 const path = require('path');
@@ -20,11 +21,18 @@ export class GridFS {
 		this.db = db;
 	}
 
-	get(id: string | Types.ObjectId) {
+	get(id: string | Types.ObjectId): GridFSFile {
 		if (typeof id === 'string')
 			id = Types.ObjectId(id);
 
 		return new GridFSFile(id, (this.db as any).lipthusDb);
+	}
+
+	getVideo(id: string | Types.ObjectId): GridFSVideo {
+		if (typeof id === 'string')
+			id = Types.ObjectId(id);
+
+		return new GridFSVideo(id, (this.db as any).lipthusDb);
 	}
 
 	findById(id: string) {
@@ -137,6 +145,7 @@ export class GridFS {
 		return new GridFSBucket(this.db, {bucketName: this.ns});
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 *  Deletes a file with the given id
 	 */
@@ -144,6 +153,7 @@ export class GridFS {
 		return this.getBucket().delete(id);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	fromUrl(url: string, fileOptions: any = {}) {
 		const fn = path.basename(url);
 		const tmp = '/tmp/' + fn;

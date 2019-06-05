@@ -31,7 +31,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 	if (!req.site.dbs[dbName] || !Types.ObjectId.isValid(id))
 		return next();
 	
-	req.site.dbs[dbName].fs.get(id).load()
+	req.site.dbs[dbName].fs.getVideo(id).load()
 		.then((file: GridFSVideo) => {
 			if (!file)
 				return next();

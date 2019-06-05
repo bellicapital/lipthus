@@ -32,6 +32,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	public connected = false;
 	public schemas: {[s: string]: LipthusSchema} = {};
 	public models: {[s: string]: any} = {};
+	public fs!: GridFS;
 	public mongoose = mongoose;
 	public _conn: any;
 
@@ -141,6 +142,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.site.dbs[dbname];
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	useDb(dbName: string) {
 		return this._conn.useDb(dbName);
 	}

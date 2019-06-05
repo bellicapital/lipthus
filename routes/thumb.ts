@@ -16,16 +16,16 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 	};
 
 	req.db.fs.findById(req.params.id)
-		.then((obj: any): Promise<BinDataImage> | void => {
+		.then((obj: any): any => {
 			if (!obj)
 				return;
 
 			if (opt.wm && (!opt.wm.type || (opt.nwm && opt.nwm === obj.md5)))
 				opt.wm = false;
 			else {
-				const minsize = req.site.config.wm_minsize.split('x');
+				const minSize = req.site.config.wm_minsize.split('x');
 
-				if (minsize[0] > opt.width || minsize[1] > opt.height)
+				if (minSize[0] > opt.width || minSize[1] > opt.height)
 					opt.wm = false;
 			}
 
