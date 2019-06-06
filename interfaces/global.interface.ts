@@ -54,6 +54,7 @@ export interface EnvironmentParams {
 		exclude: Array<string>
 	};
 	origin?: string | false;	// Access-Control-Allow-Origin
+	allowHeaders?: Array<string>;
 	customSitemap?: boolean;
 	VAPID?: {
 		publicKey: string,

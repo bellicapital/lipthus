@@ -62,10 +62,13 @@ export namespace security {
 		if (req.site.environment.origin !== false) {
 			const origin = req.site.environment.origin || req.headers.origin || '*';
 
-			res.header('Access-Control-Allow-Origin', origin + '');
-			res.header('Access-Control-Allow-Credentials', 'true');
-			res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Authorization, Accept, If-None-Match');
+			res.set('Access-Control-Allow-Origin', origin + '');
+			res.set('Access-Control-Allow-Credentials', 'true');
+			res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+			res.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Authorization, Accept, If-None-Match');
+
+			if (req.site.environment.allowHeaders)
+				res.append('Access-Control-Allow-Headers', req.site.environment.allowHeaders);
 		}
 
 		// intercept OPTIONS method
