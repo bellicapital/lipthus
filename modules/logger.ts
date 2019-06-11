@@ -1,6 +1,6 @@
 import {Types} from "mongoose";
 import {LipthusApplication, LipthusRequest, LipthusResponse} from "../index";
-import {Collection, Db, InsertOneWriteOpResult} from "mongodb";
+import {Collection, InsertOneWriteOpResult} from "mongodb";
 import {LipthusError} from "../classes/lipthus-error";
 import {NextFunction} from "express";
 
@@ -8,16 +8,12 @@ const botRe = /^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|resp
 
 export class LipthusLogger {
 	
-	public db: Db;
-	
 	constructor(public req: LipthusRequest) {
-		this.db = req.db._conn;
-		
 		Object.defineProperty(req, 'logger', {value: this});
 	}
 	
 	collection(type: string): Collection {
-		return this.db.collection('logger.' + type);
+		return this.req.db.collection('logger.' + type);
 	}
 	
 	log(collection: string | Collection, extra?: { [s: string]: any }): Promise<InsertOneWriteOpResult> {

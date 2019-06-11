@@ -14,8 +14,9 @@ import {SearchModel} from "../schemas/search";
 import {UserModel} from "../schemas/user";
 import {SettingModel} from "../schemas/settings";
 import {NationalitiesModel} from "../schemas/nationalities";
-import {DbParams} from "../interfaces/global.interface";
+import {DbParams, LipthusConnection} from "../interfaces/global.interface";
 import {NotificationModel} from "../schemas/notification";
+import {Collection, Db} from "mongodb";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -34,7 +35,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	public models: {[s: string]: any} = {};
 	public fs!: GridFS;
 	public mongoose = mongoose;
-	public _conn: any;
+	public _conn: LipthusConnection;
 
 	constructor(params: DbParams | string, public site: Site) {
 		super();
@@ -54,7 +55,12 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	connect() {
 		const {uri, options} = this.connectParams();
 
-		this._conn = mongoose.createConnection(uri, options);
+		this._conn = <LipthusConnection> Object.assign(mongoose.createConnection(uri, options), {
+			lipthusDb: this,
+			eucaDb: this, // deprecated
+			site: this.site,
+			app: this.app
+		});
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
@@ -120,14 +126,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		debug('Connected to db ' + this.name + ' on ' + (this.params.host || 'localhost') + ':' + (this.params.port || '27017'));
 
 		// native db
-		const ndb = this._conn.db;
+		const ndb: Db = this._conn.db;
 
 		this.fs = new GridFS(ndb, 'fs');
-
-		this._conn.lipthusDb = this;
-		this._conn.eucaDb = this; // deprecated
-		this._conn.site = this.site;
-		this._conn.app = this.app;
 
 		Object.defineProperty(ndb, 'lipthusDb', {value: this});
 
@@ -295,7 +296,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		this.schemas[file.name].plugin(file.getPlugin, this);
 	}
 
-	collection(name: string, options?: any, cb?: Function) {
+	collection(name: string, options?: any, cb?: any): Collection {
 		let n;
 
 		try {

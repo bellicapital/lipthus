@@ -7,7 +7,7 @@ export default [
 	},
 	{
 		version: "1.7.4",
-		updater: (site: Site) => site.db._conn.collection('sessions').removeMany()
+		updater: (site: Site) => site.db._conn.collection('sessions').deleteMany({})
 	},
 	{
 		version: "1.8.0",

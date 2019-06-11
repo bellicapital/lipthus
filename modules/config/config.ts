@@ -118,17 +118,17 @@ export class Config {
 		}
 	}
 
-	set(k: string, v: any, ns?: string | boolean | null, save?: boolean): any {
-		if (ns === true) {
-			ns = null;
+	set(k: string, v: any, ns?: string | true, save?: boolean): any {
+		if (ns === true)
 			save = true;
-		}
 
-		if (!ns) {
+		const _ns: string | undefined = ns === true ? undefined : ns;
+
+		if (!_ns) {
 			this[k] = v;
 			v = this[k];
 		} else
-			this[k][ns] = v;
+			(this[k] as any)[_ns] = v;
 
 		if (!save)
 			return Promise.resolve();
@@ -136,8 +136,8 @@ export class Config {
 		const update: any = {};
 		let key = 'value';
 
-		if (ns)
-			key += '.' + ns;
+		if (_ns)
+			key += '.' + _ns;
 
 		update[key] = v;
 

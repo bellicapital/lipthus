@@ -1,5 +1,5 @@
 import {FileInfo} from "./file-info";
-import {Collection, Types} from "mongoose";
+import {Types} from "mongoose";
 import * as path from "path";
 import {exec} from "child_process";
 import {BinDataFile, BinDataImage, LipthusDb} from "../../modules";
@@ -8,7 +8,7 @@ import * as debug0 from "debug";
 import {LipthusRequest, LipthusResponse} from "../../index";
 import {LipthusError} from "../../classes/lipthus-error";
 import {optimage} from "../optimage";
-import {GridFSBucket} from "mongodb";
+import {Collection, GridFSBucket} from "mongodb";
 import * as fs from "fs";
 import {promisify} from "util";
 

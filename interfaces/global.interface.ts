@@ -1,6 +1,6 @@
 import {IRouterHandler, IRouterMatcher, NextFunction} from "express-serve-static-core";
-import {LipthusRequest, LipthusResponse} from "../index";
-import {Types} from "mongoose";
+import {LipthusApplication, LipthusDb, LipthusRequest, LipthusResponse, Site} from "../index";
+import {Connection, Types} from "mongoose";
 
 export type RequestHandler = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
 export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
@@ -69,4 +69,11 @@ export interface ColRef {
 	collection: string;
 	id: Types.ObjectId | string;
 	field: string;
+}
+
+export interface LipthusConnection extends Connection {
+	lipthusDb: LipthusDb;
+	eucaDb: LipthusDb; // deprecated
+	site: Site;
+	app: LipthusApplication;
 }
