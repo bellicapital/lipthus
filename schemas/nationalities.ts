@@ -26,7 +26,8 @@ export function getSchema() {
 
 export interface Nationality extends Document, NationalitiesMethods {
 	code: string;
-	title: {[s: string]: MultilangText};
+	title: { [s: string]: MultilangText };
+	getLangList: (lang: string) => { [code: string]: string };
 }
 
 export interface NationalitiesModel extends Model<Nationality>, NationalitiesStatics {
@@ -37,23 +38,23 @@ export class NationalitiesMethods {
 
 export class NationalitiesStatics {
 
-	getList(req: LipthusRequest, lang?: string) {
+	getList(this: NationalitiesModel, req: LipthusRequest, lang?: string) {
 		const _lang = lang || req.ml.lang;
 
 		return this.getLangList(_lang);
 	}
 
-	getLangList(lang: string) {
+	getLangList(this: NationalitiesModel, lang: string) {
 		const sort: any = {};
 		const list: KeyString = {};
 
 		sort['title.' + lang] = 1;
 
 		// noinspection TypeScriptValidateJSTypes
-		return (this as any).find()
-			.collation( { locale: lang } )
+		return this.find()
+			.collation({locale: lang})
 			.sort(sort)
-			.then((r: Array<any>) => r.map(t => t.title
+			.then((r: Array<any>) => r.map(t => t.title && t.title
 				.getLangOrTranslate(lang)
 				.then((name2: string) => list[t.code] = name2)
 			))

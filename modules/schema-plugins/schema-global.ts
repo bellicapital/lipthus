@@ -1,6 +1,6 @@
 import {BinDataFile} from "../bdf";
 import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
-import {LipthusRequest} from "../../index";
+import {LipthusRequest, User} from "../../index";
 
 const Location = require('../geo').location;
 
@@ -108,7 +108,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			return Promise.resolve(val);
 
 		const ret: Array<any> = [];
-		const site = this.db.eucaDb.site;
+		const site = this.db.lipthusDb.site;
 		let info: any = null;
 
 		// noinspection FallThroughInSwitchStatementJS
@@ -174,7 +174,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 
 			case 'MlSelector':
 			case 'MlCheckboxes':
-				return val ? val.getVal(req, this.db.eucaDb) : Promise.resolve();
+				return val ? val.getVal(req, this.db.lipthusDb) : Promise.resolve();
 
 			case 'location':
 				return Promise.resolve(new Location(val));
@@ -390,7 +390,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 							return ko(err);
 
 						userFields.forEach(k => {
-							const user = this.get(k);
+							const user: User = this.get(k);
 
 							if (user)
 								ret[k].value = user.htmlLink();
@@ -435,7 +435,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 						const MlText = LipthusSchemaTypes.MultilangText;
 
 						obj[k].forEach((o: any, i: number) =>
-							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site));
+							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.lipthusDb.site));
 					}
 					break;
 			}

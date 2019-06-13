@@ -145,7 +145,11 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 	// noinspection JSUnusedGlobalSymbols
 	useDb(dbName: string) {
-		return this._conn.useDb(dbName);
+		const ret: any = this._conn.useDb(dbName);
+
+		ret.site = this.site;
+
+		return ret;
 	}
 
 	get dynobject() {

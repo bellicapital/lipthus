@@ -239,6 +239,9 @@ export interface User extends Document {
 
 	isAdmin(): boolean;
 
+	// noinspection JSUnusedLocalSymbols
+	htmlLink(): string;
+
 	getValues(req: LipthusRequest): Promise<any>;
 
 	// set(key: string, value: any, type: any, options?: any): void;
