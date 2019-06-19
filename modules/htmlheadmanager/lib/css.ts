@@ -17,7 +17,7 @@ export class CssManager {
 	public inited = false;
 
 	constructor(public req: LipthusRequest, res: LipthusResponse) {
-		this.publicDir = req.site.dir + '/public';
+		this.publicDir = req.site.srcDir + '/public';
 		this.dir = this.publicDir + '/css/';
 		this.lipthusDir = req.site.lipthusDir + '/public/css/';
 		this.staticHost = res.locals.staticHost;

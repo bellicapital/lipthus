@@ -29,7 +29,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		name: r[4]
 	};
 
-	const file = req.site.dir + '/public/img/' + opt.name;
+	const file = req.site.srcDir + '/public/img/' + opt.name;
 
 	if (!existsSync(file))
 		return next();

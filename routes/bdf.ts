@@ -114,7 +114,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			if (opt.wm && opt.wm.type === 2) {
 				opt.wm = {
 					type: 2,
-					image: req.site.dir + '/' + opt.wm.image,
+					image: req.site.srcDir + '/' + opt.wm.image,
 					gravity: opt.wm.gravity,
 					geometry: opt.wm.geometry,
 					opacity: opt.wm.opacity,

@@ -22,10 +22,9 @@ export class GridFS {
 	}
 
 	get(id: string | Types.ObjectId): GridFSFile {
-		if (typeof id === 'string')
-			id = Types.ObjectId(id);
+		const _id: Types.ObjectId = typeof id === 'string' ? Types.ObjectId(id as string) : id;
 
-		return new GridFSFile(id, (this.db as any).lipthusDb);
+		return new GridFSFile(_id, (this.db as any).lipthusDb);
 	}
 
 	getVideo(id: string | Types.ObjectId): GridFSVideo {

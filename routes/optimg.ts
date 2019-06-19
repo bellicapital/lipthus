@@ -14,7 +14,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		name: req.params.fn
 	};
 
-	const file = req.site.dir + '/public/img/' + opt.name;
+	const file = req.site.srcDir + '/public/img/' + opt.name;
 
 	pStat(file)
 		.then(rStat => {

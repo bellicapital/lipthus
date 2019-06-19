@@ -64,7 +64,7 @@ module.exports = function(req, res, next){
 				case 'newItem':
 					options.key = 'CREATED';
 
-					name = fs.existsSync(req.site.dir + '/views/mail-templates/es/' + schema + '_created.pug') ? schema : 'item';
+					name = fs.existsSync(req.site.srcDir + '/views/mail-templates/es/' + schema + '_created.pug') ? schema : 'item';
 
 					options.template = name + '_created';
 
@@ -73,7 +73,7 @@ module.exports = function(req, res, next){
 				case 'itemActivated':
 					options.key = 'ACTIVATED';
 
-					name = fs.existsSync(req.site.dir + '/views/mail-templates/es/' + schema + '_activated.pug') ? schema : 'item';
+					name = fs.existsSync(req.site.srcDir + '/views/mail-templates/es/' + schema + '_activated.pug') ? schema : 'item';
 
 					options.template = name + '_activated';
 
@@ -98,34 +98,31 @@ module.exports = function(req, res, next){
 			});
 
 			function getOptions(cb){
-				switch(q.type){
-					case 'confirm-subscription':
-						req.db.lang.getValues('_CONFIRM_SUBJECT', function(err, r){
-							if(err)
-								return next(err);
+				if (q.type === 'confirm-subscription') {
+					req.db.lang.getValues('_CONFIRM_SUBJECT', function(err, r){
+						if(err)
+							return next(err);
 
-							const subscriptionConfirmUri = req.site.environment.subscriptionConfirmUri || '/subscriptions/confirm';
+						const subscriptionConfirmUri = req.site.environment.subscriptionConfirmUri || '/subscriptions/confirm';
 
-							options.subject = r;
-							options.content = {
-	//							subscriptions: subscriptions,
-								X_SITELOGO: req.protocol + '://' + req.headers.host + req.site.logo().uri,
-								X_CONFIRM_LINK: req.protocol + '://' + req.headers.host + subscriptionConfirmUri + '?id=TEST'
-							};
+						options.subject = r;
+						options.content = {
+//							subscriptions: subscriptions,
+							X_SITELOGO: req.protocol + '://' + req.headers.host + req.site.logo().uri,
+							X_CONFIRM_LINK: req.protocol + '://' + req.headers.host + subscriptionConfirmUri + '?id=TEST'
+						};
+
+						cb();
+					});
+				} else {
+					subscriptor
+						.getItemOptions(schema, item)
+						.then(itemOpt => {
+							Object.assign(options, itemOpt);
 
 							cb();
-						});
-						break;
-
-					default:
-						subscriptor
-							.getItemOptions(schema, item)
-							.then(itemOpt => {
-								Object.assign(options, itemOpt);
-
-								cb();
-							})
-							.catch(next);
+						})
+						.catch(next);
 				}
 			}
 		})

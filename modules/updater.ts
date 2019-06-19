@@ -34,12 +34,10 @@ function checkAppVersion(site: Site) {
 	if (site.package.version === site.config.siteversion)
 		return;
 
-	const file = site.dir + '/updates.ts';
-
-	if (!existsSync(file))
+	if (!existsSync(site.srcDir + '/updates.ts'))
 		return;
 
-	const versionUpdates = require(file).default;
+	const versionUpdates = require(site.dir + '/updates').default;
 	
 	// Old way updates are deprecated
 	if (!versionUpdates.length)

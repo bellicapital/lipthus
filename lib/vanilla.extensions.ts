@@ -94,7 +94,7 @@ String.prototype.striptags = function (allowedTags?: string | string[]) {
 	return striptags(this + '', allowedTags);
 };
 
-String.prototype.truncate = function (length = 100, opt: any | string = {}) {
+String.prototype.truncate = function (length: number = 100, opt: any | string = {}) {
 	if (typeof opt === 'string')
 		opt = {ellipsis: opt};
 	else if (!opt)
@@ -113,7 +113,7 @@ Date.prototype.addDays = function (days: number) {
 	return this;
 };
 
-Date.prototype.toUserDateString = function (intl?: string, sep = '/') {
+Date.prototype.toUserDateString = function (intl?: string, sep: string = '/') {
 	let ret;
 	const date = this.getDate();
 	const month = this.getMonth() + 1;

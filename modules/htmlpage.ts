@@ -145,7 +145,7 @@ export class HtmlPage {
 			this.layout = 'layout';
 
 		// view
-		if (!this.view && fs.existsSync(req.site.dir + '/views/' + this.key + '.pug'))
+		if (!this.view && fs.existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
 			this.view = this.key;
 
 		if (this.locals.justContent)
@@ -209,9 +209,9 @@ export class HtmlPage {
 				this.head.addJSLang(vars);
 
 				// page
-				if (fs.existsSync(req.site.dir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
+				if (fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
 					this.head.addJS(this.deviceType + '/' + this.key + '.js', {priority: 10});
-				else if (fs.existsSync(req.site.dir + '/public/js/' + this.key + '.js'))
+				else if (fs.existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
 					this.head.addJS(this.key + '.js', {priority: 10});
 
 				if (this.key)
@@ -235,9 +235,9 @@ export class HtmlPage {
 				// css
 				this.head.addCSS(this.layout, {priority: 20});
 
-				if (this.layout && fs.existsSync(req.site.dir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
+				if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
 					this.addJS(this.deviceType + '/' + this.layout + '.js', {priority: 20});
-				else if (this.layout && fs.existsSync(req.site.dir + '/public/js/' + this.layout + '.js'))
+				else if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
 					this.addJS(this.layout + '.js', {priority: 20});
 
 				if (req.app.get('env') === 'development') {
@@ -325,10 +325,10 @@ export class HtmlPage {
 
 		const req = this.req;
 
-		this.view = req.site.dir + '/views/' + this.deviceType + '/notfound';
+		this.view = req.site.srcDir + '/views/' + this.deviceType + '/notfound';
 
 		if (!fs.existsSync(this.view + '.pug'))
-			this.view = req.site.dir + '/views/notfound';
+			this.view = req.site.srcDir + '/views/notfound';
 
 		if (!fs.existsSync(this.view + '.pug'))
 			this.view = 'status/404';
@@ -612,10 +612,10 @@ export class HtmlPage {
 	}
 
 	msg(msg: string) {
-		this.view = this.req.site.dir + '/views/' + this.deviceType + '/message';
+		this.view = this.req.site.srcDir + '/views/' + this.deviceType + '/message';
 
 		if (!fs.existsSync(this.view + '.pug')) {
-			this.view = this.req.site.dir + '/views/message';
+			this.view = this.req.site.srcDir + '/views/message';
 
 			if (!fs.existsSync(this.view + '.pug'))
 				this.view = 'message';

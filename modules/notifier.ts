@@ -285,7 +285,7 @@ export class Notifier {
 		if (!options.template) {
 			const tpl = item.schema.toString() + '_created';
 
-			options.template = fs.existsSync(this.site.dir + '/views/mail-templates/es/' + tpl + '.pug') ? tpl : 'item_created';
+			options.template = fs.existsSync(this.site.srcDir + '/views/mail-templates/es/' + tpl + '.pug') ? tpl : 'item_created';
 		}
 
 		return this._process(item, subscribed, options, cb);
@@ -492,8 +492,8 @@ export class Notifier {
 
 		const routes: Array<string> = [
 			tpl,
-			site.dir + '/views/mail-templates/' + lang + '/' + tpl,
-			site.dir + '/views/mail-templates/es/' + tpl,
+			site.srcDir + '/views/mail-templates/' + lang + '/' + tpl,
+			site.srcDir + '/views/mail-templates/es/' + tpl,
 			site.lipthusDir + '/views/mail-templates/' + lang + '/' + tpl,
 			site.lipthusDir + '/views/mail-templates/es/' + tpl
 		];

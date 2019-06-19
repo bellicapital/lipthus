@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 module.exports = function DsResponseTest(req, res, next){
-	fs.readFile(req.site.dir + '/dsresponse_log.json', 'utf8', (err, data) => {
+	fs.readFile(req.site.srcDir + '/dsresponse_log.json', 'utf8', (err, data) => {
 		if(err)
 			return next(err);
 

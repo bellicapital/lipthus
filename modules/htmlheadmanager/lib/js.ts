@@ -28,7 +28,7 @@ export class JsManager {
 	public cache: any;
 
 	constructor(public req: LipthusRequest, res: LipthusResponse) {
-		this.dir = req.site.dir + '/public/js/';
+		this.dir = req.site.srcDir + '/public/js/';
 		this.lipthusDir = req.site.lipthusDir + '/public/js/';
 		this.jQueryVersion = req.app.get('jquery_version');
 		this.staticHost = res.locals.staticHost;

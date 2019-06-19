@@ -46,6 +46,7 @@ const favicon = require("connect-favicons");
 
 export class Site extends EventEmitter {
 
+	public srcDir: string;	// dir outside the site dist directory if started from the tsc compiled dir
 	public lipthusDir: string;
 	public lipthusBuildDir = path.dirname(__dirname);
 	public package: any;
@@ -88,6 +89,8 @@ export class Site extends EventEmitter {
 	constructor(public dir: string, public options: SiteOptions = {}) {
 		super();
 
+		this.srcDir = path.basename(dir) === 'dist' ? path.dirname(dir) : dir;
+
 		if (this.options.pre)
 			this._hooks.pre = this.options.pre;
 
@@ -97,7 +100,7 @@ export class Site extends EventEmitter {
 		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
 		// noinspection JSDeprecatedSymbols
 		this.cmsDir = this.lipthusDir;
-		this.package = require(dir + '/package');
+		this.package = require(this.srcDir + '/package');
 		this.cmsPackage = require('../package');
 
 		if (!this.package.config)
@@ -129,10 +132,10 @@ export class Site extends EventEmitter {
 		if (process.env.LIPTHUS_ENV)
 			return require(this.dir + '/environments/' + process.env.LIPTHUS_ENV).environment;
 
-		if (existsSync(this.dir + '/custom-conf.json')) {
-			const ret = require(this.dir + '/custom-conf');
+		if (existsSync(this.srcDir + '/custom-conf.json')) {
+			const ret = require(this.srcDir + '/custom-conf');
 
-			return ret.include ? require(this.dir + '/' + ret.include) : ret;
+			return ret.include ? require(this.srcDir + '/' + ret.include) : ret;
 		}
 
 		let file = this.dir + '/environments/environment';
@@ -255,7 +258,7 @@ export class Site extends EventEmitter {
 		const pr: Array<any> = [];
 
 		if (plugins)
-			Object.each(plugins, k => pr.push(require(this.dir + '/node_modules/cmjs-' + k)(this.app)));
+			Object.each(plugins, k => pr.push(require(this.srcDir + '/node_modules/cmjs-' + k)(this.app)));
 
 		return Promise.all(pr)
 			.then(r => {
@@ -291,7 +294,7 @@ export class Site extends EventEmitter {
 		let ret;
 
 		try {
-			ret = require(this.dir + '/public/css/vars');
+			ret = require(this.srcDir + '/public/css/vars');
 		} catch (e) {
 			ret = {};
 		}
@@ -344,6 +347,7 @@ export class Site extends EventEmitter {
 		app
 			.set('name', this.package.name)
 			.set('dir', this.dir)
+			.set('srcDir', this.srcDir)
 			.set('lipthusDir', this.lipthusDir)
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
@@ -432,14 +436,14 @@ export class Site extends EventEmitter {
 		// noinspection JSDeprecatedSymbols
 		app.nodeModule = (name: string) => require(name);
 
-		app.set('views', [this.dir + '/views', this.lipthusDir + '/views']);
+		app.set('views', [this.srcDir + '/views', this.lipthusDir + '/views']);
 		app.set('view engine', 'pug');
 
 		// Para usar paths absolutos en pug extends
 		app.locals.basedir = '/';
 
 		app.use(logger_req);
-		app.use(favicon(this.dir + '/public/img/icons'));
+		app.use(favicon(this.srcDir + '/public/img/icons'));
 
 		if (process.env.NODE_ENV === 'development') {
 			app.locals.development = true;
@@ -450,7 +454,7 @@ export class Site extends EventEmitter {
 			redirect: false
 		};
 
-		app.use('/s', express.static(this.dir + '/public', staticOpt));
+		app.use('/s', express.static(this.srcDir + '/public', staticOpt));
 		app.use('/cms', express.static(this.lipthusDir + '/public', staticOpt));
 		app.use('/pc', require('jj-proxy-cache'));
 		app.use('/css', require('../lib/css'));
