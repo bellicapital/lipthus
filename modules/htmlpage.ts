@@ -228,7 +228,8 @@ export class HtmlPage {
 				// load layout module
 				try {
 					return require(req.site.dir + '/modules/' + this.layout).call(this, req, res);
-				} catch (e) {}
+				} catch (e) {
+				}
 			})
 			.then(() => {
 				// layout
@@ -720,10 +721,10 @@ export class HtmlPage {
 				return this.req.site.db.comment.find4show(item._id)
 					.then((comments: Array<any>) => {
 
-					this.res.locals.item.comments = comments;
+						this.res.locals.item.comments = comments;
 
-					return comments;
-				});
+						return comments;
+					});
 			});
 	}
 
