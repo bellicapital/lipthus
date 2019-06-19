@@ -129,7 +129,7 @@ class SelectorConfigVar extends ConfigVar {
 export class MultilangConfigVar extends ConfigVar {
 
 	setValue(v?: any) {
-		this.value = v && new MultilangText(v, this.site.db.config.collection, 'value', this._id, this.site);
+		this.value = v && new MultilangText(v, this.site.db.config.collection, 'value', this._id, this.site.db);
 	}
 
 	get4Edit(req: LipthusRequest) {

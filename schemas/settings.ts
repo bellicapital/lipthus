@@ -29,7 +29,7 @@ namespace LipthusSettings {
 						value,
 						this.collection,
 						'value', this._id,
-						this.db.eucaDb.site
+						this.db.lipthusDb
 					)
 						.getLangOrTranslate(lang);
 				case 'bdi':
