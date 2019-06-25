@@ -17,6 +17,7 @@ import {NationalitiesModel} from "../schemas/nationalities";
 import {DbParams, LipthusConnection} from "../interfaces/global.interface";
 import {NotificationModel} from "../schemas/notification";
 import {Collection, Db} from "mongodb";
+import {Connection} from "mongoose";
 
 const fs = require('mz/fs');
 const debug = Debug('site:db');
@@ -144,7 +145,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	useDb(dbName: string) {
+	useDb(dbName: string): Connection {
 		const ret: any = this._conn.useDb(dbName);
 
 		ret.site = this.site;

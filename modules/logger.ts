@@ -64,7 +64,7 @@ export class LipthusLogger {
 		return this.log('notfound');
 	}
 	
-	logUpdate(obj: string | any, id?: string, field?: string, value?: any): Promise<InsertOneWriteOpResult> {
+	logUpdate(obj: LogUpdateParams | string, id?: string, field?: string, value?: any): Promise<InsertOneWriteOpResult> {
 		if (typeof obj !== 'object') {
 			obj = {
 				schema_: obj,
@@ -173,3 +173,13 @@ export class LipthusLogger {
 		req.logger.notfoundRemove(a, cb);
 	}
 }
+
+export interface LogUpdateParams {
+	schema_: string;
+	itemid: any;
+	field: string;
+	value: any;
+	uid?: any;
+}
+
+
