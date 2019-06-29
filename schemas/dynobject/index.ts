@@ -33,7 +33,7 @@ module.exports = function dynobject() {
 	s.statics = {
 		addSchemas: function () {
 			return this.getSchemas()
-				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.eucaDb.schema(name, schema)));
+				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.lipthusDb.schema(name, schema)));
 		},
 		getSchemas: function () {
 			if (this.schema.options.schemas)

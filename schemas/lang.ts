@@ -26,17 +26,12 @@ export const name = 'lang';
 
 export function getSchema(site: Site) {
 	const s = new LipthusSchema({
-		_tag: String,
+		_tag: {type: String, index: true },
 		_k: {type: String, index: true, unique: true}
 	}, {
 		collection: 'lang',
 		strict: false,
 		id: false
-	});
-
-	s.index({
-		_k: 1,
-		_tag: 1
 	});
 
 	s.methods = {
