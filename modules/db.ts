@@ -189,11 +189,14 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.model('notification');
 	}
 
-	model(name: string) { // if (name === 'newsletter') console.trace(name)
+	model(name: string, schema?: LipthusSchema) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
 
-		if (!this.schemas[name]) {
+		if (!schema)
+			schema = this.schemas[name];
+
+		if (!schema) {
 			console.error(new Error("Schema " + name + " hasn't been registered"));
 			return;
 		}
@@ -201,7 +204,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		this.models[name] = this._conn.model(name, this.schemas[name]);
 
 		// force models with schema references
-		this.schemas[name].eachPath((k: string, p: any) => {
+		schema.eachPath((k: string, p: any) => {
 			const ref = p.constructor.name === 'SchemaArray' ? p.caster.options.ref : p.options.ref;
 
 			if (!ref || ref === name)

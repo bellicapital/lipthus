@@ -220,7 +220,7 @@ export class Site extends EventEmitter {
 		return this._notifier;
 	}
 
-	get authDb() {
+	get authDb(): LipthusDb {
 		if (!this._authDb)
 			this._authDb = this.environment.authDb ? this.dbs[this.environment.authDb] : this.db;
 
