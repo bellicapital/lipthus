@@ -15,7 +15,7 @@ const gm = require('gm').subClass({imageMagick: true});
  * @param next
  * @returns {*}
  */
-export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {l(req.path)
+export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	const r = /^\/resimg\/(\d+)x(\d+)k?([01]?)_(.+)$/.exec(req.path);
 
 	if (!r)
