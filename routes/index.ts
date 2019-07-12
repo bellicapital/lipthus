@@ -76,7 +76,7 @@ module.exports = function(app: LipthusApplication) {
 	const dir = app.get('dir');
 	router.all('/unsubscribe', require(existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
 
-	router.get('/resimg/:p', resimg as any);
+	router.get('/resimg/*', resimg as any);
 	router.get('/optimg/:fn', optimg as any);
 	router.get('/c/:id.:ext*', cache as any);
 	router.post('/paypalresponse', require('./paypalresponse'));
