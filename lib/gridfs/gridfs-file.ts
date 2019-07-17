@@ -11,6 +11,7 @@ import {optimage} from "../optimage";
 import {Collection, GridFSBucket} from "mongodb";
 import * as fs from "fs";
 import {promisify} from "util";
+import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
 
 const multimedia = require('multimedia-helper');
 const fsp = require('mz/fs');
@@ -136,40 +137,16 @@ export class GridFSFile {
 				if (!this.contentType)
 					throw 404;
 
-				const date = this.mTime();
-				const disposition = req.query.dl ? 'attachment' : 'inline';
-				let start = 0;
-				let end = this.length - 1;
+				const params: MongoFileParams = {
+					id: this.id,
+					contentType: this.contentType,
+					length: this.length,
+					mtime: this.mTime(),
+					disposition: req.query.dl ? 'attachment' : 'inline',
+					duration: this.metadata && this.metadata.duration
+				};
 
-				res.type(this.contentType);
-				res.set('Accept-Ranges', 'bytes');
-				res.set('Content-Disposition', disposition + '; filename="' + this.filename + '"');
-
-				if (req.headers.range) {
-					const r = /bytes[^\d]*(\d+)-(\d*)?/.exec(req.headers.range.toString());
-
-					if (!r)
-						throw new Error('headers.range parse error: ' + req.headers.range);
-
-					start = parseInt(r[1], 10);
-
-					if (r[2])
-						end = parseInt(r[2], 10);
-
-					res.status(206); // HTTP/1.1 206 Partial Content
-					res.set('Content-Range', 'bytes ' + start + '-' + end + '/' + this.length);
-				} else
-					res.set('Content-Length', this.length.toString());
-
-				res.set('Last-modified', date.toUTCString());
-				res.set('Etag', this.length + '-' + date.getTime());
-				res.set('Expires', new Date().addDays(60).toUTCString());
-
-				if (this.metadata && this.metadata.duration)
-					res.set('X-Content-Duration', this.metadata.duration);
-
-				return this.getBucket().openDownloadStream(this.id, {start: start, end: end})
-					.pipe(res);
+				return expressMongoStream(params, this.db._conn.db, req, res);
 			})
 			.catch((err: LipthusError) => {
 				if (err.message === 'File does not exist')
