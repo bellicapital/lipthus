@@ -1,6 +1,6 @@
 import {Site} from "./site";
 
-const nodemailer = require('nodemailer');
+const nodeMailer = require('nodemailer');
 const sesTransport = require('nodemailer-ses-transport');
 const path = require('path');
 
@@ -13,7 +13,7 @@ export class Mailer {
 			conf = sesTransport(conf.sesTransport);
 		}
 
-		this.transport = nodemailer.createTransport(conf);
+		this.transport = nodeMailer.createTransport(conf);
 	}
 
 	send(opt: any) {
