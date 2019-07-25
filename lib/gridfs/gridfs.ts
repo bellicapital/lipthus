@@ -38,6 +38,11 @@ export class GridFS {
 		return this.get(id).load();
 	}
 
+	// noinspection JSUnusedGlobalSymbols
+	findVideoById(id: string) {
+		return this.getVideo(id).load();
+	}
+
 	collection(cb: any) {
 		this.db.collection(this.ns + '.files', cb);
 	}

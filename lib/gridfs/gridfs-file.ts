@@ -552,11 +552,13 @@ export class GridFSFile {
 											.then((buffer: Buffer) => {
 												fsp.unlink(tmpFile2).catch(ko);
 
+												const now = new Date();
 												const bdi = new BinDataImage({
 													name: opt.name,
 													contentType: 'image/jpeg',
-													mtime: this.mTime(),
-													uploadDate: new Date(),
+													key: now.getTime().toString(),
+													mtime: now,
+													uploadDate: now,
 													size: buffer.length,
 													md5: md5(buffer),
 													MongoBinData: new Types.Buffer(buffer).toObject(),

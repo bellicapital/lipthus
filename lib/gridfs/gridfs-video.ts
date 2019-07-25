@@ -22,4 +22,20 @@ export class GridFSVideo extends GridFSFile {
 		return super.load()
 			.then((file: GridFSFile) => <GridFSVideo>file);
 	}
+
+	// noinspection JSUnusedGlobalSymbols
+	setThumbByPosition(position?: number) {
+		return this.getVideoFrame(position).then((bdf: any) => {
+			if (bdf) {
+				bdf.setColRef({
+					collection: this.namespace + '.files',
+					id: this._id,
+					field: 'thumb'
+				});
+
+				return this.update({thumb: bdf});
+			}
+		})
+			.then(() => this.thumb);
+	}
 }
