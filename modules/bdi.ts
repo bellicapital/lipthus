@@ -215,7 +215,7 @@ export class BinDataImage extends BinDataFile {
 
 					return promisify(logo.size.bind(logo))()
 						.then((logoSize: any) => {
-							const wmWidth = (opt.wm.ratio || .5) * opt.width;
+							const wmWidth = (opt.wm.ratio || .5) * (opt.width || this.width);
 
 							// calculate logoHeight with keeping aspect ratio
 							const wmHeight = (logoSize.height * wmWidth) / logoSize.width;
