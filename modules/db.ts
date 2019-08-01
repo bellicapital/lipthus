@@ -72,8 +72,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	connectParams() {
 		let uri = 'mongodb://';
 
-		if (this.params.user && this.params.pass)
+		if (this.params.user && this.params.pass) {
 			uri += this.params.user + ':' + this.params.pass + '@';
+		}
 
 		uri += (this.params.host || 'localhost');
 
@@ -140,8 +141,8 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.name;
 	}
 
-	db(dbname: string) {
-		return this.site.dbs[dbname];
+	db(dbName: string) {
+		return this.site.dbs[dbName];
 	}
 
 	// noinspection JSUnusedGlobalSymbols
@@ -325,11 +326,11 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	deReference(ref: any, fields?: any) {
 		const modelName = ref.namespace.replace('dynobjects.', '');
 
-		const dbname = ref.db || this.name;
-		const db = this.site.dbs[dbname];
+		const dbName = ref.db || this.name;
+		const db = this.site.dbs[dbName];
 
 		if (!db)
-			return Promise.reject(new Error('db ' + dbname + ' not found or not defined in this site'));
+			return Promise.reject(new Error('db ' + dbName + ' not found or not defined in this site'));
 
 		if (!db[modelName])
 			return Promise.reject(new Error('model ' + modelName + ' not found in db ' + this));

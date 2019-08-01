@@ -428,7 +428,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 				case 'Fs':
 					v.id = obj._id;
 					v.collection = schema.get('name');
-					v.dbname = this.db.name;
+					v.dbname = this.db.db.databaseName;
 					break;
 				case 'Multilang':
 					if (schema.tree[k].constructor.name === 'Array' && obj[k]) {

@@ -199,7 +199,7 @@ export class Comment {
 		});
 	}
 
-	static submit (this: LipthusCommentModel, req: LipthusRequest, dbname: string, colname: string, itemid: any, uname: string, email: string, text: string) {
+	static submit (this: LipthusCommentModel, req: LipthusRequest, dbName: string, colname: string, itemid: any, uname: string, email: string, text: string) {
 		return req.ml
 			.load('ecms-comment')
 			.then((LC: KeyString) => {
@@ -210,7 +210,7 @@ export class Comment {
 
 				const active = config.com_rule === 1 || (req.user && (req.user.isAdmin() || config.com_rule < 3));
 
-				const db = dbname ? req.site.dbs[dbname] : req.db;
+				const db = dbName ? req.site.dbs[dbName] : req.db;
 
 				return db.comment
 					.create({

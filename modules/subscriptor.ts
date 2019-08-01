@@ -50,21 +50,22 @@ export class Subscriptor {
 			.then(() => ret);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 *
 	 * @param {String} model
 	 * @param {String} [value="newItem"]
 	 * @param {String} [type="events"]
-	 * @param {String} [dbname=this.app.site.db]
+	 * @param {String} [dbName=this.app.site.db]
 	 * @returns {Promise}
 	 */
-	subscriptorsCount(model: any, value = 'newItem', type = 'events', dbname?: string) {
+	subscriptorsCount(model: any, value = 'newItem', type = 'events', dbName?: string) {
 		const query: any = {};
 		const db = this.app.site.db;
 
-		dbname = dbname || db.name;
+		dbName = dbName || db.name;
 
-		const key = 'subscriptions.' + dbname + '.' + model + '.' + type;
+		const key = 'subscriptions.' + dbName + '.' + model + '.' + type;
 
 		query[key] = value;
 
@@ -72,16 +73,16 @@ export class Subscriptor {
 			.then((count: number) => db.user.countDocuments(query).then((count2: number) => count + count2));
 	}
 
-	getSubscriptors(dbname: string, model: any, type: string, value: any, onlyUsers?: boolean) {
+	getSubscriptors(dbName: string, model: any, type: string, value: any, onlyUsers?: boolean) {
 		let query: any = {};
 		const db = this.app.site.db;
 		const byEmail: any = {};
 
-		if (typeof dbname === 'object') {
-			query = dbname;
+		if (typeof dbName === 'object') {
+			query = dbName;
 			onlyUsers = model;
 		} else
-			query['subscriptions.' + dbname + '.' + model + '.' + type + '.key'] = value;
+			query['subscriptions.' + dbName + '.' + model + '.' + type + '.key'] = value;
 
 		return db.user.find(query)
 			.select('email language name uname email_notifications devices subscriptions')
@@ -93,7 +94,7 @@ export class Subscriptor {
 					name: u.getName(true),
 					email_notifications: u.email_notifications,
 					devices: u.devices,
-					subscribed: u.get('subscriptions')[dbname][model][type].find((su: any) => su.key === value),
+					subscribed: u.get('subscriptions')[dbName][model][type].find((su: any) => su.key === value),
 					user: u
 				}))
 			.then(() => {
@@ -103,7 +104,7 @@ export class Subscriptor {
 						.select('email lang subscriptions')
 						.then((subscribed: Array<any>) => subscribed.forEach(s => {
 							byEmail[s.email] = s.toObject();
-							byEmail[s.email].subscribed = s.get('subscriptions')[dbname][model][type].find((su: any) => su.key === value);
+							byEmail[s.email].subscribed = s.get('subscriptions')[dbName][model][type].find((su: any) => su.key === value);
 						}));
 				}
 			})

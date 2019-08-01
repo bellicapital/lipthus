@@ -33,8 +33,7 @@ export interface DbParams {
 	pass?: string;
 	host?: string;
 	port?: string;
-	options?: any;
-	authSource?: string;
+	options?: any;	// ex: {authSource: "admin"}
 }
 
 export interface EnvironmentParams {

@@ -250,14 +250,14 @@ export class Notifier {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	toSubscriptors(dbname: string, model: any, type: string, value: any, onlyUsers: boolean, params: any) {
+	toSubscriptors(dbName: string, model: any, type: string, value: any, onlyUsers: boolean, params: any) {
 
 		// si no se facilita asunto, no se envía email a los no usuarios
 		if (!onlyUsers && !params.subject)
 			onlyUsers = true;
 
 		return this.site.app.subscriptor
-			.getSubscriptors(dbname, model, type, value, onlyUsers)
+			.getSubscriptors(dbName, model, type, value, onlyUsers)
 			.then((subscriptors: Array<any>) =>
 				subscriptors.reduce((p, s) =>
 						p.then(() => {
