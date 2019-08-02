@@ -3,8 +3,8 @@ import {NextFunction} from "express";
 import {HeadManager} from "./htmlheadmanager";
 import {KeyAny} from "../interfaces/global.interface";
 import {MultilangText} from "./schema-types/mltext";
+import * as pug from "pug";
 
-const pug = require('pug');
 const fs = require('mz/fs');
 const debug = require('debug')('site:htmlpage');
 const jsLangKeys = [

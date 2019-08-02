@@ -362,6 +362,11 @@
 				"bool",
 				"RSS Video",
 				true
+			],
+			"botLog": [
+				"bool",
+				"Log robots",
+				false
 			]
 		}
 	},
