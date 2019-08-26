@@ -196,7 +196,7 @@ class DoSchema extends LipthusSchema {
 			def[k] = p;
 		});
 
-		const schema = new DoSchema(def, {
+		return new DoSchema(def, {
 			identifier: obj.identifier || 'title',
 			descIdentifier: obj.descIdentifier || 'description',
 			name: obj.name || obj.colname,
@@ -215,11 +215,6 @@ class DoSchema extends LipthusSchema {
 			list_order: obj.list_order,
 			versionKey: '__v'
 		});
-
-		schema.index({'parents.$ref': 1});
-		schema.index({'parents.$id': 1});
-
-		return schema;
 	}
 }
 
