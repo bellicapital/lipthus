@@ -73,7 +73,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			};
 
 			if (req.params.name) {
-				const r2 = req.params.name.match(/^.+\.(\w+)+$/, "$1");
+				const r2 = req.params.name.match(/^.+\.(\w+)+$/);
 
 				if (r2)
 					opt.format = r2[1];
