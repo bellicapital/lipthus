@@ -8,10 +8,11 @@ import * as debug0 from "debug";
 import {LipthusRequest, LipthusResponse} from "../../index";
 import {LipthusError} from "../../classes/lipthus-error";
 import {optimage} from "../optimage";
-import {Collection, GridFSBucket} from "mongodb";
+import {Collection, GridFSBucket, GridFSBucketReadStream} from "mongodb";
 import * as fs from "fs";
 import {promisify} from "util";
 import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
+import {Response} from "express";
 
 const multimedia = require('multimedia-helper');
 const fsp = require('mz/fs');
@@ -131,7 +132,7 @@ export class GridFSFile {
 		return ret;
 	}
 
-	send(req: LipthusRequest, res: LipthusResponse) {
+	send(req: LipthusRequest, res: LipthusResponse): Promise<GridFSBucketReadStream | Response> {
 		return this.load()
 			.then(() => {
 				if (!this.contentType)
