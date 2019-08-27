@@ -148,15 +148,15 @@ module.exports = function fsfiles(Schema){
 				return Promise.resolve([]);
 
 			let db;
-			const thisdb = this.db.eucaDb;
-			const dbs = this.db.eucaDb.site.dbs;
-			const items = this.get('items');
+			const thisDb = this.db.lipthusDb;
+			const dbs = this.db.lipthusDb.site.dbs;
+			const items = this.get('items') || [];
 			const ret = [];
 
 			const p = items.map(item => {
 				item = item.toObject();
 
-				db = item.db ? dbs[item.db] : thisdb;
+				db = item.db ? dbs[item.db] : thisDb;
 
 				return db[item.namespace.replace('dynobjects.', '')]
 					.findById(item.oid)
@@ -166,60 +166,14 @@ module.exports = function fsfiles(Schema){
 
 			return Promise.all(p).then(() => ret);
 		},
-		unlink: function(cb){
-			this.fsFile((err, file) => {
-				if(err)
-					return cb(err);
-
-//				file.unlink(function(err){
-//					if(err)
-//						return cb(err);
-
-					this.getItemFields((err, items) => {
-						if(err)
-							return cb(err);
-					});
-//				});
-			});
-		},
-		getItemFields: function(cb){
-			const ret = [];
-
-			if(!this.items || !this.items.length)
-				return cb(null, ret);
-
-			const dbs = this.db.eucaDb.site.dbs;
-			const dbname = this.db.name;
-			let error;
-
-			this.items.forEach(item => {
-				item = item.toObject();
-
-				const db = dbs[item.db || dbname];
-
-				if(!db)
-					return (error = new Error('Db ' + item.db + ' not found'));
-
-				const schema = db.schemas[item.namespace.replace('dynobjects.', '')];
-
-				if(!schema)
-					return (error = new Error('Schema ' + schema + ' not found'));
-
-				const fields = schema.fileFields();
-
-				if(!fields)
-					return (error = new Error('Field ' + item.field + ' not found'));
-			});
+		unlink: function(){
 		},
 		/**
 		 *
 		 * @returns {Promise}
 		 */
 		fsFile: function(){
-			return new Promise((ok, ko) => {
-				this.db.eucaDb.fs.get(this._id)
-					.load((err, gridfsfile) => err ? ko(err) : ok(gridfsfile));
-			});
+			return this.db.lipthusDb.fs.get(this._id).load();
 		},
 		createVideoVersion: function(ext, force){
 			return this.fsFile()

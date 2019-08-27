@@ -17,7 +17,7 @@ module.exports = function botlog(Schema){
 		},
 
 		log: function(req){
-			return this.db.eucaDb.bot
+			return this.db.lipthusDb.bot
 				.fromAgent(req.get('user-agent'))
 				.then(bot => {
 					return this.create({

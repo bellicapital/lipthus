@@ -87,14 +87,14 @@ module.exports = function payment(Schema){
 	};
 
 	s.virtual('signature').get(function(){
-		return this.db.eucaDb.site.config.pay.signature.trim();
+		return this.db.lipthusDb.site.config.pay.signature.trim();
 	});
 
 	s.virtual('merchantCode').get(function(){
 		let merchantCode = this.get('merchant_code');
 
 		if(!merchantCode){
-			merchantCode = this.db.eucaDb.site.config.pay.merchantCode;
+			merchantCode = this.db.lipthusDb.site.config.pay.merchantCode;
 
 			this.set('merchant_code', merchantCode);
 		}
@@ -122,7 +122,7 @@ module.exports = function payment(Schema){
 			return ret;
 		},
 		getNumber: function(cb){
-			this.db.eucaDb.payment.findOne({}, '-_id number').sort({number: -1}).exec((err, r) => {
+			this.db.lipthusDb.payment.findOne({}, '-_id number').sort({number: -1}).exec((err, r) => {
 				if(err)
 					return cb&& cb(err);
 
@@ -141,7 +141,7 @@ module.exports = function payment(Schema){
 				if(err)
 					return cb(err);
 
-				const site = this.db.eucaDb.site;
+				const site = this.db.lipthusDb.site;
 				const url = site.mainUrl(null, true);
 				const pay = site.config.pay;
 				const pp = {url: pay.url_tpvv};
@@ -212,7 +212,7 @@ module.exports = function payment(Schema){
 			if(!ret)
 				return this.status;
 
-			return ret[lang] || ret[this.db.eucaDb.site.config.language];
+			return ret[lang] || ret[this.db.lipthusDb.site.config.language];
 		}
 	};
 

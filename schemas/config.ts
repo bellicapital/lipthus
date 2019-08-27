@@ -50,7 +50,7 @@ export function getSchema(site: Site) {
 	 */
 	s.statics.changeValue = function (this: any, key: string, value: any) {
 		return this.updateOne({name: key}, {$set: {value: value}})
-			.then(() => this.db.eucaDb.site.config[key] = value);
+			.then(() => this.db.lipthusDb.site.config[key] = value);
 	};
 
 	return s;

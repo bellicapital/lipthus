@@ -12,7 +12,7 @@ import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import session from "./session";
-import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
+import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel, LipthusPage} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
@@ -62,7 +62,7 @@ export class Site extends EventEmitter {
 	public domainName: string;
 	public db: LipthusDb;
 	public app: LipthusApplication;
-	public pages: { [s: string]: any; } = {};
+	public pages: { [s: string]: LipthusPage; } = {};
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
@@ -158,23 +158,28 @@ export class Site extends EventEmitter {
 					.then(() => existsSync(this.dir + '/schemas') && this.db.addSchemasDir(this.dir + '/schemas'))
 					.then(() => this.init())
 					.catch(this.emit.bind(this, 'error'));
-			})
-			.connect();
+			});
+
+		this.db.connect();
 	}
 
 	// noinspection JSUnusedGlobalSymbols
 	addDb(p: any, schemasDir?: string): Promise<LipthusDb> {
 		return new Promise((ok, ko) => {
-			new LipthusDb(p, this)
-				.on('error', ko)
-				.on('ready', (db: LipthusDb) => {
+			const db = new LipthusDb(p, this);
+
+			db.on('error', ko)
+				.on('ready', () => {
 					this.dbs[p.name] = db;
 
 					db.addLipthusSchemas()
 						.then(() => schemasDir && db.addSchemasDir(schemasDir))
 						.then(() => ok(db), ko);
-				})
-				.connect();
+				});
+
+			db.connect();
+
+			console.log(db._conn.constructor.name, this.db._conn.constructor.name);
 		});
 	}
 

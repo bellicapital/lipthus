@@ -15,7 +15,7 @@ export function getSchema() {
 		identifier: 'to',
 		created: true
 	});
-	
+
 	s.methods.send = function () {
 		return Promise.resolve()
 			.then(() => {
@@ -24,21 +24,21 @@ export function getSchema() {
 						message: 'No se ha enviado el email ' + this._id + ' a '	+ this.email.to	+ ' por estar en modo desarrollo'
 					};
 				}
-				
-				return this.db.eucaDb.site.mailer.send(this.email);
+
+				return this.db.lipthusDb.site.mailer.send(this.email);
 			})
 			.then((result: any) => this.set('result', result))
 			.catch((err: Error) => this.set('error', err))
 			.then(() => debug(this.result || this.error))
 			.then(() => this.save());
 	};
-	
+
 	// s.statics.pendingList = function() {
 	// 	return this.find({
 	// 		result: {$exists: false},
 	// 		error: {$exists: false}
 	// 	});
 	// };
-	
+
 	return s;
 }

@@ -71,7 +71,7 @@ module.exports = function cacheless(Schema){
 			const src = opt.src;
 			const compress = opt.compress;
 			const mtime = opt.mtime;
-			const db = this.db.eucaDb;
+			const db = this.db.lipthusDb;
 			const mapUrl = opt.mapUrl;
 			const site = db.site;
 

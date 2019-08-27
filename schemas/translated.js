@@ -63,7 +63,7 @@ module.exports = function translated(Schema){
 				return this.remove(query).then(r => !!r);
 
 		// Marcar como traducido. Hemos de contar las palabras
-			const site = this.db.eucaDb.site;
+			const site = this.db.lipthusDb.site;
 
 			return new Promise((ok, ko) => {
 
@@ -127,7 +127,7 @@ module.exports = function translated(Schema){
 		},
 		//solucion temporar para actualizar con contadores de palabras
 		setWC: function(){
-			const site = this.db.eucaDb.site;
+			const site = this.db.lipthusDb.site;
 
 			this.find(function(err, r){
 				if(err)

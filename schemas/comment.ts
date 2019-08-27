@@ -137,11 +137,11 @@ export class Comment {
 		if (!this.ref || !this.ref.namespace)
 			return Promise.resolve();
 
-		const dbs = (this as any).db.eucaDb.site.dbs;
+		const dbs = (this as any).db.lipthusDb.site.dbs;
 		const ref = this.ref.toObject();
 
 		if (!ref.db)
-			ref.db = (this as any).db.eucaDb.site.db.name;
+			ref.db = (this as any).db.lipthusDb.site.db.name;
 
 		if (!dbs[ref.db])
 			return Promise.reject(new Error('db ' + ref.db + ' not found'));

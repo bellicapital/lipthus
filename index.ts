@@ -115,3 +115,4 @@ export {User, UserModel} from "./schemas/user";
 export {NationalitiesModel, Nationality} from './schemas/nationalities';
 export {EnvironmentParams, DbParams} from './interfaces/global.interface';
 export {LipthusComment, LipthusCommentModel} from "./schemas/comment";
+export {LipthusPage, LipthusPageModel} from './schemas/page';
