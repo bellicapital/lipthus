@@ -1,6 +1,6 @@
 import {NextFunction, Router} from "express";
 import {EventEmitter} from "events";
-import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString} from "../interfaces/global.interface";
+import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString, LipthusConnection} from "../interfaces/global.interface";
 import * as Debug from "debug";
 import {LipthusDb} from "./db";
 import * as express from "express";
@@ -164,7 +164,30 @@ export class Site extends EventEmitter {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	addDb(p: any, schemasDir?: string): Promise<LipthusDb> {
+	addDb(name: string | any, schemasDir?: string): Promise<LipthusDb> {
+		// old compat
+		if (typeof name !== 'string')
+			name = name.name;
+
+		const db = new LipthusDb({name: name}, this);
+
+		db._conn = <LipthusConnection> Object.assign(this.db._conn.useDb(name), {
+			lipthusDb: db,
+			site: this,
+			app: this.app
+		});
+
+		this.dbs[name] = db;
+
+		db.setFs();
+
+		return db.addLipthusSchemas()
+			.then(() => schemasDir && db.addSchemasDir(schemasDir))
+			.then(() => db);
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	addDb_old(p: any, schemasDir?: string): Promise<LipthusDb> {
 		return new Promise((ok, ko) => {
 			const db = new LipthusDb(p, this);
 
@@ -178,8 +201,6 @@ export class Site extends EventEmitter {
 				});
 
 			db.connect();
-
-			console.log(db._conn.constructor.name, this.db._conn.constructor.name);
 		});
 	}
 

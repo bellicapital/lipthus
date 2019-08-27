@@ -72,7 +72,7 @@ export interface ColRef {
 
 export interface LipthusConnection extends Connection {
 	lipthusDb: LipthusDb;
-	eucaDb: LipthusDb; // deprecated
+	eucaDb?: LipthusDb; // deprecated
 	site: Site;
 	app: LipthusApplication;
 }

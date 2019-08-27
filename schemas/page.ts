@@ -4,7 +4,7 @@ import {Document, Model} from "mongoose";
 const fs = require('mz/fs');
 const debug = require('debug')('site:page');
 
-export const name = 'user';
+export const name = 'page';
 
 export function getSchema() {
 	const s = new LipthusSchema({

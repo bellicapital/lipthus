@@ -127,14 +127,18 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		this.connected = true;
 		debug('Connected to db ' + this.name + ' on ' + (this.params.host || 'localhost') + ':' + (this.params.port || '27017'));
 
+		this.setFs();
+
+		this.emit('ready', this);
+	}
+
+	setFs() {
 		// native db
 		const ndb: Db = this._conn.db;
 
 		this.fs = new GridFS(ndb, 'fs');
 
 		Object.defineProperty(ndb, 'lipthusDb', {value: this});
-
-		this.emit('ready', this);
 	}
 
 	toString() {
