@@ -17,7 +17,6 @@ import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
 import {LipthusLogger} from "./logger";
-import '../lib/global.l';
 import notFoundMin from "../routes/notfoundmin";
 import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";

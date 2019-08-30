@@ -1,6 +1,5 @@
 import * as Debug from 'debug';
 import './lib/vanilla.extensions';
-import './lib/global.l';
 import {LipthusDb, Site, SiteOptions} from "./modules";
 import {User} from "./schemas/user";
 import * as express from "express";

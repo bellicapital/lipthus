@@ -26,6 +26,7 @@ const debug = Debug('site:db');
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
+// mongoose.set('debug', true);
 
 export class LipthusDb extends (EventEmitter as new() => any) {
 
@@ -174,6 +175,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.model('user');
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	get settings(): SettingModel {
 		return this.model('settings');
 	}
@@ -247,20 +249,18 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	}
 
 	addSchemasDir(dir: string) {
+		const isValid = file => !file.match(/\.d\.ts$/) && file.match(/.+\.[tj]s/);
+
 		return fs.readdir(dir)
-			.then((schemas: Array<any>) =>
-					Promise.all(schemas.map(file => {
-						// avoid ts definition files
-						if (file.match(/\.d\.ts$/) || !file.match(/.+\.[tj]s/))
-							return;
+			.then((schemas: Array<string>) =>
+					Promise.all(schemas.filter(isValid).map(file => {
+						const fPath = dir + '/' + file;
 
-						const fpath = dir + '/' + file;
-
-						return fs.stat(fpath).then((stat: any) => {
+						return fs.stat(fPath).then((stat: any) => {
 							if (stat.isDirectory())
 								return;
 
-							const s: SchemaScript | any = require(fpath);
+							const s: SchemaScript | any = require(fPath);
 							const name = s.name;
 
 							if (typeof s === 'function') {
@@ -275,7 +275,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 			)
 			.then(() => fs.readdir(dir + '/plugins')
 				.then((plugins: Array<string>) => {
-					(plugins || []).forEach(plugin => {
+					(plugins || []).filter(isValid).forEach(plugin => {
 						const basename = path.basename(plugin, path.extname(plugin));
 						let file = require(dir + '/plugins/' + basename);
 
