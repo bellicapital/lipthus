@@ -119,7 +119,7 @@ export class BinDataImage extends BinDataFile {
 		return ret;
 	}
 
-	getDimentions() {
+	getDimensions() {
 		if (!this.width) {
 			if (this.contentType === 'image/png') {
 				this.width = this.MongoBinData.buffer.readUInt32BE(16);
@@ -242,10 +242,16 @@ export class BinDataImage extends BinDataFile {
 	send(req: any, res: any, opt?: any) {
 		if (!opt)
 			return super.send(req, res);
-		else
-			return this.getCached(req.site.db, opt)
+		else {
+			let db = req.site.db;
+
+			if (this.colRef.db && req.site.dbs[this.colRef.db] && req.site.dbs[this.colRef.db].cache)
+				db = req.site.dbs[this.colRef.db];
+
+			return this.getCached(db, opt)
 				.then((cached: BinDataFile) => cached.send(req, res))
 				.catch(req.next);
+		}
 	}
 
 	postFromFile(opt: PostParams = {}): Promise<BinDataImage> {

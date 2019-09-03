@@ -1,8 +1,8 @@
 import {UploadedFile} from "../interfaces/uploaded-file";
 import {promisify} from 'util';
+import * as path from "path";
 
 const fs = require('fs');
-const path = require('path');
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
@@ -83,12 +83,13 @@ export class BinDataFile {
 	}
 
 	uriName(ext?: string) {
-		const curext = path.extname(this.name);
-		const bn = path.basename(this.name, curext);
+		const curExt = path.extname(this.name);
+		const bn = path.basename(this.name, curExt);
 
-		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curext);
+		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	formDataValue() {
 		return this.name;
 	}
@@ -155,7 +156,7 @@ export class BinDataFile {
 
 		if (/^image\/.*$/.test(obj.contentType)) {
 			ret = new BinDataImage(obj, colRef);
-			ret.getDimentions();
+			ret.getDimensions();
 		} else
 			ret = new BinDataFile(obj, colRef);
 
