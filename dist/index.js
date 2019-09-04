@@ -39,4 +39,5 @@ var lipthus_error_1 = require("./classes/lipthus-error");
 exports.LipthusError = lipthus_error_1.LipthusError;
 var web_socket_server_1 = require("./classes/web-socket-server");
 exports.LipthusWebSocketServer = web_socket_server_1.LipthusWebSocketServer;
+// noinspection JSUnusedGlobalSymbols
 exports.nodeModule = (key) => require(key);

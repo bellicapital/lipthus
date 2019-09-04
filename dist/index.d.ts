@@ -51,6 +51,7 @@ export interface LipthusRequest extends express.Request {
      * @deprecated
      */
     cmsDir: string;
+    csrfToken(): string;
 }
 export interface LipthusResponse extends express.Response {
     now: number;

@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"start": "ts-node index",
-		"build": "tsc && node scripts/postinstall"
+		"build": "tsc && node scripts/build"
 	},
 	"repository": {
 		"type": "git",
