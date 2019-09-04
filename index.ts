@@ -82,6 +82,7 @@ export interface LipthusRequest extends express.Request {
 	 * @deprecated
 	 */
 	cmsDir: string;
+	csrfToken(): string;
 }
 
 export interface LipthusResponse extends express.Response {
@@ -105,6 +106,7 @@ export interface LipthusApplication extends express.Application {
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusWebSocketServer} from './classes/web-socket-server';
 export {LipthusDocument} from './interfaces/lipthus-document';
+// noinspection JSUnusedGlobalSymbols
 export const nodeModule = (key: string) => require(key);
 export {Setting, SettingModel} from "./schemas/settings";
 export {LipthusCache, LipthusCacheModel} from "./schemas/cache";
