@@ -90,11 +90,14 @@ class Ng2helper {
 const methods = {
 
 	serve(app: LipthusApplication): Promise<void> {
-		const dir = app.get('dir');
+		const dir = app.get('srcDir');
 		const lipthusRoutes = app.get('lipthusDir') + '/ng-routes';
-		const customRoutes = dir + '/ng-routes';
 		const serve = Ng2helper.serve;
 		const conf = app.site.package.config.ngRoutes || {};
+
+		let customRoutes = dir + '/dist/ng-routes';
+		customRoutes = dir + '/ng-routes';
+
 
 		return pExists(dir + '/angular-cli.json')
 			.then(exists => exists && serve(app, dir, '/home'))

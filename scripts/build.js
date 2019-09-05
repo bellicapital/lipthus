@@ -1,5 +1,3 @@
-console.log('copyfiles');
-
 const copyfiles = require('copyfiles');
 
 copyfiles([
