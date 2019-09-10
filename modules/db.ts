@@ -93,6 +93,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		if (options.useNewUrlParser === undefined)
 			options.useNewUrlParser = true;
 
+		if (options.useUnifiedTopology === undefined)
+			options.useUnifiedTopology = true;
+
 		return {uri: uri, options: options};
 	}
 
