@@ -19,8 +19,8 @@ module.exports = function fsfiles(Schema){
 		}],
 		processLog: {},
 		versions: {
-			mp4: {type: Schema.Types.ObjectId, ref: 'fsfiles' },
-			webm: {type: Schema.Types.ObjectId, ref: 'fsfiles' }
+			mp4: {},
+			webm: {}
 		},
 		thumb: {},
 		submitter: {type: Schema.Types.ObjectId, ref: 'user'},

@@ -4,6 +4,7 @@ import { BinDataImage, LipthusDb } from "../../modules";
 import { LipthusRequest, LipthusResponse } from "../../index";
 import { Collection, GridFSBucket, GridFSBucketReadStream } from "mongodb";
 import { Response } from "express";
+import { LipthusFile } from "../file-stream";
 export declare class GridFSFile {
     _id: string | Types.ObjectId;
     db: LipthusDb;
@@ -16,7 +17,7 @@ export declare class GridFSFile {
     metadata?: any;
     thumb?: any;
     versions?: {
-        [s: string]: GridFSFile | Types.ObjectId;
+        [s: string]: any;
     };
     md5?: string;
     submitter?: string;
@@ -39,8 +40,7 @@ export declare class GridFSFile {
     load(): Promise<GridFSFile>;
     setNotFound(): void;
     getVideoVersion(k: string, force: boolean): Promise<GridFSFile | any>;
-    setVideoVersions(): void;
-    checkVideoVersion(k: string, force: boolean): Promise<any>;
+    checkVideoVersion(k: string, force: boolean): Promise<any> | LipthusFile;
     getMetadata(): Promise<this>;
     tmpFile(): Promise<string>;
     createVideoVersion(k: string, force: boolean): Promise<any>;

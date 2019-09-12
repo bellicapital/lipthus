@@ -13,11 +13,14 @@ import * as fs from "fs";
 import {promisify} from "util";
 import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
 import {Response} from "express";
+import {LipthusFile} from "../file-stream";
 
 const multimedia = require('multimedia-helper');
 const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
 const pExec = promisify(exec);
+const cacheDir = '/var/cache/video-versions/';
+const writeFile = promisify(fs.writeFile);
 
 let tmpdir = require('os').tmpdir();
 
@@ -36,7 +39,7 @@ export class GridFSFile {
 	public folder?: string;
 	public metadata?: any;
 	public thumb?: any;
-	public versions?: { [s: string]: GridFSFile | Types.ObjectId };
+	public versions?: { [s: string]: any };
 	public md5?: string;
 	public submitter?: string;
 	public loaded = false;
@@ -176,7 +179,7 @@ export class GridFSFile {
 			return Promise.reject(new Error('No id!'));
 
 		return this.getBucket().find({_id: this._id}).toArray()
-			.then((r: Array<any>) => {
+			.then((r: Array<any>): any => {
 				if (!r.length)
 					return this.setNotFound();
 
@@ -192,11 +195,7 @@ export class GridFSFile {
 						db: this.databaseName
 					});
 
-				return this.getMetadata()
-					.then(() => {
-						if (this.metadata && this.folder === 'videos')
-							this.setVideoVersions();
-					});
+				return this.getMetadata();
 			})
 			.then(() => this);
 	}
@@ -214,30 +213,20 @@ export class GridFSFile {
 				if (this.folder !== 'videos')
 					throw new Error(this._id + ' is not a video main file');
 
-				if (!this.versions)
-					this.versions = {};
+				const fileName = cacheDir + this._id + '.' + k;
 
-				if (this.versions[k] && !force)
-					return this.versions[k];
+				if (fs.existsSync(fileName))
+					return new LipthusFile(fileName, this.versions[k]);
 
 				return this.checkVideoVersion(k, force);
 			});
 	}
 
-	setVideoVersions() {
-		videoExt.forEach(k => {
-			if (this.versions && this.versions[k]) {
-				this.versions[k] = new GridFSFile(this.versions[k] as Types.ObjectId, this.db);
-				(this.versions[k] as GridFSFile).folder = 'videoversions';
-				// } else {
-				// 	this.createVideoVersion(k);
-			}
-		});
-	}
-
 	checkVideoVersion(k: string, force: boolean) {
-		if (this.versions && this.versions[k])
-			return (this.versions[k] as GridFSFile).load();
+		const fileName = cacheDir + this._id + '.' + k;
+
+		if (fs.existsSync(fileName))
+			return new LipthusFile(fileName, this.versions[k]);
 		else
 			return this.createVideoVersion(k, force);
 	}
@@ -276,7 +265,7 @@ export class GridFSFile {
 
 		if (this.processLog[k].started) {
 			const elapsed = Date.now() - this.processLog[k].started.getTime(),
-				max = force ? 4 * 60000 : 4 * 60 * 60000;
+				max = force ? 60000 : 4 * 60 * 60000;
 
 			if (elapsed < max) {
 				const err = new LipthusError(
@@ -294,6 +283,8 @@ export class GridFSFile {
 
 		this.processLog[k].started = new Date();
 
+		const fileName = cacheDir + this._id + '.' + k;
+
 		return this.update({processLog: this.processLog})
 			.then(() => this.tmpFile())
 			.then((tmpFile: string) => {
@@ -309,10 +300,7 @@ export class GridFSFile {
 				else
 					cmd += ' -an';
 
-				const filename = this.basename(k);
-				const newTmpFile = tmpdir + new Types.ObjectId() + '_' + filename;
-
-				cmd += ' "' + newTmpFile + '"';
+				cmd += ' "' + fileName + '"';
 
 				this.processLog[k].command = cmd;
 
@@ -324,65 +312,27 @@ export class GridFSFile {
 						this.processLog[k].result = r || 'ok';
 						this.update({processLog: this.processLog}).catch(console.error.bind(console));
 
-						if (!fs.existsSync(newTmpFile))
-							throw new Error('tmp file not created: ' + newTmpFile);
+						if (!fs.existsSync(fileName))
+							throw new Error('tmp file not created: ' + fileName);
 
-						const bulkOptions: any = {contentType: 'video/' + k};
+						return multimedia(fileName)
+							.then((metadata: any) => writeFile(fileName + '.json', metadata)
+								.then(() => {
+									this.processLog[k].end = new Date();
 
-						return multimedia(newTmpFile)
-							.then((metadata: any) => bulkOptions.metadata = metadata)
-							.then(() => {
-								return new Promise((ok, ko) => {
-									debug("Version " + k + " created. Inserting it into db...");
+									debug("Version " + k + " created.");
+									this.db.emit('videoProcessed', this);
 
-									fs.createReadStream(newTmpFile)
-										.pipe(this.getBucket().openUploadStream(filename, bulkOptions))
-										.on('error', ko)
-										.on('finish', (r2: any) => {
-											debug('version ' + k + ' written into db: ' + r2._id);
+									const update = {processLog: this.processLog};
+									update['versions.' + k] = metadata;
 
-											return ok(r2._id);
-										});
-								});
-							})
-							.then((id: Types.ObjectId) => {
-								if (!this.versions)
-									this.versions = {};
-
-								this.versions[k] = id;
-								this.processLog[k].end = new Date();
-
-								const update = {
-									versions: <any>{},
-									processLog: this.processLog
-								};
-
-								Object.keys(this.versions).forEach(i => {
-									if (this.versions![i])
-										update.versions[i] = (this.versions![i] as GridFSFile)._id || this.versions![i];
-								});
-
-								return this.update(update)
-									.then(() => {
-										const params = {
-											folder: 'videoversions',
-											parent: this._id
-										};
-
-										return this.db.fsfiles.updateOne({_id: id}, {$set: params})
-											.then(() => {
-												this.versions![k] = new GridFSFile(id, this.db);
-
-												if (videoExt.every(ext => !!this.versions![ext]))
-													this.db.emit('videoProcessed', this);
-											});
-									})
-									.then(() => fsp.unlink(tmpFile))
-									.then(() => fsp.unlink(newTmpFile));
-							});
+									return this.update(update)
+										.then(() => fsp.unlink(tmpFile));
+								})
+							);
 					});
 			})
-			.then((): any => this.versions![k]);
+			.then((): any => new LipthusFile(fileName, this.versions[k]));
 	}
 
 	update(params: any): Promise<GridFSFile> {

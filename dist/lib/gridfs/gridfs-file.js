@@ -12,10 +12,13 @@ const optimage_1 = require("../optimage");
 const fs = require("fs");
 const util_1 = require("util");
 const express_mongo_stream_1 = require("express-mongo-stream");
+const file_stream_1 = require("../file-stream");
 const multimedia = require('multimedia-helper');
 const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
 const pExec = util_1.promisify(child_process_1.exec);
+const cacheDir = '/var/cache/video-versions/';
+const writeFile = util_1.promisify(fs.writeFile);
 let tmpdir = require('os').tmpdir();
 if (tmpdir.substr(-1) !== '/')
     tmpdir += '/';
@@ -143,11 +146,7 @@ class GridFSFile {
                     field: 'thumb',
                     db: this.databaseName
                 });
-            return this.getMetadata()
-                .then(() => {
-                if (this.metadata && this.folder === 'videos')
-                    this.setVideoVersions();
-            });
+            return this.getMetadata();
         })
             .then(() => this);
     }
@@ -161,26 +160,16 @@ class GridFSFile {
             .then(() => {
             if (this.folder !== 'videos')
                 throw new Error(this._id + ' is not a video main file');
-            if (!this.versions)
-                this.versions = {};
-            if (this.versions[k] && !force)
-                return this.versions[k];
+            const fileName = cacheDir + this._id + '.' + k;
+            if (fs.existsSync(fileName))
+                return new file_stream_1.LipthusFile(fileName, this.versions[k]);
             return this.checkVideoVersion(k, force);
         });
     }
-    setVideoVersions() {
-        videoExt.forEach(k => {
-            if (this.versions && this.versions[k]) {
-                this.versions[k] = new GridFSFile(this.versions[k], this.db);
-                this.versions[k].folder = 'videoversions';
-                // } else {
-                // 	this.createVideoVersion(k);
-            }
-        });
-    }
     checkVideoVersion(k, force) {
-        if (this.versions && this.versions[k])
-            return this.versions[k].load();
+        const fileName = cacheDir + this._id + '.' + k;
+        if (fs.existsSync(fileName))
+            return new file_stream_1.LipthusFile(fileName, this.versions[k]);
         else
             return this.createVideoVersion(k, force);
     }
@@ -211,7 +200,7 @@ class GridFSFile {
         if (!this.processLog[k])
             this.processLog[k] = {};
         if (this.processLog[k].started) {
-            const elapsed = Date.now() - this.processLog[k].started.getTime(), max = force ? 4 * 60000 : 4 * 60 * 60000;
+            const elapsed = Date.now() - this.processLog[k].started.getTime(), max = force ? 60000 : 4 * 60 * 60000;
             if (elapsed < max) {
                 const err = new lipthus_error_1.LipthusError(this.processLog[k].end ?
                     'Could not create version ' + k :
@@ -222,6 +211,7 @@ class GridFSFile {
             }
         }
         this.processLog[k].started = new Date();
+        const fileName = cacheDir + this._id + '.' + k;
         return this.update({ processLog: this.processLog })
             .then(() => this.tmpFile())
             .then((tmpFile) => {
@@ -233,9 +223,7 @@ class GridFSFile {
                 cmd += ' -b:a 64k' + (k === 'webm' ? ' -c:a libvorbis' : ' -strict experimental');
             else
                 cmd += ' -an';
-            const filename = this.basename(k);
-            const newTmpFile = tmpdir + new mongoose_1.Types.ObjectId() + '_' + filename;
-            cmd += ' "' + newTmpFile + '"';
+            cmd += ' "' + fileName + '"';
             this.processLog[k].command = cmd;
             debug('executing cmd: ' + cmd);
             return this.update({ processLog: this.processLog })
@@ -243,55 +231,22 @@ class GridFSFile {
                 .then((r) => {
                 this.processLog[k].result = r || 'ok';
                 this.update({ processLog: this.processLog }).catch(console.error.bind(console));
-                if (!fs.existsSync(newTmpFile))
-                    throw new Error('tmp file not created: ' + newTmpFile);
-                const bulkOptions = { contentType: 'video/' + k };
-                return multimedia(newTmpFile)
-                    .then((metadata) => bulkOptions.metadata = metadata)
+                if (!fs.existsSync(fileName))
+                    throw new Error('tmp file not created: ' + fileName);
+                return multimedia(fileName)
+                    .then((metadata) => writeFile(fileName + '.json', metadata)
                     .then(() => {
-                    return new Promise((ok, ko) => {
-                        debug("Version " + k + " created. Inserting it into db...");
-                        fs.createReadStream(newTmpFile)
-                            .pipe(this.getBucket().openUploadStream(filename, bulkOptions))
-                            .on('error', ko)
-                            .on('finish', (r2) => {
-                            debug('version ' + k + ' written into db: ' + r2._id);
-                            return ok(r2._id);
-                        });
-                    });
-                })
-                    .then((id) => {
-                    if (!this.versions)
-                        this.versions = {};
-                    this.versions[k] = id;
                     this.processLog[k].end = new Date();
-                    const update = {
-                        versions: {},
-                        processLog: this.processLog
-                    };
-                    Object.keys(this.versions).forEach(i => {
-                        if (this.versions[i])
-                            update.versions[i] = this.versions[i]._id || this.versions[i];
-                    });
+                    debug("Version " + k + " created.");
+                    this.db.emit('videoProcessed', this);
+                    const update = { processLog: this.processLog };
+                    update['versions.' + k] = metadata;
                     return this.update(update)
-                        .then(() => {
-                        const params = {
-                            folder: 'videoversions',
-                            parent: this._id
-                        };
-                        return this.db.fsfiles.updateOne({ _id: id }, { $set: params })
-                            .then(() => {
-                            this.versions[k] = new GridFSFile(id, this.db);
-                            if (videoExt.every(ext => !!this.versions[ext]))
-                                this.db.emit('videoProcessed', this);
-                        });
-                    })
-                        .then(() => fsp.unlink(tmpFile))
-                        .then(() => fsp.unlink(newTmpFile));
-                });
+                        .then(() => fsp.unlink(tmpFile));
+                }));
             });
         })
-            .then(() => this.versions[k]);
+            .then(() => new file_stream_1.LipthusFile(fileName, this.versions[k]));
     }
     update(params) {
         return this.db.fsfiles.updateOne({ _id: this._id }, { $set: params }).exec()

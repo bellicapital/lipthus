@@ -44,12 +44,14 @@ function default_1(req, res, next) {
             return file.sendThumb(req, res, opt);
         }
         else if (ext === 'tag') {
+            const basename = encodeURIComponent(file.basename().toLocaleLowerCase());
+            const basePath = req.protocol + '://' + req.headers.host + '/videos/' + dbName + '.' + file._id + '/';
             res.locals = {
-                poster: 'http://' + req.headers.host + '/videos/' + file._id + '/poster.jpg',
-                mp4: 'http://' + req.headers.host + file.versions.mp4,
-                webm: 'http://' + req.headers.host + file.versions.webm
+                poster: basePath + 'poster.jpg',
+                mp4: basePath + basename + '.mp4',
+                webm: basePath + basename + '.webm'
             };
-            return res.render(req.site.lipthusDir + '/views/videotag');
+            return res.render(req.site.lipthusDir + '/views/video-tag');
         }
         else if (/^f_\d+_/.test(ext)) { // frames
             const parsed = /^f_(\d+)_(\d*)x?(\d*)(k?)/.exec(ext);

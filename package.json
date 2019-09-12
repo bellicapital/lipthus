@@ -3,8 +3,9 @@
 	"version": "2.4.3",
 	"private": true,
 	"scripts": {
-		"start": "ts-node index",
-		"build": "tsc && node scripts/build"
+		"build": "tsc && node scripts/build",
+		"postinstall": "node dist/lib/server",
+		"server": "ts-node lib/server"
 	},
 	"repository": {
 		"type": "git",

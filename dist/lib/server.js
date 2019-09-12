@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const util_1 = require("util");
+const mkdir = util_1.promisify(fs.mkdir);
 const exec = require("child_process").exec;
 const debug = require('debug')('site:server');
 const commands = [
@@ -44,4 +47,24 @@ commands.forEach((cmd) => {
         if (++count === commands.length)
             debug('status: ok');
     });
+});
+const videoCacheDir = '/var/cache/video-versions';
+fs.access(videoCacheDir, fs.constants.W_OK | fs.constants.R_OK, (err) => {
+    if (!err)
+        return;
+    debug('/var/cache/video-versions does not exists');
+    Promise.resolve()
+        .then(() => {
+        if (!fs.existsSync('/var/cache'))
+            return mkdir('/var/cache');
+    })
+        .then(() => {
+        if (!fs.existsSync(videoCacheDir))
+            return mkdir(videoCacheDir);
+    })
+        .then(() => fs.chmod(videoCacheDir, 0o666, err2 => {
+        if (err2)
+            throw err2;
+    }))
+        .catch(err3 => console.error('Can\'t create ' + videoCacheDir + ' directory', err3.message));
 });
