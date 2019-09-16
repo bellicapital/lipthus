@@ -2,7 +2,7 @@ import { FileInfo } from "./file-info";
 import { Types } from "mongoose";
 import { BinDataImage, LipthusDb } from "../../modules";
 import { LipthusRequest, LipthusResponse } from "../../index";
-import { Collection, GridFSBucket, GridFSBucketReadStream } from "mongodb";
+import { Collection, GridFSBucket } from "mongodb";
 import { Response } from "express";
 import { LipthusFile } from "../file-stream";
 export declare class GridFSFile {
@@ -35,7 +35,7 @@ export declare class GridFSFile {
     readonly namespace: string;
     readonly collection: Collection;
     info(full?: boolean): FileInfo;
-    send(req: LipthusRequest, res: LipthusResponse): Promise<GridFSBucketReadStream | Response>;
+    send(req: LipthusRequest, res: LipthusResponse): Promise<any | Response>;
     toString(): string;
     load(): Promise<GridFSFile>;
     setNotFound(): void;

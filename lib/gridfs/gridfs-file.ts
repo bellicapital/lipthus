@@ -8,7 +8,7 @@ import * as debug0 from "debug";
 import {LipthusRequest, LipthusResponse} from "../../index";
 import {LipthusError} from "../../classes/lipthus-error";
 import {optimage} from "../optimage";
-import {Collection, GridFSBucket, GridFSBucketReadStream} from "mongodb";
+import {Collection, GridFSBucket} from "mongodb";
 import * as fs from "fs";
 import {promisify} from "util";
 import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
@@ -135,7 +135,7 @@ export class GridFSFile {
 		return ret;
 	}
 
-	send(req: LipthusRequest, res: LipthusResponse): Promise<GridFSBucketReadStream | Response> {
+	send(req: LipthusRequest, res: LipthusResponse): Promise<any | Response> {
 		return this.load()
 			.then(() => {
 				if (!this.contentType)
