@@ -65,7 +65,7 @@ class Site extends events_1.EventEmitter {
         // noinspection JSDeprecatedSymbols
         this.cmsDir = this.lipthusDir;
         this.package = require(this.srcDir + '/package');
-        this.cmsPackage = require('../package');
+        this.cmsPackage = require(this.lipthusDir + '/package');
         if (!this.package.config)
             this.package.config = {};
         this.key = this.package.name;

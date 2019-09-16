@@ -15,7 +15,7 @@
 		"name": "Juanjo Tortosa",
 		"email": "juanjo.tortosa@gmail.com"
 	},
-	"description": "Content Management Framework using angular 7+, mongodb, express and nodejs",
+	"description": "Content Management Framework using angular, mongodb, express and nodejs",
 	"keywords": [
 		"cms"
 	],
