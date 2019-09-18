@@ -37,9 +37,9 @@ class GridFS {
     collection(cb) {
         this.db.collection(this.ns + '.files', cb);
     }
-    find() {
+    find(q, o) {
         const args = arguments;
-        this.collection((err, collection) => {
+        return this.collection((err, collection) => {
             if (err)
                 return args[args.length - 1]();
             collection.find.apply(collection, args);

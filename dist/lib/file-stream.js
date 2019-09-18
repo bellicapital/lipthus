@@ -19,7 +19,8 @@ class LipthusFile {
             .then((stat) => {
             let start = 0;
             let end = stat.size - 1;
-            res.type(this.params.contentType);
+            if (this.params.contentType)
+                res.type(this.params.contentType);
             res.set('Accept-Ranges', 'bytes');
             res.set('Content-Disposition', opt.disposition + '; filename="' + opt.filename + '"');
             if (req.headers.range) {

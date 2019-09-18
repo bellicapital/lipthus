@@ -20,7 +20,6 @@ const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
 const pExec = promisify(exec);
 const cacheDir = '/var/cache/video-versions/';
-const writeFile = promisify(fs.writeFile);
 
 let tmpdir = require('os').tmpdir();
 
@@ -213,7 +212,7 @@ export class GridFSFile {
 				if (this.folder !== 'videos')
 					throw new Error(this._id + ' is not a video main file');
 
-				const fileName = cacheDir + this._id + '.' + k;
+				const fileName = this.videoVersionFileName(k);
 
 				if (fs.existsSync(fileName))
 					return new LipthusFile(fileName, this.versions[k]);
@@ -222,8 +221,12 @@ export class GridFSFile {
 			});
 	}
 
+	videoVersionFileName(k: string) {
+		return cacheDir + this.db.name + '/' + this._id + '.' + k;
+	}
+
 	checkVideoVersion(k: string, force: boolean) {
-		const fileName = cacheDir + this._id + '.' + k;
+		const fileName = this.videoVersionFileName(k);
 
 		if (fs.existsSync(fileName))
 			return new LipthusFile(fileName, this.versions[k]);
@@ -238,7 +241,7 @@ export class GridFSFile {
 		return this.tmpFile()
 			.then(multimedia)
 			.then((r: any) => this.update({metadata: r}))
-			// assignamos todos los valores de metadata al propio objeto (duration, fps, etc...)
+			// asignamos todos los valores de metadata al propio objeto (duration, fps, etc...)
 			.then(() => Object.assign(this, this.metadata));
 	}
 
@@ -283,7 +286,12 @@ export class GridFSFile {
 
 		this.processLog[k].started = new Date();
 
-		const fileName = cacheDir + this._id + '.' + k;
+		const dir = cacheDir + this.db.name;
+
+		if (!fs.existsSync(dir))
+			fs.mkdirSync(dir, {recursive: true});
+
+		const fileName = dir + '/' + this._id + '.' + k;
 
 		return this.update({processLog: this.processLog})
 			.then(() => this.tmpFile())
@@ -316,20 +324,18 @@ export class GridFSFile {
 							throw new Error('tmp file not created: ' + fileName);
 
 						return multimedia(fileName)
-							.then((metadata: any) => writeFile(fileName + '.json', metadata)
-								.then(() => {
-									this.processLog[k].end = new Date();
+							.then((metadata: any) => {
+								this.processLog[k].end = new Date();
 
-									debug("Version " + k + " created.");
-									this.db.emit('videoProcessed', this);
+								debug("Version " + k + " created.");
+								this.db.emit('videoProcessed', this);
 
-									const update = {processLog: this.processLog};
-									update['versions.' + k] = metadata;
+								const update = {processLog: this.processLog};
+								update['versions.' + k] = metadata;
 
-									return this.update(update)
-										.then(() => fsp.unlink(tmpFile));
-								})
-							);
+								return this.update(update)
+									.then(() => fsp.unlink(tmpFile));
+							});
 					});
 			})
 			.then((): any => new LipthusFile(fileName, this.versions[k]));

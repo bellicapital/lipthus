@@ -47,10 +47,10 @@ export class GridFS {
 		this.db.collection(this.ns + '.files', cb);
 	}
 
-	find() {
+	find(q?, o?) {
 		const args = arguments;
 
-		this.collection((err: Error, collection: any) => {
+		return this.collection((err: Error, collection: any) => {
 			if (err)
 				return args[args.length - 1]();
 

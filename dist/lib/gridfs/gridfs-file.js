@@ -18,7 +18,6 @@ const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
 const pExec = util_1.promisify(child_process_1.exec);
 const cacheDir = '/var/cache/video-versions/';
-const writeFile = util_1.promisify(fs.writeFile);
 let tmpdir = require('os').tmpdir();
 if (tmpdir.substr(-1) !== '/')
     tmpdir += '/';
@@ -160,14 +159,17 @@ class GridFSFile {
             .then(() => {
             if (this.folder !== 'videos')
                 throw new Error(this._id + ' is not a video main file');
-            const fileName = cacheDir + this._id + '.' + k;
+            const fileName = this.videoVersionFileName(k);
             if (fs.existsSync(fileName))
                 return new file_stream_1.LipthusFile(fileName, this.versions[k]);
             return this.checkVideoVersion(k, force);
         });
     }
+    videoVersionFileName(k) {
+        return cacheDir + this.db.name + '/' + this._id + '.' + k;
+    }
     checkVideoVersion(k, force) {
-        const fileName = cacheDir + this._id + '.' + k;
+        const fileName = this.videoVersionFileName(k);
         if (fs.existsSync(fileName))
             return new file_stream_1.LipthusFile(fileName, this.versions[k]);
         else
@@ -179,7 +181,7 @@ class GridFSFile {
         return this.tmpFile()
             .then(multimedia)
             .then((r) => this.update({ metadata: r }))
-            // assignamos todos los valores de metadata al propio objeto (duration, fps, etc...)
+            // asignamos todos los valores de metadata al propio objeto (duration, fps, etc...)
             .then(() => Object.assign(this, this.metadata));
     }
     tmpFile() {
@@ -211,7 +213,10 @@ class GridFSFile {
             }
         }
         this.processLog[k].started = new Date();
-        const fileName = cacheDir + this._id + '.' + k;
+        const dir = cacheDir + this.db.name;
+        if (!fs.existsSync(dir))
+            fs.mkdirSync(dir, { recursive: true });
+        const fileName = dir + '/' + this._id + '.' + k;
         return this.update({ processLog: this.processLog })
             .then(() => this.tmpFile())
             .then((tmpFile) => {
@@ -234,8 +239,7 @@ class GridFSFile {
                 if (!fs.existsSync(fileName))
                     throw new Error('tmp file not created: ' + fileName);
                 return multimedia(fileName)
-                    .then((metadata) => writeFile(fileName + '.json', metadata)
-                    .then(() => {
+                    .then((metadata) => {
                     this.processLog[k].end = new Date();
                     debug("Version " + k + " created.");
                     this.db.emit('videoProcessed', this);
@@ -243,7 +247,7 @@ class GridFSFile {
                     update['versions.' + k] = metadata;
                     return this.update(update)
                         .then(() => fsp.unlink(tmpFile));
-                }));
+                });
             });
         })
             .then(() => new file_stream_1.LipthusFile(fileName, this.versions[k]));

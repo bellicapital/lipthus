@@ -40,6 +40,7 @@ export declare class GridFSFile {
     load(): Promise<GridFSFile>;
     setNotFound(): void;
     getVideoVersion(k: string, force: boolean): Promise<GridFSFile | any>;
+    videoVersionFileName(k: string): string;
     checkVideoVersion(k: string, force: boolean): Promise<any> | LipthusFile;
     getMetadata(): Promise<this>;
     tmpFile(): Promise<string>;

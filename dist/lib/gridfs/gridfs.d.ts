@@ -13,7 +13,7 @@ export declare class GridFS {
     findById(id: string): Promise<GridFSFile>;
     findVideoById(id: string): Promise<GridFSVideo>;
     collection(cb: any): void;
-    find(): void;
+    find(q?: any, o?: any): void;
     findOneField(id: string, field: string): Promise<unknown>;
     fromFile(file: string | any, fileOptions?: any): Promise<any>;
     getBucket(): GridFSBucket;
