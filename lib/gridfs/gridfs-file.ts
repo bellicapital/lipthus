@@ -111,8 +111,7 @@ export class GridFSFile {
 					ret.versions = {};
 
 					videoExt.forEach(ext => {
-						ret.versions[ext] = '/videos/' + this.databaseName + '.' +
-							(this.versions && this.versions[ext] ? (this.versions[ext] as GridFSFile)._id : this._id) + '/' + ret.basename + '.' + ext;
+						ret.versions[ext] = '/videos/' + this.databaseName + '.' + this._id + '/' + ret.basename + '.' + ext;
 					});
 				}
 			} else if (this.thumb)

@@ -4,8 +4,7 @@
 	"private": true,
 	"scripts": {
 		"build": "tsc && node scripts/build",
-		"postinstall": "node dist/lib/server",
-		"server": "ts-node lib/server"
+		"postinstall": "node dist/lib/server"
 	},
 	"repository": {
 		"type": "git",
@@ -78,7 +77,7 @@
 		"passport-facebook-token": "3.3.0",
 		"passport-google-oauth2": "0.2.0",
 		"passport-local": "1.0.0",
-		"pem": "1.14.2",
+		"pem": "1.14.3",
 		"protractor": "5.4.2",
 		"pug": "2.0.4",
 		"request": "2.88.0",
