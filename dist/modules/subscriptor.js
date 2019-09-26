@@ -13,6 +13,9 @@ class Subscriptor {
         this.manageComments();
         this.subscribeDb(app.db);
     }
+    static init(app) {
+        return new Subscriptor(app);
+    }
     subscribeDb(db) {
         Object.each(db.schemas, (name, s) => {
             if (s.options.subscriptions)

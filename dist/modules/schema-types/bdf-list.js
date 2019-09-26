@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bdf_1 = require("../bdf");
 const mongoose_1 = require("mongoose");
+const bdi_1 = require("../bdi");
 class BinDataFileList {
     /**
      * First element
@@ -15,7 +16,10 @@ class BinDataFileList {
     }
     getThumb(width, height, crop, enlarge) {
         const first = this.getFirst();
-        return first ? first.info(width, height, crop === undefined ? true : crop, enlarge) : null;
+        if (first instanceof bdi_1.default)
+            return first.info(width, height, crop === undefined ? true : crop, enlarge);
+        else
+            return first;
     }
     info(width, height, crop, enlarge) {
         return Object.keys(this).map(key => this[key].info(width, height, crop, enlarge)).sort((a, b) => a.weight - b.weight);

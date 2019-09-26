@@ -19,7 +19,6 @@ import logout from "./logout";
 import videos from "./videos";
 import lmns from "./lmns";
 import resimg from "./resimg";
-
 import item_comments from "./item-comments";
 
 const embed = require('./embed');
@@ -36,9 +35,8 @@ const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusRe
 		});
 };
 
-module.exports = function(app: LipthusApplication) {
+export default async function(app: LipthusApplication) {
 	const router = Router({strict: true});
-
 
 	// ...  as "any" hasta que implementemos router
 	router.post('/ngsetup/:method', uLevelMiddleware(2) as any, Setup as any);
@@ -92,5 +90,19 @@ module.exports = function(app: LipthusApplication) {
 
 	require('./rss')(app);
 
+	// local routes
+	const path_ = app.get('dir') + '/routes';
+
+	if (existsSync(path_))
+		await require(path_)(app);
+
+	// site pages
+	if (app.site.config.startpage && app.site.pages[app.site.config.startpage])
+		router.all('/', (req, res, next) => app.site.pages[app.site.config.startpage].display(req, res, next));
+
+	Object.values(app.site.pages).forEach(p =>
+		router.all('/' + (p.url || p.key), p.display.bind(p))
+	);
+
 	app.use('/', router);
-};
+}

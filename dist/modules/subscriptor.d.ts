@@ -2,6 +2,7 @@ import { LipthusDb } from "./db";
 export declare class Subscriptor {
     app: any;
     models: any;
+    static init(app: any): Subscriptor;
     constructor(app: any);
     subscribeDb(db: LipthusDb): void;
     summary(): any;

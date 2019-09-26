@@ -9,6 +9,10 @@ export class Subscriptor {
 
 	public models: any = {};
 
+	static init(app: any) {
+		return new Subscriptor(app);
+	}
+
 	constructor(public app: any) {
 		Object.defineProperty(app, 'subscriptor', {value: this});
 

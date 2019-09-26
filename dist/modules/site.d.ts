@@ -55,8 +55,7 @@ export declare class Site extends EventEmitter {
     getEnvironment(): EnvironmentParams;
     connect(): void;
     addDb(name: string | any, schemasDir?: string): Promise<LipthusDb>;
-    addDb_old(p: any, schemasDir?: string): Promise<LipthusDb>;
-    init(): any;
+    init(): Promise<void>;
     readonly notifier: any;
     readonly authDb: LipthusDb;
     readonly userCollection: UserModel;
@@ -66,13 +65,13 @@ export declare class Site extends EventEmitter {
     finish(): Promise<void>;
     lessVars(): any;
     mainUrl(lang?: string, omitePort?: boolean): string;
-    sendMail(opt: any, throwError?: boolean): any;
+    sendMail(opt: any, throwError?: boolean): Promise<any>;
     createApp(): void;
-    setupApp(): any;
+    setupApp(): Promise<void>;
     logo(width?: number, height?: number): any;
-    getPages(): any;
-    setRoutes(): Promise<void>;
-    loadLocalRoutes(): Promise<any>;
+    getPages(): Promise<{
+        [s: string]: LipthusPage;
+    }>;
     routeNotFound(): void;
     listen(): Promise<void>;
     langUrl(langcode?: string): string;

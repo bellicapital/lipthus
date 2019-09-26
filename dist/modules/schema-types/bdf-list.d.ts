@@ -1,10 +1,12 @@
+import { BinDataFile } from "../bdf";
 import { SchemaType } from "mongoose";
+import BinDataImage from "../bdi";
 export declare class BinDataFileList {
     /**
      * First element
      * @returns {BinDataFile}
      */
-    getFirst(): any;
+    getFirst(): BinDataFile | BinDataImage;
     getThumb(width: number, height: number, crop?: boolean, enlarge?: boolean): any;
     info(width: number, height: number, crop: boolean, enlarge: boolean): any[];
     toObject(): any;

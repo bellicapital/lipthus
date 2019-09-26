@@ -59,36 +59,32 @@ export function getSchema(site: Site) {
 
 			return this.find({_tag: tag}, fields);
 		},
-		getMlTag: function (tag: string | Array<string>, cb: any) {
+		getMlTag: async function (tag: string | Array<string>) {
 			if (typeof tag === 'string')
-				return this.getMlTag_(tag, cb);
+				return this.getMlTag_(tag);
 
 			const ret = {};
-			let count = 0;
 
-			tag.forEach((t) => {
-				this.getMlTag_(t, (err: Error, r: any) => {
-					Object.assign(ret, r);
+			for (const t of tag) {
+				const r = await this.getMlTag_(t);
 
-					if (++count === tag.length)
-						cb(err, ret);
-				});
-			});
+				Object.assign(ret, r);
+			}
+
+			return ret;
 		},
-		getMlTag_: function (tag: string, cb: any) {
-			this.find({_tag: tag}, exclude)
-				.then((r: any) => {
-					const ret: any = {};
+		getMlTag_: async function (tag: string) {
+			const r: any = await this.find({_tag: tag}, exclude);
 
-					r.forEach((obj: any) => {
-						ret[obj._k] = obj.toObject();
+			const ret: any = {};
 
-						delete ret[obj._k]._k;
-					});
+			for (const obj of r) {
+				ret[obj._k] = obj.toObject();
 
-					cb(null, ret);
-				})
-				.catch(cb);
+				delete ret[obj._k]._k;
+			}
+
+			return ret;
 		},
 		check: function () {
 			const dbname = this.db.name;

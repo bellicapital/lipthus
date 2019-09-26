@@ -4,7 +4,7 @@ const morgan = require("morgan");
 function default_1(req, res, next) {
     const timers = {
         all: { start: res.now },
-        cmjs: { start: res.now }
+        lipthus: { start: res.now }
     };
     res.timer = {
         start: (k) => timers[k] = { start: Date.now() },

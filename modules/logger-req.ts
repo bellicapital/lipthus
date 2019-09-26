@@ -6,7 +6,7 @@ import {KeyAny} from "../interfaces/global.interface";
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	const timers: KeyAny = {
 		all: {start: res.now},
-		cmjs: {start: res.now}
+		lipthus: {start: res.now}
 	};
 
 	res.timer = {

@@ -1,4 +1,4 @@
-import {NextFunction, Router} from "express";
+import {NextFunction} from "express";
 import {EventEmitter} from "events";
 import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString, LipthusConnection} from "../interfaces/global.interface";
 import * as Debug from "debug";
@@ -22,8 +22,7 @@ import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";
 import logger_req from "./logger-req";
 import auth from "./auth";
-import {exists as exists_, existsSync} from "fs";
-import {promisify} from "util";
+import {existsSync} from "fs";
 import listen from "./listen";
 import sitemap from "./sitemap";
 import {Notifier} from "./notifier";
@@ -34,8 +33,8 @@ import facebook from "./facebook";
 import Ng from './ng2';
 import {GPageSpeedMiddleWare} from "./g-page-speed";
 import {LipthusDevPanel} from "./cmjspanel";
+import route from "../routes";
 
-const pExists = promisify(exists_);
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({cookie: true});
@@ -163,7 +162,7 @@ export class Site extends EventEmitter {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	addDb(name: string | any, schemasDir?: string): Promise<LipthusDb> {
+	async addDb(name: string | any, schemasDir?: string): Promise<LipthusDb> {
 		// old compat
 		if (typeof name !== 'string')
 			name = name.name;
@@ -180,62 +179,51 @@ export class Site extends EventEmitter {
 
 		db.setFs();
 
-		return db.addLipthusSchemas()
-			.then(() => schemasDir && db.addSchemasDir(schemasDir))
-			.then(() => db);
+		await db.addLipthusSchemas();
+
+		if (schemasDir)
+			await db.addSchemasDir(schemasDir);
+
+		return db;
 	}
 
-	// noinspection JSUnusedGlobalSymbols
-	addDb_old(p: any, schemasDir?: string): Promise<LipthusDb> {
-		return new Promise((ok, ko) => {
-			const db = new LipthusDb(p, this);
-
-			db.on('error', ko)
-				.on('ready', () => {
-					this.dbs[p.name] = db;
-
-					db.addLipthusSchemas()
-						.then(() => schemasDir && db.addSchemasDir(schemasDir))
-						.then(() => ok(db), ko);
-				});
-
-			db.connect();
-		});
-	}
-
-	init() {
+	async init() {
 		this.createApp();
 
 		this.mailer = new Mailer(this.environment.mail, this);
 
-		return this.config.load()
-			.then(() => {
-				const config = this.config;
+		await this.config.load();
 
-				if (config.static_host)
-					this.staticHost = this.externalProtocol + '://' + config.static_host;
+		const config = this.config;
 
-				this.registerMethods = {
-					site: config.site_credentials,
-					google: config.googleApiKey && !!config.googleSecret,
-					facebook: !!config.fb_app_id
-				};
-			})
-			.then(this.hooks.bind(this, 'pre', 'checkVersion'))
-			.then(checkVersions.bind(this, this))
-			.then(this.hooks.bind(this, 'pre', 'setupApp'))
-			.then(this.setupApp.bind(this))
-			.then(this.hooks.bind(this, 'post', 'setupApp'))
-			.then(() => Ng(this.app))
-			.then(this.getPages.bind(this))
-			.then(this.loadPlugins.bind(this))
-			.then(this.hooks.bind(this, 'post', 'plugins'))
-			.then(() => new Subscriptor(this.app))
-			.then(() => debug(this.key + ' ready'))
-			.then(this.hooks.bind(this, 'pre', 'finish'))
-			.then(this.finish.bind(this))
-			.then(this.hooks.bind(this, 'post', 'finish'))
-			.then(() => this.emit('ready'));
+		if (config.static_host)
+			this.staticHost = this.externalProtocol + '://' + config.static_host;
+
+		this.registerMethods = {
+			site: config.site_credentials,
+			google: config.googleApiKey && !!config.googleSecret,
+			facebook: !!config.fb_app_id
+		};
+
+		await this.hooks('pre', 'checkVersion');
+		await checkVersions(this);
+		await this.hooks('pre', 'setupApp');
+		await this.setupApp();
+		await this.hooks( 'post', 'setupApp');
+		await Ng(this.app);
+		await this.getPages();
+		await this.loadPlugins();
+		await this.hooks('post', 'plugins');
+
+		Subscriptor.init(this.app);
+
+		debug(this.key + ' ready');
+
+		await this.hooks('pre', 'finish');
+		await this.finish();
+		await this.hooks('post', 'finish');
+
+		this.emit('ready');
 	}
 
 	get notifier() {
@@ -278,41 +266,36 @@ export class Site extends EventEmitter {
 		return fn(this);
 	}
 
-	loadPlugins() {
+	async loadPlugins() {
 		const plugins = this.package.config.plugins;
-		const pr: Array<any> = [];
 
-		if (plugins)
-			Object.each(plugins, k => pr.push(require(this.srcDir + '/node_modules/cmjs-' + k)(this.app)));
+		if (!plugins)
+			return;
 
-		return Promise.all(pr)
-			.then(r => {
-				r.forEach(p => {
-					this.plugins[p.key] = p;
-					Object.defineProperty(this, p.key, {value: p});
-				});
-			});
+		for (const k of Object.keys(plugins)) {
+			this.plugins[k] = await require(this.srcDir + '/node_modules/cmjs-' + k)(this.app);
+
+			Object.defineProperty(this, k, {value: this.plugins[k]});
+		}
 	}
 
 	toString() {
 		return this.config && this.config.sitename || this.key;
 	}
 
-	finish() {
-		return this.setRoutes()
-			.then(() => {
-				this.routeNotFound();
+	async finish() {
+		await route(this.app);
+		await this.routeNotFound();
 
-				this.app.use(errorHandler);
+		this.app.use(errorHandler);
 
-				// para status 40x no disparamos error
-				this.app.use(notFoundMin as any);
+		// para status 40x no disparamos error
+		this.app.use(notFoundMin as any);
 
-				if (!this.options.skipListening)
-					return this.listen();
-				else
-					debug('Skip listening');
-			});
+		if (!this.options.skipListening)
+			await this.listen();
+		else
+			debug('Skip listening');
 	}
 
 	lessVars() {
@@ -349,18 +332,17 @@ export class Site extends EventEmitter {
 		return ret;
 	}
 
-	sendMail(opt: any, throwError?: boolean) {
-		return this.db.mailsent
-			.create({email: opt})
-			.then((email: any) => email.send())
-			.then((email: any) => {
-				this.emit('mailsent', email);
+	async sendMail(opt: any, throwError?: boolean) {
+		const email = await this.db.mailsent.create({email: opt});
 
-				if (throwError && email.error)
-					throw email.error;
+		await email.send();
 
-				return email;
-			});
+		this.emit('mailsent', email);
+
+		if (throwError && email.error)
+			throw email.error;
+
+		return email;
 	}
 
 	createApp() {
@@ -368,6 +350,7 @@ export class Site extends EventEmitter {
 
 		Object.defineProperty(this, 'app', {value: app});
 		Object.defineProperty(app, 'site', {value: this});
+		Object.defineProperty(app, 'db', {value: this.db});
 
 		app
 			.set('name', this.package.name)
@@ -501,7 +484,7 @@ export class Site extends EventEmitter {
 		app.use(security.main);
 	}
 
-	setupApp() {
+	async setupApp() {
 		const app = this.app;
 
 		Object.defineProperties(app, {
@@ -519,26 +502,25 @@ export class Site extends EventEmitter {
 
 		app.locals.sitename = this.config.sitename;
 
-		return MultilangModule(app)
-			.then(() => {
-				app.use(flash());
-				app.use(HtmlPageMiddleware);
-				app.use(session(this));
-				LipthusLogger.init(app);
-				app.use(LipthusDevPanel);
+		await MultilangModule(app);
 
-				if (!this.environment.customSitemap)
-					app.use(sitemap(this));
+		app.use(flash());
+		app.use(HtmlPageMiddleware);
+		app.use(session(this));
+		LipthusLogger.init(app);
+		app.use(LipthusDevPanel);
 
-				facebook(app);
-				app.use(auth(this));
+		if (!this.environment.customSitemap)
+			app.use(sitemap(this));
 
-				app.use((req: LipthusRequest, res: any, next: NextFunction) => {
-					res.timer.end('cmjs');
-					res.timer.start('page');
-					next();
-				});
-			});
+		facebook(app);
+		app.use(auth(this));
+
+		app.use((req: LipthusRequest, res: any, next: NextFunction) => {
+			res.timer.end('lipthus');
+			res.timer.start('page');
+			next();
+		});
 	}
 
 	logo(width = 340, height = 48) {
@@ -552,42 +534,14 @@ export class Site extends EventEmitter {
 		};
 	}
 
-	getPages() {
-		if (Object.keys(this.pages).length)
-			return Promise.resolve(this.pages);
+	async getPages() {
+		if (!Object.keys(this.pages).length) {
+			const r: Array<any> = await this.db.page.find({active: true});
 
-		return this.db.page
-			.find({active: true})
-			.then((r: Array<any>) => {
-				r.forEach((obj: any) => this.pages[obj.key] = obj);
+			r.forEach((obj: any) => this.pages[obj.key] = obj);
+		}
 
-				return this.pages;
-			});
-	}
-
-	setRoutes() {
-		require('../routes')(this.app);
-
-		return this.loadLocalRoutes()
-			.then(() => {
-				const router = Router({strict: true});
-
-				if (this.config.startpage && this.pages[this.config.startpage])
-					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));
-
-				Object.values(this.pages).forEach(p =>
-					router.all('/' + (p.url || p.key), p.display.bind(p))
-				);
-
-				this.app.use('/', router);
-			});
-	}
-
-	loadLocalRoutes() {
-		const path_ = this.dir + '/routes';
-
-		return pExists(path_)
-			.then((exists: boolean) => exists && require(path_)(this.app));
+		return this.pages;
 	}
 
 	routeNotFound() {
