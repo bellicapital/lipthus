@@ -32,13 +32,19 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 	const logReqClients = req.app.wss.getClients('/log-req');
 
 	if (logReqClients.length) {
-		const logReq = {
+		const logReq: any = {
 			url: req.protocol + '://' + req.get('host') + req.originalUrl,
 			agent: req.get('user-agent')
 		};
 
-		if (req.method !== 'GET')
+		if (req.method !== 'GET') {
 			logReq.url += ' ' + req.method;
+
+			if (req.method !== 'POST') {
+				logReq.keys = Object.keys(req.body);
+				logReq.referer = req.get('referer');
+			}
+		}
 
 		req.app.wss.broadcast(logReq, '/log-req');
 	}

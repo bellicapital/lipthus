@@ -27,8 +27,13 @@ function default_1(req, res, next) {
             url: req.protocol + '://' + req.get('host') + req.originalUrl,
             agent: req.get('user-agent')
         };
-        if (req.method !== 'GET')
+        if (req.method !== 'GET') {
             logReq.url += ' ' + req.method;
+            if (req.method !== 'POST') {
+                logReq.keys = Object.keys(req.body);
+                logReq.referer = req.get('referer');
+            }
+        }
         req.app.wss.broadcast(logReq, '/log-req');
     }
     if (process.env.NODE_ENV !== 'development') {
