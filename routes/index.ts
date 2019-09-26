@@ -20,26 +20,29 @@ import videos from "./videos";
 import lmns from "./lmns";
 import resimg from "./resimg";
 import item_comments from "./item-comments";
+import logReq from "./log-req";
 
 const embed = require('./embed');
 const upload = require('./upload');
-const multipart = multer({ dest: tmpdir() }).any();
+const multipart = multer({dest: tmpdir()}).any();
 
-const uLevelMiddleware = (level: number) => (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-	req.getUser()
-		.then(u => {
-			if (!u || u.level < level)
-				return next(403);
+const uLevelMiddleware = (level: number) => async (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
+	if (level) {
+		const u = await req.getUser();
 
-			next();
-		});
+		if (!u || u.level < level)
+			return next(403);
+	}
+
+	next();
 };
 
-export default async function(app: LipthusApplication) {
+export default async function (app: LipthusApplication) {
 	const router = Router({strict: true});
 
 	// ...  as "any" hasta que implementemos router
 	router.post('/ngsetup/:method', uLevelMiddleware(2) as any, Setup as any);
+	router.get('/log-req', uLevelMiddleware(app.site.config.logReqUserLevel) as any, logReq as any);
 	router.get('/bdf/:col/:id/:field/:p/:name', bdf as any);
 	router.get('/bdf/:col/:id/:field/:name', bdf as any);
 	router.get('/bdf/:col/:id/:field', bdf as any);

@@ -30,22 +30,24 @@ const videos_1 = require("./videos");
 const lmns_1 = require("./lmns");
 const resimg_1 = require("./resimg");
 const item_comments_1 = require("./item-comments");
+const log_req_1 = require("./log-req");
 const embed = require('./embed');
 const upload = require('./upload');
 const multipart = multer({ dest: os_1.tmpdir() }).any();
-const uLevelMiddleware = (level) => (req, res, next) => {
-    req.getUser()
-        .then(u => {
+const uLevelMiddleware = (level) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (level) {
+        const u = yield req.getUser();
         if (!u || u.level < level)
             return next(403);
-        next();
-    });
-};
+    }
+    next();
+});
 function default_1(app) {
     return __awaiter(this, void 0, void 0, function* () {
         const router = express_1.Router({ strict: true });
         // ...  as "any" hasta que implementemos router
         router.post('/ngsetup/:method', uLevelMiddleware(2), setup_1.Setup);
+        router.get('/log-req', uLevelMiddleware(app.site.config.logReqUserLevel), log_req_1.default);
         router.get('/bdf/:col/:id/:field/:p/:name', bdf_1.default);
         router.get('/bdf/:col/:id/:field/:name', bdf_1.default);
         router.get('/bdf/:col/:id/:field', bdf_1.default);

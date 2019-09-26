@@ -1,0 +1,29 @@
+h3 {
+	float: left;
+}
+#status {
+	float: right;
+}
+#status-text {
+	margin-left: 1em;
+}
+
+#log-req {
+	margin-top: 12px;
+}
+
+.msg-box {
+	margin: 8px 0;
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid #cccccc;
+}
+
+.msg-box td:first-child {
+	width: 50px;
+	text-align: right;
+	padding: 2px 8px;
+}
+.msg-box td:first-child:after {
+	content: ':';
+}

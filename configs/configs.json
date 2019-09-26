@@ -562,6 +562,11 @@
 				"Detect Page Speed Insights",
 				false,
 				"Detect Google Page Speed Insights origin"
+			],
+			"logReqUserLevel": [
+				"int",
+				"User level to access /log-req",
+				2
 			]
 		}
 	},

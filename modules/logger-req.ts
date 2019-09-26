@@ -29,6 +29,20 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		toString: () => JSON.stringify(res.timer.json())
 	};
 
+	const logReqClients = req.app.wss.getClients('/log-req');
+
+	if (logReqClients.length) {
+		const logReq = {
+			url: req.protocol + '://' + req.get('host') + req.originalUrl,
+			agent: req.get('user-agent')
+		};
+
+		if (req.method !== 'GET')
+			logReq.url += ' ' + req.method;
+
+		req.app.wss.broadcast(logReq, '/log-req');
+	}
+
 	if (process.env.NODE_ENV !== 'development') {
 		next();
 	} else {
