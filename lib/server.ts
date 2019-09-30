@@ -55,27 +55,33 @@ commands.forEach((cmd: any) => {
 	});
 });
 
-const videoCacheDir = '/var/cache/video-versions';
 
-fs.access(videoCacheDir, fs.constants.W_OK | fs.constants.R_OK, (err) => {
-	if (!err)
-		return;
+// to deprecate
 
-	debug('/var/cache/video-versions does not exists');
+function mkCacheDir(f: string) {
+	fs.access(f, fs.constants.W_OK | fs.constants.R_OK, (err) => {
+		if (!err)
+			return;
 
-	Promise.resolve()
-		.then(() => {
-			if (!fs.existsSync('/var/cache'))
-				return mkdir('/var/cache');
-		})
-		.then(() => {
-			if (!fs.existsSync(videoCacheDir))
-				return mkdir(videoCacheDir);
+		debug('/var/cache/video-versions does not exists');
 
-		})
-		.then(() => fs.chmod(videoCacheDir, 0o666, err2 => {
-			if (err2)
-				throw err2;
-		}))
-			.catch(err3 => console.error('Can\'t create ' + videoCacheDir + ' directory', err3.message));
-});
+		Promise.resolve()
+			.then(() => {
+				if (!fs.existsSync('/var/cache'))
+					return mkdir('/var/cache');
+			})
+			.then(() => {
+				if (!fs.existsSync(f))
+					return mkdir(f, {recursive: true});
+
+			})
+			.then(() => fs.chmod(f, 0o666, err2 => {
+				if (err2)
+					throw err2;
+			}))
+			.catch(err3 => console.error('Can\'t create ' + f + ' directory', err3.message));
+	});
+}
+
+mkCacheDir('/var/cache/video-versions');
+

@@ -202,22 +202,21 @@ export class GridFSFile {
 		this.error = new GridFSFileNotFoundError('File not found ' + this._id);
 	}
 
-	getVideoVersion(k: string, force: boolean): Promise<GridFSFile | any> {
+	async getVideoVersion(k: string, force: boolean): Promise<LipthusFile> {
 		if (videoExt.indexOf(k) === -1)
 			return Promise.reject(new Error('Version ' + k + ' not implemented'));
 
-		return this.load()
-			.then(() => {
-				if (this.folder !== 'videos')
-					throw new Error(this._id + ' is not a video main file');
+		await this.load();
 
-				const fileName = this.videoVersionFileName(k);
+		if (this.folder !== 'videos')
+			throw new Error(this._id + ' is not a video main file');
 
-				if (fs.existsSync(fileName))
-					return new LipthusFile(fileName, this.versions[k]);
+		const fileName = this.videoVersionFileName(k);
 
-				return this.checkVideoVersion(k, force);
-			});
+		if (fs.existsSync(fileName))
+			return new LipthusFile(fileName, this.versions[k]);
+
+		return this.checkVideoVersion(k, force);
 	}
 
 	videoVersionFileName(k: string) {

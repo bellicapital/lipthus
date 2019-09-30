@@ -1,56 +1,77 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const modules_1 = require("../modules");
-const lib_1 = require("../lib");
 const mongoose_1 = require("mongoose");
+const cached_file_1 = require("../classes/cached-file");
+const fs_1 = require("fs");
+const path = require("path");
 function default_1(req, res, next) {
-    let colName = req.params.col.replace('dynobjects.', '');
-    let collection = req.db[colName];
-    if (!collection) {
-        if (colName.indexOf('.') > 0) {
-            const m = colName.split('.', 2);
-            const dbName = m[0];
-            colName = m[1];
-            collection = req.site.dbs[dbName][colName];
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const fn = req.site.srcDir + '/.cache' + decodeURIComponent(req.path);
+            const f = cached_file_1.CachedFile.get(fn);
+            if (f)
+                return f.send(res);
+            const b = yield notCached(req);
+            const dir = path.dirname(fn);
+            if (!fs_1.existsSync(dir))
+                yield fs_1.promises.mkdir(path.dirname(fn), { recursive: true });
+            yield fs_1.promises.writeFile(fn, b);
+            const newFile = new cached_file_1.CachedFile(fn);
+            newFile.send(res);
         }
-        else {
-            const dbs = req.site.dbs;
-            Object.values(dbs).some(db => {
-                if (db[colName])
-                    collection = db[colName];
-                return !!db[colName];
-            });
+        catch (err) {
+            if (err === 404)
+                return res.status(404).render(req.site.lipthusDir + '/views/status/404');
+            next(err);
         }
-    }
-    if (!collection || !req.params.id || !mongoose_1.Types.ObjectId.isValid(req.params.id) || !req.params.field)
-        return res.status(404).end();
-    collection
-        .findOneField(req.params.id, req.params.field)
-        .then((obj) => {
+    });
+}
+exports.default = default_1;
+function notCached(req) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let colName = req.params.col.replace('dynobjects.', '');
+        let collection = req.db[colName];
+        if (!collection) {
+            if (colName.indexOf('.') > 0) {
+                const m = colName.split('.', 2);
+                const dbName = m[0];
+                colName = m[1];
+                collection = req.site.dbs[dbName][colName];
+            }
+            else {
+                const dbs = req.site.dbs;
+                Object.values(dbs).some(db => {
+                    if (db[colName])
+                        collection = db[colName];
+                    return !!db[colName];
+                });
+            }
+        }
+        if (!collection || !req.params.id || !mongoose_1.Types.ObjectId.isValid(req.params.id) || !req.params.field)
+            throw 404;
+        const obj = yield collection
+            .findOneField(req.params.id, req.params.field);
         if (!obj)
-            return res.status(404).render(req.site.lipthusDir + '/views/status/404');
-        if (typeof obj === 'string')
-            obj = modules_1.BinDataFile.fromString(obj, {
-                collection: colName,
-                id: new mongoose_1.Types.ObjectId(req.params.id),
-                field: req.params.field
-            });
-        else { // noinspection SuspiciousInstanceOfGuard
-            if (!(obj instanceof modules_1.BinDataFile) && !(obj instanceof lib_1.GridFSFile))
-                obj = modules_1.BinDataFile.fromMongo(obj);
-        }
-        if (!obj)
-            return res.status(404).end();
+            throw 404;
         if (obj.contentType.indexOf('svg') !== -1)
-            return obj.send(req, res);
+            return obj.MongoBinData.buffer;
         let wm = req.site.config.watermark;
         if (wm && collection.schema) {
-            const path = collection.schema.paths[req.params.field] || collection.schema.paths[req.params.field.replace(/\..+$/, '')];
-            if (path && path.options.noWatermark)
+            const itemPath = collection.schema.paths[req.params.field] || collection.schema.paths[req.params.field.replace(/\..+$/, '')];
+            if (itemPath && itemPath.options.noWatermark)
                 wm = null;
         }
         if (!req.params.p && !wm)
-            return obj.send(req, res);
+            return obj.MongoBinData.buffer;
         const opt = {
             'ref.id': new mongoose_1.Types.ObjectId(req.params.id),
             'ref.field': req.params.field,
@@ -78,8 +99,7 @@ function default_1(req, res, next) {
             });
         }
         else if (!wm) {
-            res.send(404);
-            return;
+            throw 404;
         }
         opt.wm = wm;
         if (wm && (!opt.wm.type || (opt.nwm && opt.nwm === obj.md5)))
@@ -101,9 +121,7 @@ function default_1(req, res, next) {
         }
         delete opt.nwm;
         if (!opt.width && !opt.wm)
-            return obj.send(req, res);
-        return obj.send(req, res, opt);
-    })
-        .catch(next);
+            return obj.MongoBinData.buffer;
+        return obj.toBuffer(opt);
+    });
 }
-exports.default = default_1;

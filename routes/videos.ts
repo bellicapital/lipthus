@@ -3,7 +3,8 @@ import {GridFSFile} from "../lib";
 import {Types} from "mongoose";
 import {LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
-import {GridFSVideo} from "../lib/gridfs/gridfs-video";
+import {GridFSVideo} from "../lib/gridfs";
+import {LipthusFile} from "../lib/file-stream";
 
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	let id = req.params.id;
@@ -95,7 +96,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 				return file.send(req, res);
 
 			return file.getVideoVersion(ext, req.query.force)
-				.then((version: GridFSFile) => version.send(req, res))
+				.then((version: LipthusFile) => version.send(req, res))
 				.catch((err: any) => {
 					if (err.code === 1) // version processing
 						res.set("Retry-After", "120").status(503);
