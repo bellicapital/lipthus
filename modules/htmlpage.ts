@@ -151,8 +151,9 @@ export class HtmlPage {
 		if (this.locals.justContent)
 			return Promise.resolve(this);
 
-		if (this.robots)
+		if (this.robots) {
 			this.head.addMetaName('robots', this.robots);
+		}
 
 		const config = req.site.config;
 
@@ -252,7 +253,7 @@ export class HtmlPage {
 			});
 	}
 
-	send(view?: string, locals: any = {}): Promise<any> {
+	async send(view?: string, locals: any = {}): Promise<any> {
 		if (this.sent)
 			return Promise.reject(new Error('HtmlPage already sent'));
 
@@ -266,36 +267,40 @@ export class HtmlPage {
 		else if (view)
 			this.view = view;
 
-		return this.checkUserLevel()
-			.then(this.init.bind(this))
-			.then(this.load.bind(this))
-			.then((): any => {
-				locals = Object.assign({
-					page: this.key,
-					metas: this.head.metas,
-					user: this.req.user
-				}, locals);
+		await this.checkUserLevel();
+		await this.init();
+		await this.load();
 
-				Object.assign(this.locals, locals);
+		locals = Object.assign({
+			page: this.key,
+			metas: this.head.metas,
+			user: this.req.user
+		}, locals);
 
-				if (this.req.site.config.auto_hreflang && !this.locals.hreflangs)
-					this.locals.hreflangs = this.head.hreflangs;
+		Object.assign(this.locals, locals);
 
-				if (!this.locals.canonical)
-					this.locals.canonical = this.req.protocol + '://' + this.req.headers.host + this.req.path;
+		if (this.req.site.config.auto_hreflang && !this.locals.hreflangs)
+			this.locals.hreflangs = this.head.hreflangs;
 
-				this.head.addLink({rel: 'canonical', href: this.locals.canonical});
+		if (!this.locals.canonical)
+			this.locals.canonical = this.req.protocol + '://' + this.req.headers.host + this.req.path;
 
-				this.addOpenGraphMetas();
+		this.head.addLink({rel: 'canonical', href: this.locals.canonical});
 
-				if (this.sitelogo)
-					this.locals.logo = this.req.site.logo();
+		this.addOpenGraphMetas();
 
-				if (!this.locals.justContent)
-					return this.finalCSS()
-						.then(this.finalJS.bind(this));
-			})
-			.then(this.render.bind(this));
+		if (this.sitelogo)
+			this.locals.logo = this.req.site.logo();
+
+		if (!this.locals.justContent) {
+			await this.finalCSS();
+			await this.finalJS();
+
+			if (this.robots)
+				this.res.set({'X-Robots-Tag': this.robots});
+		}
+
+		return this.render();
 	}
 
 	finalCSS() {

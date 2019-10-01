@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const htmlheadmanager_1 = require("./htmlheadmanager");
 const mltext_1 = require("./schema-types/mltext");
@@ -100,8 +109,9 @@ class HtmlPage {
             this.view = this.key;
         if (this.locals.justContent)
             return Promise.resolve(this);
-        if (this.robots)
+        if (this.robots) {
             this.head.addMetaName('robots', this.robots);
+        }
         const config = req.site.config;
         this.addJSVars({
             v: req.app.get('version'),
@@ -185,19 +195,19 @@ class HtmlPage {
         });
     }
     send(view, locals = {}) {
-        if (this.sent)
-            return Promise.reject(new Error('HtmlPage already sent'));
-        if (this.noCache)
-            this.setNoCache();
-        this.sent = true;
-        if (typeof view === 'object')
-            this.set(view);
-        else if (view)
-            this.view = view;
-        return this.checkUserLevel()
-            .then(this.init.bind(this))
-            .then(this.load.bind(this))
-            .then(() => {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.sent)
+                return Promise.reject(new Error('HtmlPage already sent'));
+            if (this.noCache)
+                this.setNoCache();
+            this.sent = true;
+            if (typeof view === 'object')
+                this.set(view);
+            else if (view)
+                this.view = view;
+            yield this.checkUserLevel();
+            yield this.init();
+            yield this.load();
             locals = Object.assign({
                 page: this.key,
                 metas: this.head.metas,
@@ -212,11 +222,14 @@ class HtmlPage {
             this.addOpenGraphMetas();
             if (this.sitelogo)
                 this.locals.logo = this.req.site.logo();
-            if (!this.locals.justContent)
-                return this.finalCSS()
-                    .then(this.finalJS.bind(this));
-        })
-            .then(this.render.bind(this));
+            if (!this.locals.justContent) {
+                yield this.finalCSS();
+                yield this.finalJS();
+                if (this.robots)
+                    this.res.set({ 'X-Robots-Tag': this.robots });
+            }
+            return this.render();
+        });
     }
     finalCSS() {
         return this.head.css.final()
