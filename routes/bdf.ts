@@ -5,8 +5,12 @@ import {CachedFile} from "../classes/cached-file";
 import {existsSync, promises as fs} from "fs";
 import * as path from "path";
 
-export default async function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
+export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
+	handleBdiRequest(req, res, notCached)
+		.catch(next);
+}
 
+export async function handleBdiRequest(req: LipthusRequest, res: LipthusResponse, bdiGetter: Function) {
 	try {
 		const fn = req.site.srcDir + '/.cache' + decodeURIComponent(req.path);
 		const f = CachedFile.get(fn);
@@ -14,7 +18,13 @@ export default async function (req: LipthusRequest, res: LipthusResponse, next: 
 		if (f)
 			return f.send(res);
 
-		const b: Buffer = await notCached(req);
+		const b: Buffer = await bdiGetter(req);
+
+		if (!b)	{
+			// noinspection ExceptionCaughtLocallyJS
+			throw 404;
+		}
+
 		const dir = path.dirname(fn);
 
 		if (!existsSync(dir))
@@ -29,7 +39,7 @@ export default async function (req: LipthusRequest, res: LipthusResponse, next: 
 		if (err === 404)
 			return res.status(404).render(req.site.lipthusDir + '/views/status/404');
 
-		next(err);
+		throw err;
 	}
 }
 

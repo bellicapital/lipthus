@@ -5,6 +5,7 @@ import {LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
 import {GridFSVideo} from "../lib/gridfs";
 import {LipthusFile} from "../lib/file-stream";
+import videoPoster from "./video-poster";
 
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	let id = req.params.id;
@@ -32,6 +33,23 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 	if (!req.site.dbs[dbName] || !Types.ObjectId.isValid(id))
 		return next();
 
+	// to deprecate. New route: /video-poster/:db?/:id(-w(xh)?)?.jpg
+	if (ext.indexOf('poster') === 0) {
+		req.params = {
+			db: dbName,
+			fn: id
+		};
+
+		const r = /^poster(\d+x?\d*)/.exec(ext);
+
+		if (r)
+			req.params.fn += '-' + r[1];
+
+		req.params.fn += '.jpg';
+
+		return videoPoster(req, res, next);
+	}
+
 	req.site.dbs[dbName].fs.getVideo(id).load()
 		.then((file: GridFSVideo) => {
 			if (!file)
@@ -43,29 +61,12 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			if (!ext)
 				return res.redirect('/videos/' + (dbName !== req.site.db.name ? dbName + '.' : '') + id + '/' + file.filename);
 
-			let opt;
-
-			if (ext.indexOf('poster') === 0) {
-				opt = {
-					width: file.metadata.width,
-					height: file.metadata.height,
-					crop: true
-				};
-
-				const r = /^poster(\d+)x?(\d*)/.exec(ext);
-
-				if (r) {
-					opt.width = parseInt(r[1], 10);
-					opt.height = parseInt(r[2], 10) || (file.metadata.height * opt.width / file.width);
-				}
-
-				return file.sendThumb(req, res, opt);
-			} else if (ext === 'tag') {
+			if (ext === 'tag') {
 				const basename = encodeURIComponent(file.basename().toLocaleLowerCase());
 				const basePath = req.protocol + '://' + req.headers.host + '/videos/' + dbName + '.' + file._id + '/';
 
 				res.locals = {
-					poster: basePath + 'poster.jpg',
+					poster: req.protocol + '://' + req.headers.host + '/video-poster/' + dbName + '/' + file._id + '.jpg',
 					mp4: basePath + basename + '.mp4',
 					webm: basePath + basename + '.webm'
 				};
@@ -74,6 +75,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			} else if (/^f_\d+_/.test(ext)) { // frames
 				const parsed = /^f_(\d+)_(\d*)x?(\d*)(k?)/.exec(ext);
 				const frame = parseInt(parsed![1], 10);
+				let opt;
 
 				if (parsed![2])
 					opt = {

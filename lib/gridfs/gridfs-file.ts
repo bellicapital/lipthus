@@ -107,7 +107,7 @@ export class GridFSFile {
 				Object.assign(ret, this.metadata);
 
 				if (this.folder === 'videos') {
-					ret.thumb = '/videos/' + this.databaseName + '.' + this._id + '/poster.jpg';
+					ret.thumb = '/video-poster/' + this.databaseName + '/' + this._id + '.jpg';
 					ret.versions = {};
 
 					videoExt.forEach(ext => {
@@ -388,6 +388,7 @@ export class GridFSFile {
 		return ret;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	sendThumb(req: LipthusRequest, res: LipthusResponse, opt?: any) {
 		return this.getThumb()
 			.then(thumb => {

@@ -27,6 +27,7 @@ const video_1 = require("./video");
 const optimg_1 = require("./optimg");
 const logout_1 = require("./logout");
 const videos_1 = require("./videos");
+const video_poster_1 = require("./video-poster");
 const lmns_1 = require("./lmns");
 const resimg_1 = require("./resimg");
 const item_comments_1 = require("./item-comments");
@@ -58,6 +59,8 @@ function default_1(app) {
         router.get('/video/:id', video_1.default);
         router.get('/videos/:id', videos_1.default);
         router.get('/videos/:id/:type*', videos_1.default);
+        router.get('/video-poster/:db/:fn', video_poster_1.default);
+        router.get('/video-poster/:fn', video_poster_1.default);
         router.get('/embed/:id', embed);
         router.get('/thumbs/:id\\_:width\\_:height\\_:crop:nwm?.png', thumb_1.default);
         // router.get('/thumbs/:schema/:id/:field\\_:width\\_:height\\_:crop:nwm?.png', thumb);

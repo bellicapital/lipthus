@@ -84,7 +84,7 @@ class GridFSFile {
             if (this.metadata) {
                 Object.assign(ret, this.metadata);
                 if (this.folder === 'videos') {
-                    ret.thumb = '/videos/' + this.databaseName + '.' + this._id + '/poster.jpg';
+                    ret.thumb = '/video-poster/' + this.databaseName + '/' + this._id + '.jpg';
                     ret.versions = {};
                     videoExt.forEach(ext => {
                         ret.versions[ext] = '/videos/' + this.databaseName + '.' + this._id + '/' + ret.basename + '.' + ext;
@@ -297,6 +297,7 @@ class GridFSFile {
             ret += '.' + ext;
         return ret;
     }
+    // noinspection JSUnusedGlobalSymbols
     sendThumb(req, res, opt) {
         return this.getThumb()
             .then(thumb => {

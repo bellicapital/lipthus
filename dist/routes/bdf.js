@@ -14,13 +14,22 @@ const cached_file_1 = require("../classes/cached-file");
 const fs_1 = require("fs");
 const path = require("path");
 function default_1(req, res, next) {
+    handleBdiRequest(req, res, notCached)
+        .catch(next);
+}
+exports.default = default_1;
+function handleBdiRequest(req, res, bdiGetter) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const fn = req.site.srcDir + '/.cache' + decodeURIComponent(req.path);
             const f = cached_file_1.CachedFile.get(fn);
             if (f)
                 return f.send(res);
-            const b = yield notCached(req);
+            const b = yield bdiGetter(req);
+            if (!b) {
+                // noinspection ExceptionCaughtLocallyJS
+                throw 404;
+            }
             const dir = path.dirname(fn);
             if (!fs_1.existsSync(dir))
                 yield fs_1.promises.mkdir(path.dirname(fn), { recursive: true });
@@ -31,11 +40,11 @@ function default_1(req, res, next) {
         catch (err) {
             if (err === 404)
                 return res.status(404).render(req.site.lipthusDir + '/views/status/404');
-            next(err);
+            throw err;
         }
     });
 }
-exports.default = default_1;
+exports.handleBdiRequest = handleBdiRequest;
 function notCached(req) {
     return __awaiter(this, void 0, void 0, function* () {
         let colName = req.params.col.replace('dynobjects.', '');
