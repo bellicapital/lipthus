@@ -1,6 +1,6 @@
 import {Types} from "mongoose";
 import {LipthusApplication, LipthusRequest, LipthusResponse} from "../index";
-import {Collection, InsertOneWriteOpResult} from "mongodb";
+import {Collection} from "mongodb";
 import {LipthusError} from "../classes/lipthus-error";
 import {NextFunction} from "express";
 
@@ -16,7 +16,7 @@ export class LipthusLogger {
 		return this.req.db.collection('logger.' + type);
 	}
 
-	log(collection: string | Collection, extra?: { [s: string]: any }): Promise<InsertOneWriteOpResult> {
+	log(collection: string | Collection, extra?: { [s: string]: any }): Promise<any> {
 		const obj = this.baseObj();
 
 		if (extra)
@@ -62,11 +62,11 @@ export class LipthusLogger {
 			});
 	}
 
-	logNotFound(): Promise<InsertOneWriteOpResult> {
+	logNotFound(): Promise<any> {
 		return this.log('notfound');
 	}
 
-	logUpdate(obj: LogUpdateParams | string, id?: string, field?: string, value?: any): Promise<InsertOneWriteOpResult> {
+	logUpdate(obj: LogUpdateParams | string, id?: string, field?: string, value?: any): Promise<any> {
 		if (typeof obj !== 'object') {
 			obj = {
 				schema_: obj,

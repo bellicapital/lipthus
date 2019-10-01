@@ -1,5 +1,5 @@
 import { LipthusApplication, LipthusRequest, LipthusResponse } from "../index";
-import { Collection, InsertOneWriteOpResult } from "mongodb";
+import { Collection } from "mongodb";
 import { LipthusError } from "../classes/lipthus-error";
 import { NextFunction } from "express";
 export declare class LipthusLogger {
@@ -8,10 +8,10 @@ export declare class LipthusLogger {
     collection(type: string): Collection;
     log(collection: string | Collection, extra?: {
         [s: string]: any;
-    }): Promise<InsertOneWriteOpResult>;
+    }): Promise<any>;
     logError(err: LipthusError): Promise<void | Error>;
-    logNotFound(): Promise<InsertOneWriteOpResult>;
-    logUpdate(obj: LogUpdateParams | string, id?: string, field?: string, value?: any): Promise<InsertOneWriteOpResult>;
+    logNotFound(): Promise<any>;
+    logUpdate(obj: LogUpdateParams | string, id?: string, field?: string, value?: any): Promise<any>;
     count(type: string): Promise<number>;
     list(type: string, query: any, opt: any, cb: () => {}): void;
     baseObj(): any;
