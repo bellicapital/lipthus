@@ -57,7 +57,6 @@ class LipthusDb extends events_1.EventEmitter {
         const options = this.params.options || {};
         if (!options.promiseLibrary)
             options.promiseLibrary = global.Promise;
-        // Avoid a Deprecation warning (connect.mongodb-session sigue con warning si quitamos esto de aqui 20/11/18 · jj)
         if (options.useNewUrlParser === undefined)
             options.useNewUrlParser = true;
         if (options.useUnifiedTopology === undefined)

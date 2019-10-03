@@ -36,64 +36,65 @@ export class Config {
 	model: ConfigModel | any = {};
 	lang_subdomains?: boolean;
 	auto_hreflang?: boolean;
+	sessionExpireDays?: number;
 
 	constructor(public site: Site) {
 	}
 
-	load() {
+	async load() {
 		this.model = this.site.db.model('config');
 
-		return this.checkDefaults()
-			.then(() => this.model.find())
-			.then((obj: Array<ConfigDoc>) => {
-				const indb: {[s: string]: ConfigDoc} = {};
-				const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
+		const obj: Array<ConfigDoc> = await this.checkDefaults()
+			.then(() => this.model.find());
 
-				obj.forEach(c => indb[c.get('name')] = c);
+		const inDb: {[s: string]: ConfigDoc} = {};
+		const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
 
-				const configs: any = require(this.site.lipthusDir + '/configs/configs');
+		obj.forEach(c => inDb[c.get('name')] = c);
 
-				configs.general.configs.version[2] = this.site.cmsPackage.version;
+		const configs: any = require(this.site.lipthusDir + '/configs/configs');
 
-				Object.each(configs, (group_name, group) => {
-					this.groups[group_name] = {title: group.title, configs: {}};
+		configs.general.configs.version[2] = this.site.cmsPackage.version;
 
-					Object.each(group.configs, (key: string, c: Array<any>) => {
-						const g: any = {group: group_name, name: key};
+		Object.each(configs, (group_name, group) => {
+			this.groups[group_name] = {title: group.title, configs: {}};
 
-						c.forEach((v: any, idx) =>
-								g[keys[idx]] = v);
+			Object.each(group.configs, (key: string, c: Array<any>) => {
+				const g: any = {group: group_name, name: key};
 
-						if (indb[key]) {
-							g.value = indb[key].getValue();
-							g._id = indb[key]._id;
-						}
+				c.forEach((v: any, idx) =>
+						g[keys[idx]] = v);
 
-						this.configs[key] = ConfigVarInstance(g, this.site);
+				if (inDb[key]) {
+					g.value = inDb[key].getValue();
+					g._id = inDb[key]._id;
+				}
 
-						if (!indb[key]) {
-							indb[key] = new this.model({name: key, value: this.configs[key].value});
+				this.configs[key] = ConfigVarInstance(g, this.site);
 
-							indb[key].save()
-								.catch(console.error.bind(console));
+				if (!inDb[key]) {
+					inDb[key] = new this.model({name: key, value: this.configs[key].value});
 
-							this.configs[key]._id = indb[key]._id;
-						}
+					inDb[key].save()
+						.catch(console.error.bind(console));
 
-						this.groups[group_name].configs[key] = this.configs[key];
+					this.configs[key]._id = inDb[key]._id;
+				}
 
-						Object.defineProperty(this, key, {
-							get: () => this.configs[key].getValue(),
-							set: v => this.configs[key].setValue(v)
-						});
-					});
+				this.groups[group_name].configs[key] = this.configs[key];
+
+				Object.defineProperty(this, key, {
+					get: () => this.configs[key].getValue(),
+					set: v => this.configs[key].setValue(v)
 				});
+			});
+		});
 
-				this.model.on('itemChange', (item: any) => {
-					this.configs[item.name].setValue(item.value);
-				});
-			})
-			.then(() => this.check());
+		this.model.on('itemChange', (item: any) => {
+			this.configs[item.name].setValue(item.value);
+		});
+
+		await this.check();
 	}
 
 	// noinspection JSUnusedLocalSymbols
@@ -167,36 +168,26 @@ export class Config {
 		this.get('meta_robots', true, () => cb(this.metaRobots()));
 	}
 
-	check() {
-		return new Promise(ok => {
-			this.configs.languages.value.forEach((code: string, idx: number) => {
-				if (!code)
-					this.configs.languages.value.splice(idx, 1);
-			});
-
-			return ok();
+	async check() {
+		this.configs.languages.value.forEach((code: string, idx: number) => {
+			if (!code)
+				this.configs.languages.value.splice(idx, 1);
 		});
 	}
 
-	checkDefaults() {
-		return this.model.countDocuments({})
-			.then((c: number) => {
-				if (c)
-					return;
+	async checkDefaults() {
+		const c: number = await this.model.countDocuments({});
 
-				debug('Inserting config collection default values');
+		if (c)
+			return;
 
-				return exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson')
-					.then((r: { stdout: string, stderr: string }) =>
-						this.model.countDocuments({})
-							.then((c2: number) => {
-								if (c2)
-									return;
+		debug('Inserting config collection default values');
 
-								if (r.stderr)
-									throw new Error(r.stderr);
-							})
-					);
-			});
+		const r: { stdout: string, stderr: string } = await exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
+
+		const c2: number = await this.model.countDocuments({});
+
+		if (!c2 && r.stderr)
+			throw new Error(r.stderr);
 	}
 }

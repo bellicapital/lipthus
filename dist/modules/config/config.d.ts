@@ -39,8 +39,9 @@ export declare class Config {
     model: ConfigModel | any;
     lang_subdomains?: boolean;
     auto_hreflang?: boolean;
+    sessionExpireDays?: number;
     constructor(site: Site);
-    load(): any;
+    load(): Promise<void>;
     get(k: string, update?: any, cb?: (v: any) => void): any;
     set(k: string, v: any, ns?: string | true, save?: boolean): any;
     getConfigsByCat(cat: string): {
@@ -48,6 +49,6 @@ export declare class Config {
     };
     getValuesByCat(cat: string): any;
     metaRobots(cb?: (a: any) => {}): any;
-    check(): Promise<unknown>;
-    checkDefaults(): any;
+    check(): Promise<void>;
+    checkDefaults(): Promise<void>;
 }

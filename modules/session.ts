@@ -7,7 +7,7 @@ const MongoDBStore = require("connect-mongodb-session")(session);
 
 export default (site: Site) => {
 	const {uri, options} = site.authDb.connectParams();
-	const expires = 1000 * 60 * 60 * 24 * 14; // 2 weeks
+	const expires = 1000 * 60 * 60 * 24 * (site.config.sessionExpireDays || 0);
 
 	site.store = new MongoDBStore({
 		uri: uri,
@@ -15,7 +15,7 @@ export default (site: Site) => {
 		collection: 'sessions',
 		expires: expires
 	});
-	
+
 	const params = {
 		secret: site.secret,
 		cookie: {
@@ -27,16 +27,16 @@ export default (site: Site) => {
 		saveUninitialized: false,
 		unset: 'destroy'
 	};
-	
+
 	const sessionMW = session(params);
-	
+
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 		if (req.device.type === 'bot') {
 			req.session = {};
-			
+
 			return next();
 		}
-		
+
 		sessionMW(req, res, next);
 	};
 };

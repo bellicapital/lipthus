@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const configvar_1 = require("./configvar");
 const Debug = require("debug");
@@ -18,13 +27,13 @@ class Config {
         this.model = {};
     }
     load() {
-        this.model = this.site.db.model('config');
-        return this.checkDefaults()
-            .then(() => this.model.find())
-            .then((obj) => {
-            const indb = {};
+        return __awaiter(this, void 0, void 0, function* () {
+            this.model = this.site.db.model('config');
+            const obj = yield this.checkDefaults()
+                .then(() => this.model.find());
+            const inDb = {};
             const keys = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
-            obj.forEach(c => indb[c.get('name')] = c);
+            obj.forEach(c => inDb[c.get('name')] = c);
             const configs = require(this.site.lipthusDir + '/configs/configs');
             configs.general.configs.version[2] = this.site.cmsPackage.version;
             Object.each(configs, (group_name, group) => {
@@ -32,16 +41,16 @@ class Config {
                 Object.each(group.configs, (key, c) => {
                     const g = { group: group_name, name: key };
                     c.forEach((v, idx) => g[keys[idx]] = v);
-                    if (indb[key]) {
-                        g.value = indb[key].getValue();
-                        g._id = indb[key]._id;
+                    if (inDb[key]) {
+                        g.value = inDb[key].getValue();
+                        g._id = inDb[key]._id;
                     }
                     this.configs[key] = configvar_1.ConfigVarInstance(g, this.site);
-                    if (!indb[key]) {
-                        indb[key] = new this.model({ name: key, value: this.configs[key].value });
-                        indb[key].save()
+                    if (!inDb[key]) {
+                        inDb[key] = new this.model({ name: key, value: this.configs[key].value });
+                        inDb[key].save()
                             .catch(console.error.bind(console));
-                        this.configs[key]._id = indb[key]._id;
+                        this.configs[key]._id = inDb[key]._id;
                     }
                     this.groups[group_name].configs[key] = this.configs[key];
                     Object.defineProperty(this, key, {
@@ -53,8 +62,8 @@ class Config {
             this.model.on('itemChange', (item) => {
                 this.configs[item.name].setValue(item.value);
             });
-        })
-            .then(() => this.check());
+            yield this.check();
+        });
     }
     // noinspection JSUnusedLocalSymbols
     get(k, update, cb = (v) => { }) {
@@ -109,28 +118,23 @@ class Config {
         this.get('meta_robots', true, () => cb(this.metaRobots()));
     }
     check() {
-        return new Promise(ok => {
+        return __awaiter(this, void 0, void 0, function* () {
             this.configs.languages.value.forEach((code, idx) => {
                 if (!code)
                     this.configs.languages.value.splice(idx, 1);
             });
-            return ok();
         });
     }
     checkDefaults() {
-        return this.model.countDocuments({})
-            .then((c) => {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = yield this.model.countDocuments({});
             if (c)
                 return;
             debug('Inserting config collection default values');
-            return exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson')
-                .then((r) => this.model.countDocuments({})
-                .then((c2) => {
-                if (c2)
-                    return;
-                if (r.stderr)
-                    throw new Error(r.stderr);
-            }));
+            const r = yield exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
+            const c2 = yield this.model.countDocuments({});
+            if (!c2 && r.stderr)
+                throw new Error(r.stderr);
         });
     }
 }

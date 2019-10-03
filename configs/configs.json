@@ -567,6 +567,11 @@
 				"int",
 				"User level to access /log-req",
 				2
+			],
+			"sessionExpireDays": [
+				"int",
+				"Session cookie: Number of days to expire.",
+				1
 			]
 		}
 	},

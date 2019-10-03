@@ -4,7 +4,7 @@ const session = require('express-session');
 const MongoDBStore = require("connect-mongodb-session")(session);
 exports.default = (site) => {
     const { uri, options } = site.authDb.connectParams();
-    const expires = 1000 * 60 * 60 * 24 * 14; // 2 weeks
+    const expires = 1000 * 60 * 60 * 24 * (site.config.sessionExpireDays || 0);
     site.store = new MongoDBStore({
         uri: uri,
         connectionOptions: options,
