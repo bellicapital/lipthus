@@ -33,6 +33,10 @@ export interface DbParams {
 	pass?: string;
 	host?: string;
 	port?: string;
+	replicaSet?: {
+		name: string;
+		members: Array<string>; // ex: [localhost:27017]
+	};
 	options?: any;	// ex: {authSource: "admin"}
 }
 

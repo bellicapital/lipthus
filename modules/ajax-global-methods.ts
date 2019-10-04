@@ -6,25 +6,23 @@ export class AjaxGlobalMethods {
 	constructor(public req: LipthusRequest) {
 	}
 
-	main(): Promise<any> {
+	async main(): Promise<any> {
 		const req = this.req;
 		const site = req.site;
 		const ret: any = {
 			sitename: site + '',
-			registerMethods: site.registerMethods
+			registerMethods: site.registerMethods,
+			languages: await req.ml.langUserNames(),
+			user: await this.req.getUser()
 		};
 
-		return req.ml.langUserNames()
-			.then(ln => ret.languages = ln)
-			.then(() => this.req.getUser()
-				.then((user: any) => ret.user = user && user.baseInfo())
-			)
-			.then(() => {
-				if (site.environment.VAPID)
-					ret.publicKey = site.environment.VAPID.publicKey;
+		if (ret.user)
+			ret.user = ret.user.baseInfo();
 
-				return ret;
-			});
+		if (site.environment.VAPID)
+			ret.publicKey = site.environment.VAPID.publicKey;
+
+		return ret;
 	}
 
 	// noinspection JSUnusedGlobalSymbols
@@ -33,38 +31,35 @@ export class AjaxGlobalMethods {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	loginInfo(): Promise<LoginInfo> {
-		return this.req.ml.load('ecms-user')
-			.then(() => this.main())
-			.then((ret: any) => {
-				ret = <LoginInfo>ret;
+	async loginInfo(): Promise<LoginInfo> {
+		await this.req.ml.load('ecms-user');
+		const ret: LoginInfo = await this.main();
 
-				if (ret.user)
-					ret.msg = 'Ya estás logueado como ' + ret.user.name;
+		if (ret.user)
+			ret.msg = 'Ya estás logueado como ' + ret.user.name;
 
-				const keys = [
-					'_US_LOGIN',
-					'_US_USERNAME',
-					'_US_EMAIL',
-					'_US_PASSWORD',
-					'_US_NOTREGISTERED',
-					'_US_LOSTPASSWORD',
-					'_US_NOPROBLEM',
-					'_US_SENDPASSWORD'
-				];
+		const keys = [
+			'_US_LOGIN',
+			'_US_USERNAME',
+			'_US_EMAIL',
+			'_US_PASSWORD',
+			'_US_NOTREGISTERED',
+			'_US_LOSTPASSWORD',
+			'_US_NOPROBLEM',
+			'_US_SENDPASSWORD'
+		];
 
-				const LC = this.req.ml.all;
+		const LC = this.req.ml.all;
 
-				ret.LC = {};
+		ret.LC = {};
 
-				keys.forEach(k => ret.LC[k] = LC[k]);
+		keys.forEach(k => ret.LC[k] = LC[k]);
 
-				return ret;
-			});
+		return ret;
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	storeFcmToken(params: any) {
+	async storeFcmToken(params: any) {
 		const devices = this.req.user!.devices || [];
 		const device = devices.find((d: any) => d.uuid === params.uuid || d.regId === params.regId);
 
@@ -86,9 +81,10 @@ export class AjaxGlobalMethods {
 			devices.push(params);
 		}
 
-		return this.req.user!.set('devices', devices)
-			.save()
-			.then(() => ({ok: true}));
+		await this.req.user!.set('devices', devices)
+			.save();
+
+		return {ok: true};
 	}
 }
 

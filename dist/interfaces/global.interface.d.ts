@@ -26,6 +26,10 @@ export interface DbParams {
     pass?: string;
     host?: string;
     port?: string;
+    replicaSet?: {
+        name: string;
+        members: Array<string>;
+    };
     options?: any;
 }
 export interface EnvironmentParams {

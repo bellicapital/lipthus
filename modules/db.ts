@@ -71,19 +71,6 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	}
 
 	connectParams() {
-		let uri = 'mongodb://';
-
-		if (this.params.user && this.params.pass) {
-			uri += this.params.user + ':' + this.params.pass + '@';
-		}
-
-		uri += (this.params.host || 'localhost');
-
-		if (this.params.port)
-			uri += ':' + this.params.port;
-
-		uri += '/' + this.name;
-
 		const options = this.params.options || {};
 
 		if (!options.promiseLibrary)
@@ -94,6 +81,24 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 		if (options.useUnifiedTopology === undefined)
 			options.useUnifiedTopology = true;
+
+		let uri = 'mongodb://';
+
+		if (this.params.user && this.params.pass)
+			uri += this.params.user + ':' + this.params.pass + '@';
+
+		if (this.params.replicaSet) {
+			options.replicaSet = this.params.replicaSet.name;
+
+			uri += this.params.replicaSet.members.join(',');
+		} else {
+			uri += (this.params.host || 'localhost');
+
+			if (this.params.port)
+				uri += ':' + this.params.port;
+		}
+
+		uri += '/' + this.name;
 
 		return {uri: uri, options: options};
 	}

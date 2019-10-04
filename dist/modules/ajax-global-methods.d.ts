@@ -8,9 +8,7 @@ export declare class AjaxGlobalMethods {
     loginInfo(): Promise<LoginInfo>;
     storeFcmToken(params: any): Promise<{
         ok: boolean;
-    }> | {
-        ok: boolean;
-    };
+    }>;
 }
 export default AjaxGlobalMethods;
 export interface LoginInfo {
