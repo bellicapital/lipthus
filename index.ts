@@ -103,6 +103,7 @@ export interface LipthusApplication extends express.Application {
 	nodeModule: (name: string) => any;
 }
 
+export {CachedFile} from './classes/cached-file';
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusWebSocketServer} from './classes/web-socket-server';
 export {LipthusDocument} from './interfaces/lipthus-document';

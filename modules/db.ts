@@ -133,7 +133,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 	onConnOpen() {
 		this.connected = true;
-		debug('Connected to db ' + this.name + ' on ' + (this.params.host || 'localhost') + ':' + (this.params.port || '27017'));
+
+		const name = this.params.replicaSet ? ' replica set ' + this.params.replicaSet.name : (this.params.host || 'localhost');
+		debug('Connected to db ' + this.name + ' on ' + name + ':' + (this.params.port || '27017'));
 
 		this.setFs();
 
