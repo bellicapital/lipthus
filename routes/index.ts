@@ -102,13 +102,5 @@ export default async function (app: LipthusApplication) {
 	if (existsSync(path_))
 		await require(path_)(app);
 
-	// site pages
-	if (app.site.config.startpage && app.site.pages[app.site.config.startpage])
-		router.all('/', (req, res, next) => app.site.pages[app.site.config.startpage].display(req, res, next));
-
-	Object.values(app.site.pages).forEach(p =>
-		router.all('/' + (p.url || p.key), p.display.bind(p))
-	);
-
 	app.use('/', router);
 }

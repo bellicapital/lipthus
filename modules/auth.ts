@@ -134,18 +134,11 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 	Object.keys(methods).forEach(method => methods[method]());
 };
 
-const getUser = (req: LipthusRequest) => {
-	if (!req.user || req.user.constructor.name === 'model')
-		return Promise.resolve(req.user);
+const getUser = async (req: LipthusRequest) => {
+	if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
+		req.user = await req.site.userCollection.findById(req.user);
 
-	if (mongoose.Types.ObjectId.isValid(req.user))
-		return req.site.userCollection
-			.findById(req.user)
-			.then((user: any) => req.user = user);
-
-	console.warn('Unknown user id format:', req.user);
-
-	return Promise.resolve();
+	return req.user;
 };
 
 export default (site: Site): any => {

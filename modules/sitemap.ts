@@ -62,11 +62,6 @@ class SiteMap {
 
 		sm.add(this.routes);
 
-		Object.values(site.pages).forEach(page => {
-			if (page.active && page.sitemap)
-				sm.add('/' + page.url, {});
-		});
-
 		sm.created = d.getTime();
 
 		this.maps[req.ml.lang] = sm;

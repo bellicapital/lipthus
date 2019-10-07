@@ -55,7 +55,6 @@ class Site extends events_1.EventEmitter {
         this.options = options;
         this.lipthusBuildDir = path.dirname(__dirname);
         this.staticHost = '';
-        this.pages = {};
         this.plugins = {};
         this.dbs = {};
         this.registerMethods = {};
@@ -156,7 +155,6 @@ class Site extends events_1.EventEmitter {
             yield this.setupApp();
             yield this.hooks('post', 'setupApp');
             yield ng2_1.default(this.app);
-            yield this.getPages();
             yield this.loadPlugins();
             yield this.hooks('post', 'plugins');
             subscriptor_1.Subscriptor.init(this.app);
@@ -401,15 +399,6 @@ class Site extends events_1.EventEmitter {
             width: width,
             height: height
         };
-    }
-    getPages() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!Object.keys(this.pages).length) {
-                const r = yield this.db.page.find({ active: true });
-                r.forEach((obj) => this.pages[obj.key] = obj);
-            }
-            return this.pages;
-        });
     }
     routeNotFound() {
         this.app.use((req, res) => {

@@ -101,7 +101,10 @@ class LipthusDb extends events_1.EventEmitter {
         // native db
         const ndb = this._conn.db;
         this.fs = new lib_2.GridFS(ndb, 'fs');
-        Object.defineProperty(ndb, 'lipthusDb', { value: this });
+        try {
+            Object.defineProperty(ndb, 'lipthusDb', { value: this });
+        }
+        catch (e) { }
     }
     toString() {
         return this.name;

@@ -44,13 +44,14 @@ function errorHandler(err_, req, res, next) {
         err.status = 500;
     res.status(err.status);
     (req.logger || new logger_1.LipthusLogger(req)).logError(err).then(() => {
-        console.error("Exception at " + req.originalUrl);
+        err.message = "Exception at " + req.originalUrl + "\n" + err.message;
+        console.error(err);
     });
     if (!res.headersSent) {
-        res.render(getView(err.status.toString(), req), {
+        req.getUser().then(() => res.render(getView(err.status.toString(), req), {
             message: err.message,
             error: err
-        });
+        }));
     }
 }
 exports.errorHandler = errorHandler;

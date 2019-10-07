@@ -12,7 +12,7 @@ import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import session from "./session";
-import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel, LipthusPage} from "../index";
+import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
@@ -60,7 +60,6 @@ export class Site extends EventEmitter {
 	public domainName: string;
 	public db: LipthusDb;
 	public app: LipthusApplication;
-	public pages: { [s: string]: LipthusPage; } = {};
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
@@ -211,7 +210,6 @@ export class Site extends EventEmitter {
 		await this.setupApp();
 		await this.hooks( 'post', 'setupApp');
 		await Ng(this.app);
-		await this.getPages();
 		await this.loadPlugins();
 		await this.hooks('post', 'plugins');
 
@@ -532,16 +530,6 @@ export class Site extends EventEmitter {
 			width: width,
 			height: height
 		};
-	}
-
-	async getPages() {
-		if (!Object.keys(this.pages).length) {
-			const r: Array<any> = await this.db.page.find({active: true});
-
-			r.forEach((obj: any) => this.pages[obj.key] = obj);
-		}
-
-		return this.pages;
 	}
 
 	routeNotFound() {

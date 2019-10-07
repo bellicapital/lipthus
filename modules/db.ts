@@ -148,7 +148,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 		this.fs = new GridFS(ndb, 'fs');
 
-		Object.defineProperty(ndb, 'lipthusDb', {value: this});
+		try {
+			Object.defineProperty(ndb, 'lipthusDb', {value: this});
+		} catch (e) {}
 	}
 
 	toString() {

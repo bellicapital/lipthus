@@ -2,7 +2,7 @@
 import { EventEmitter } from "events";
 import { DbParams, EnvironmentParams, KeyAny, KeyString } from "../interfaces/global.interface";
 import { LipthusDb } from "./db";
-import { LipthusApplication, UserModel, LipthusPage } from "../index";
+import { LipthusApplication, UserModel } from "../index";
 import { Config } from "./config";
 export declare class Site extends EventEmitter {
     dir: string;
@@ -23,9 +23,6 @@ export declare class Site extends EventEmitter {
     domainName: string;
     db: LipthusDb;
     app: LipthusApplication;
-    pages: {
-        [s: string]: LipthusPage;
-    };
     plugins: any;
     _lessVars: any;
     dbconf: DbParams;
@@ -69,9 +66,6 @@ export declare class Site extends EventEmitter {
     createApp(): void;
     setupApp(): Promise<void>;
     logo(width?: number, height?: number): any;
-    getPages(): Promise<{
-        [s: string]: LipthusPage;
-    }>;
     routeNotFound(): void;
     listen(): Promise<void>;
     langUrl(langcode?: string): string;
