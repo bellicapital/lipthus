@@ -521,8 +521,10 @@ export class Site extends EventEmitter {
 					host: req.hostname,
 					url: req.originalUrl
 				};
-			} else
+			} else {
 				req.session = {};
+				req.getUser = () => Promise.resolve();
+			}
 
 			next();
 		});

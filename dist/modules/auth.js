@@ -110,11 +110,6 @@ const registerSiteStrategies = (site, passport) => {
     };
     Object.keys(methods).forEach(method => methods[method]());
 };
-const getUser = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
-        req.user = yield req.site.userCollection.findById(req.user);
-    return req.user;
-});
 exports.default = (site) => {
     const app = site.app;
     const passport = new passport_1.Passport();
@@ -128,7 +123,11 @@ exports.default = (site) => {
      * @todo: add getUser in req.constructor.prototype
      */
     return (req, res, next) => {
-        req.getUser = getUser.bind(null, req);
+        req.getUser = () => __awaiter(void 0, void 0, void 0, function* () {
+            if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
+                req.user = yield req.site.userCollection.findById(req.user);
+            return req.user;
+        });
         next();
     };
 };

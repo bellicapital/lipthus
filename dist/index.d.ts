@@ -40,7 +40,7 @@ export interface LipthusRequest extends express.Request {
     imgnwm?: boolean;
     ipLocation: any;
     nationalities: KeyString;
-    getUser: () => Promise<User>;
+    getUser: () => Promise<User | void>;
     files: Array<any>;
     security: any;
     logError: (err: LipthusError) => Promise<void | Error>;

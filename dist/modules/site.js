@@ -390,8 +390,10 @@ class Site extends events_1.EventEmitter {
                         url: req.originalUrl
                     };
                 }
-                else
+                else {
                     req.session = {};
+                    req.getUser = () => Promise.resolve();
+                }
                 next();
             });
         });

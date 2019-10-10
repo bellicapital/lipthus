@@ -134,13 +134,6 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 	Object.keys(methods).forEach(method => methods[method]());
 };
 
-const getUser = async (req: LipthusRequest) => {
-	if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
-		req.user = await req.site.userCollection.findById(req.user);
-
-	return req.user;
-};
-
 export default (site: Site): any => {
 	const app = site.app;
 
@@ -161,7 +154,12 @@ export default (site: Site): any => {
 	 * @todo: add getUser in req.constructor.prototype
 	 */
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-		req.getUser = getUser.bind(null, req);
+		req.getUser = async () => {
+			if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
+				req.user = await req.site.userCollection.findById(req.user);
+
+			return req.user;
+		};
 
 		next();
 	};
