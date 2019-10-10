@@ -11,7 +11,6 @@ import * as os from "os";
 import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
-import session from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
@@ -21,18 +20,14 @@ import notFoundMin from "../routes/notfoundmin";
 import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";
 import logger_req from "./logger-req";
-import auth from "./auth";
 import {existsSync} from "fs";
 import listen from "./listen";
-import sitemap from "./sitemap";
 import {Notifier} from "./notifier";
 import multipart from './multipart';
 import {Subscriptor} from './subscriptor';
 import {Mailer} from "./mailer";
-import facebook from "./facebook";
 import Ng from './ng2';
 import {GPageSpeedMiddleWare} from "./g-page-speed";
-import {LipthusDevPanel} from "./cmjspanel";
 import route from "../routes";
 
 const debug = Debug('site:site');
@@ -66,7 +61,6 @@ export class Site extends EventEmitter {
 	public dbs: { [s: string]: LipthusDb } = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
-	public store?: any;
 	public registerMethods: any = {};
 	public environment: EnvironmentParams;
 	public langs: KeyString = {};
@@ -504,19 +498,32 @@ export class Site extends EventEmitter {
 
 		app.use(flash());
 		app.use(HtmlPageMiddleware);
-		app.use(session(this));
+
 		LipthusLogger.init(app);
-		app.use(LipthusDevPanel);
 
-		if (!this.environment.customSitemap)
-			app.use(sitemap(this));
+		if (this.config.sitemap && !this.environment.customSitemap)
+			app.use((await import('./sitemap')).default(this));
 
-		facebook(app);
-		app.use(auth(this));
+		if (this.config.fb_app_id)
+			(await import('./facebook')).default(app);
+
+		if (this.config.sessionExpireDays) {
+			app.use((await import('./session')).default(this));
+			app.use((await import('./auth')).default(this));
+		}
 
 		app.use((req: LipthusRequest, res: any, next: NextFunction) => {
 			res.timer.end('lipthus');
 			res.timer.start('page');
+
+			if (req.session) {
+				req.session.last = {
+					host: req.hostname,
+					url: req.originalUrl
+				};
+			} else
+				req.session = {};
+
 			next();
 		});
 	}

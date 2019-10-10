@@ -9,19 +9,17 @@ export default (site: Site) => {
 	const {uri, options} = site.authDb.connectParams();
 	const expires = 1000 * 60 * 60 * 24 * (site.config.sessionExpireDays || 0);
 
-	site.store = new MongoDBStore({
-		uri: uri,
-		connectionOptions: options,
-		collection: 'sessions',
-		expires: expires
-	});
-
 	const params = {
 		secret: site.secret,
 		cookie: {
 			maxAge: expires
 		},
-		store: site.store,
+		store: new MongoDBStore({
+		uri: uri,
+		connectionOptions: options,
+		collection: 'sessions',
+		expires: expires
+		}),
 		name: site.key + ".sid",
 		resave: false,
 		saveUninitialized: false,
@@ -31,11 +29,8 @@ export default (site: Site) => {
 	const sessionMW = session(params);
 
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-		if (req.device.type === 'bot') {
-			req.session = {};
-
+		if (req.device.type === 'bot')
 			return next();
-		}
 
 		sessionMW(req, res, next);
 	};

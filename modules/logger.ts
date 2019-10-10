@@ -141,8 +141,6 @@ export class LipthusLogger {
 	}
 
 	static middleware(req: LipthusRequest, res: LipthusResponse, next: NextFunction): void {
-		req.session.debug = parseInt(req.body.debug || req.query.debug || req.session.debug, 10) || 0;
-
 		const logger = new LipthusLogger(req);
 
 		req.logError = logger.logError.bind(logger);

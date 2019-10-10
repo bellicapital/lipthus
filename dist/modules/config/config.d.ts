@@ -32,7 +32,6 @@ export declare class Config {
     sitename?: string;
     siteversion: string;
     slogan?: MultilangText;
-    startpage: string;
     static_host?: string;
     version: string;
     webmastermail?: string;
@@ -40,6 +39,7 @@ export declare class Config {
     lang_subdomains?: boolean;
     auto_hreflang?: boolean;
     sessionExpireDays?: number;
+    sitemap: boolean;
     constructor(site: Site);
     load(): Promise<void>;
     get(k: string, update?: any, cb?: (v: any) => void): any;

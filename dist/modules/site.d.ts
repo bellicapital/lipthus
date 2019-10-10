@@ -33,7 +33,6 @@ export declare class Site extends EventEmitter {
         [s: string]: string;
     };
     translator: any;
-    store?: any;
     registerMethods: any;
     environment: EnvironmentParams;
     langs: KeyString;

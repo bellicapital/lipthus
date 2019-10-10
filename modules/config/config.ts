@@ -29,7 +29,6 @@ export class Config {
 	sitename?: string;
 	siteversion!: string;
 	slogan?: MultilangText;
-	startpage = 'home';
 	static_host?: string;
 	version!: string;
 	webmastermail?: string;
@@ -37,6 +36,7 @@ export class Config {
 	lang_subdomains?: boolean;
 	auto_hreflang?: boolean;
 	sessionExpireDays?: number;
+	sitemap: boolean;
 
 	constructor(public site: Site) {
 	}

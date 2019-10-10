@@ -20,7 +20,6 @@ const os = require("os");
 const updater_1 = require("./updater");
 const errorhandler_1 = require("./errorhandler");
 const csurf = require("csurf");
-const session_1 = require("./session");
 const lipthus = require("../index");
 const security_1 = require("./security");
 const config_1 = require("./config");
@@ -29,18 +28,14 @@ const notfoundmin_1 = require("../routes/notfoundmin");
 const multilang_1 = require("./multilang");
 const htmlpage_1 = require("./htmlpage");
 const logger_req_1 = require("./logger-req");
-const auth_1 = require("./auth");
 const fs_1 = require("fs");
 const listen_1 = require("./listen");
-const sitemap_1 = require("./sitemap");
 const notifier_1 = require("./notifier");
 const multipart_1 = require("./multipart");
 const subscriptor_1 = require("./subscriptor");
 const mailer_1 = require("./mailer");
-const facebook_1 = require("./facebook");
 const ng2_1 = require("./ng2");
 const g_page_speed_1 = require("./g-page-speed");
-const cmjspanel_1 = require("./cmjspanel");
 const routes_1 = require("../routes");
 const debug = Debug('site:site');
 const device = require('express-device');
@@ -377,16 +372,26 @@ class Site extends events_1.EventEmitter {
             yield multilang_1.MultilangModule(app);
             app.use(flash());
             app.use(htmlpage_1.HtmlPageMiddleware);
-            app.use(session_1.default(this));
             logger_1.LipthusLogger.init(app);
-            app.use(cmjspanel_1.LipthusDevPanel);
-            if (!this.environment.customSitemap)
-                app.use(sitemap_1.default(this));
-            facebook_1.default(app);
-            app.use(auth_1.default(this));
+            if (this.config.sitemap && !this.environment.customSitemap)
+                app.use((yield Promise.resolve().then(() => require('./sitemap'))).default(this));
+            if (this.config.fb_app_id)
+                (yield Promise.resolve().then(() => require('./facebook'))).default(app);
+            if (this.config.sessionExpireDays) {
+                app.use((yield Promise.resolve().then(() => require('./session'))).default(this));
+                app.use((yield Promise.resolve().then(() => require('./auth'))).default(this));
+            }
             app.use((req, res, next) => {
                 res.timer.end('lipthus');
                 res.timer.start('page');
+                if (req.session) {
+                    req.session.last = {
+                        host: req.hostname,
+                        url: req.originalUrl
+                    };
+                }
+                else
+                    req.session = {};
                 next();
             });
         });

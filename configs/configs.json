@@ -45,12 +45,6 @@
 				"string",
 				"_CF_WEBMASTER_MAIL"
 			],
-			"startpage": [
-				"page",
-				"_MD_AM_STARTPAGE",
-				"home",
-				"_MD_AM_STARTPAGEDSC"
-			],
 			"closesite": [
 				"bool",
 				"_MD_AM_CLOSESITE",

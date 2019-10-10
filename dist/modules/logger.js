@@ -110,7 +110,6 @@ class LipthusLogger {
             app.use(LipthusLogger.botMiddleware);
     }
     static middleware(req, res, next) {
-        req.session.debug = parseInt(req.body.debug || req.query.debug || req.session.debug, 10) || 0;
         const logger = new LipthusLogger(req);
         req.logError = logger.logError.bind(logger);
         next();

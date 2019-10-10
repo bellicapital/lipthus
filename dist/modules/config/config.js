@@ -23,7 +23,6 @@ class Config {
         this.host = '';
         this.language = 'es';
         this.protocol = 'http';
-        this.startpage = 'home';
         this.model = {};
     }
     load() {
