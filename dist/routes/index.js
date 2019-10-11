@@ -29,6 +29,7 @@ const logout_1 = require("./logout");
 const videos_1 = require("./videos");
 const video_poster_1 = require("./video-poster");
 const lmns_1 = require("./lmns");
+const paypalresponse_1 = require("./paypalresponse");
 const resimg_1 = require("./resimg");
 const item_comments_1 = require("./item-comments");
 const log_req_1 = require("./log-req");
@@ -64,7 +65,6 @@ function default_1(app) {
         router.get('/embed/:id', embed);
         router.get('/thumbs/:id\\_:width\\_:height\\_:crop:nwm?.png', thumb_1.default);
         // router.get('/thumbs/:schema/:id/:field\\_:width\\_:height\\_:crop:nwm?.png', thumb);
-        require('./admin')(app, router);
         require('./config')(app);
         router.all('/_test/:method', require('./test'));
         router.all('/ajax', ajax_1.AjaxMiddleware);
@@ -80,9 +80,9 @@ function default_1(app) {
         const dir = app.get('dir');
         router.all('/unsubscribe', require(fs_2.existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
         router.get('/resimg/*', resimg_1.default);
-        router.get('/optimg/:fn', optimg_1.default);
+        router.get('/optimg/*', optimg_1.default);
         router.get('/c/:id.:ext*', cache_1.default);
-        router.post('/paypalresponse', require('./paypalresponse'));
+        router.post('/paypalresponse', paypalresponse_1.default);
         router.all('/dsresponse', require('./dsresponse'));
         router.get('/dsresponsetest', require('./dsresponsetest'));
         router.get('/notifications', require('./notifications'));

@@ -1,6 +1,8 @@
 import {UploadedFile} from "../interfaces/uploaded-file";
 import {promisify} from 'util';
 import * as path from "path";
+import {ColRef} from "../interfaces/global.interface";
+import {LipthusRequest} from "../index";
 
 const fs = require('fs');
 const Mime = require('mime');
@@ -94,9 +96,12 @@ export class BinDataFile {
 		return this.name;
 	}
 
-	send(req: any, res: any) {
+	async send(req: LipthusRequest, res: any) {
+		if (res.headersSent)
+			throw new Error('Headers already sent' + req.originalUrl);
+
 		if (!this.MongoBinData)
-			return Promise.reject(new Error('MongoBinData is empty'));
+			throw new Error('MongoBinData is empty');
 
 		const data = Buffer.from(this.MongoBinData.buffer);
 
@@ -122,9 +127,9 @@ export class BinDataFile {
 		return 'data:' + this.contentType + ';base64,' + (this.MongoBinData as any).toString('base64');
 	}
 
-	static fromMongo(mongo: any, colRef?: ColRef) {
+	static fromMongo(mongo: any, colRef?: ColRef): BinDataImage | BinDataFile {
 		if (!mongo)
-			return mongo;
+			throw new Error('empty mongo object');
 
 		if (mongo.toObject)
 			mongo = mongo.toObject();
@@ -305,7 +310,6 @@ export class DbfInfo implements DbfInfoParams {
 }
 
 import {BinDataImage} from './bdi';
-import {ColRef} from "../interfaces/global.interface";
 
 export default BinDataFile;
 

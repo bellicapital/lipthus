@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Debug = require("debug");
+const fs_1 = require("fs");
 const debug = Debug('site:w3c');
-const fs = require('mz/fs');
 const os = require('os');
 const md5 = require('md5');
 const w3cjs = require('w3cjs');
 const { util } = require('./util');
 const tmpdir = os.tmpdir() + '/w3cv/';
-fs.mkdir(tmpdir).catch((err) => {
+fs_1.promises.mkdir(tmpdir).catch((err) => {
     if (err.code !== 'EEXIST')
         throw err;
 });
@@ -58,7 +58,7 @@ const w3c = {
     cach(uri, content) {
         const filename = tmpdir + md5(uri);
         debug('writing tmp file', filename);
-        return fs.writeFile(filename, JSON.stringify(content))
+        return fs_1.promises.writeFile(filename, JSON.stringify(content))
             .then(() => {
             debug('file written');
             return content;
@@ -66,9 +66,9 @@ const w3c = {
     },
     getCached(uri) {
         const file = tmpdir + md5(uri);
-        return fs.access(file)
+        return fs_1.promises.access(file)
             .then(() => {
-            return fs.readFile(file, 'utf8')
+            return fs_1.promises.readFile(file, 'utf8')
                 .then((r) => {
                 debug('read cached', uri);
                 return JSON.parse(r);

@@ -11,7 +11,6 @@ export declare class Multilang {
     all: KeyAny;
     translator: any;
     baseHost?: string;
-    mainLangSubdomain?: string;
     private locale?;
     private _availableLangNames?;
     private _allLangNames?;
@@ -52,7 +51,6 @@ export declare class Multilang {
      * @returns {String}
      */
     private _getLocale;
-    mainLangUrl(): string;
     translateAvailable(): boolean;
     private _loadArray;
     /**
@@ -100,17 +98,5 @@ export declare class Multilang {
     allLangNames(): Promise<KeyString>;
     availableLangNames(): Promise<KeyString>;
     translate(src: any, cb: any, srcLog?: any): void;
-    /**
-     * TODO
-     * @param src
-     * @returns {*}
-     */
-    number(src: string): any;
-    money(src: string, currency: string): any;
-    /**
-     *
-     * @returns {moment} localized instance
-     */
-    moment(date: Date): any;
 }
-export declare function MultilangModule(app: LipthusApplication): any;
+export declare function MultilangModule(app: LipthusApplication): Promise<any>;

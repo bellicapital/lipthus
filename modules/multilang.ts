@@ -2,9 +2,6 @@ import {LipthusApplication, LipthusRequest, LipthusResponse, Site} from "../inde
 import {KeyAny, KeyString} from "../interfaces/global.interface";
 import {NextFunction} from "express";
 
-const accounting = require('accounting');
-const moment = require('moment');
-
 export class Multilang {
 
 	public lang: string;
@@ -16,7 +13,6 @@ export class Multilang {
 	public all: KeyAny;
 	public translator: any;
 	public baseHost?: string;
-	public mainLangSubdomain?: string;
 
 	private locale?: string;
 	private _availableLangNames?: KeyString;
@@ -156,16 +152,6 @@ export class Multilang {
 		}
 	}
 
-	mainLangUrl() {
-		if (this.langUrls[this.configLang])
-			return this.langUrls[this.configLang];
-
-		if (this.mainLangSubdomain)
-			return '//' + this.mainLangSubdomain + '.' + this.baseHost;
-
-		return '//www.' + this.baseHost;
-	}
-
 	translateAvailable() {
 		return Multilang._translateAvailable(this.req.site);
 	}
@@ -248,7 +234,7 @@ export class Multilang {
 								update[req.ml.lang] = v;
 								result[key] = v;
 
-								req.db.lang.updateNative({_k: key}, {$set: update})
+								req.db.collection('lang').updateOne({_k: key}, {$set: update})
 									.catch(console.error.bind(console));
 							});
 						}
@@ -354,46 +340,15 @@ export class Multilang {
 		this.req.site.translate(src, this.configLang, this.lang, cb, srcLog);
 	}
 
-	//noinspection JSMethodCanBeStatic
-	/**
-	 * TODO
-	 * @param src
-	 * @returns {*}
-	 */
-	number(src: string) {
-		return accounting.formatNumber(src, {
-			decimal: ',',
-			thousand: '.'
-		});
-	}
-
-	money(src: string, currency: string) {
-		currency = currency || this.req.site.config.currency;
-
-		return accounting.formatMoney(src, {
-			symbol: currency,
-			format: this.req.site.config.money,
-			decimal: currency === '€' ? ',' : '.',
-			thousand: currency === '€' ? '.' : ','
-		});
-	}
-
-	/**
-	 *
-	 * @returns {moment} localized instance
-	 */
-	moment(date: Date) {
-		return moment(date).locale(this.lang);
-	}
 }
 
 
 
 
-export function MultilangModule(app: LipthusApplication) {
+export async function MultilangModule(app: LipthusApplication) {
 	const site: Site = app.site;
 
-	site.db.lang.check();
+	await site.db.lang.check();
 
 	site.langUrls = {};
 

@@ -42,13 +42,13 @@ export declare class Config {
     sitemap: boolean;
     constructor(site: Site);
     load(): Promise<void>;
-    get(k: string, update?: any, cb?: (v: any) => void): any;
+    get(k: string, update?: boolean): Promise<any>;
     set(k: string, v: any, ns?: string | true, save?: boolean): any;
     getConfigsByCat(cat: string): {
         [configKey: string]: ConfigVar;
     };
     getValuesByCat(cat: string): any;
-    metaRobots(cb?: (a: any) => {}): any;
+    metaRobots(): any;
     check(): Promise<void>;
     checkDefaults(): Promise<void>;
 }

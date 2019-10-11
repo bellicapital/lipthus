@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const htmlheadmanager_1 = require("./htmlheadmanager");
 const mltext_1 = require("./schema-types/mltext");
 const pug = require("pug");
-const fs = require('mz/fs');
+const fs_1 = require("fs");
 const debug = require('debug')('site:htmlpage');
 const jsLangKeys = [
     '_YES', '_NO', '_CREATE', '_EDIT', '_DELETE', '_DATE', '_TITLE', '_NAME', '_DESCRIPTION', '_PREFERENCES',
@@ -105,7 +105,7 @@ class HtmlPage {
         if (this.layout === 'default')
             this.layout = 'layout';
         // view
-        if (!this.view && fs.existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
+        if (!this.view && fs_1.existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
             this.view = this.key;
         if (this.locals.justContent)
             return Promise.resolve(this);
@@ -158,9 +158,9 @@ class HtmlPage {
             jsLangKeys.forEach(v => vars[v] = req.ml.all[v]);
             this.head.addJSLang(vars);
             // page
-            if (fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
+            if (fs_1.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
                 this.head.addJS(this.deviceType + '/' + this.key + '.js', { priority: 10 });
-            else if (fs.existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
+            else if (fs_1.existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
                 this.head.addJS(this.key + '.js', { priority: 10 });
             if (this.key)
                 this.head.addCSS(this.key, { priority: 10 });
@@ -182,9 +182,9 @@ class HtmlPage {
             // layout
             // css
             this.head.addCSS(this.layout, { priority: 20 });
-            if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
+            if (this.layout && fs_1.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
                 this.addJS(this.deviceType + '/' + this.layout + '.js', { priority: 20 });
-            else if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
+            else if (this.layout && fs_1.existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
                 this.addJS(this.layout + '.js', { priority: 20 });
             if (req.app.get('env') === 'development') {
                 this.addJS('debug.js');
@@ -252,9 +252,9 @@ class HtmlPage {
             return this.res.headersSent || this.res.render(this.req.site.lipthusDir + '/views/status/' + st);
         const req = this.req;
         this.view = req.site.srcDir + '/views/' + this.deviceType + '/notfound';
-        if (!fs.existsSync(this.view + '.pug'))
+        if (!fs_1.existsSync(this.view + '.pug'))
             this.view = req.site.srcDir + '/views/notfound';
-        if (!fs.existsSync(this.view + '.pug'))
+        if (!fs_1.existsSync(this.view + '.pug'))
             this.view = 'status/404';
         this.head.addCSS('notfound');
         this.head.removeLink({ rel: 'canonical', href: req.url });
@@ -264,7 +264,7 @@ class HtmlPage {
             delete this.robots;
             delete this.metaKeywords;
             delete this.metaDescription;
-            if (fs.existsSync(req.site.dir + '/routes/notfound.js'))
+            if (fs_1.existsSync(req.site.dir + '/routes/notfound.js'))
                 return require(req.site.dir + '/routes/notfound')(req, this.res);
         })
             .then(() => this.send())
@@ -427,7 +427,7 @@ class HtmlPage {
         const base = this.deviceType + '/' + this.view;
         let view = null;
         vDirs.some(dir => {
-            if (fs.existsSync(dir + '/' + base + '.pug') || fs.existsSync(dir + '/' + base + '/index.pug')) {
+            if (fs_1.existsSync(dir + '/' + base + '.pug') || fs_1.existsSync(dir + '/' + base + '/index.pug')) {
                 view = base;
                 return true;
             }
@@ -460,20 +460,20 @@ class HtmlPage {
         const r = vDirs.some(dir => {
             return dirOpt.some(opt => {
                 view = dir + '/' + opt;
-                return fs.existsSync(view);
+                return fs_1.existsSync(view);
             });
         });
         return r && (this.view = view);
     }
     msg(msg) {
         this.view = this.req.site.srcDir + '/views/' + this.deviceType + '/message';
-        if (!fs.existsSync(this.view + '.pug')) {
+        if (!fs_1.existsSync(this.view + '.pug')) {
             this.view = this.req.site.srcDir + '/views/message';
-            if (!fs.existsSync(this.view + '.pug'))
+            if (!fs_1.existsSync(this.view + '.pug'))
                 this.view = 'message';
         }
         this.res.locals.message = msg;
-        if (!fs.existsSync(this.req.site.dir + '/routes/message.js'))
+        if (!fs_1.existsSync(this.req.site.dir + '/routes/message.js'))
             return this.send();
         require(this.req.site.dir + '/routes/message').call(this, this.req, this.res, () => this.send());
     }

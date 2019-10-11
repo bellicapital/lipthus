@@ -8,7 +8,7 @@ const Debug = require("debug");
 const path = require("path");
 const events_1 = require("events");
 const lib_2 = require("./../lib");
-const fs = require('mz/fs');
+const fs_1 = require("fs");
 const debug = Debug('site:db');
 mongoose.dbs = {};
 mongoose.set('useNewUrlParser', true);
@@ -146,6 +146,9 @@ class LipthusDb extends events_1.EventEmitter {
     get notification() {
         return this.model('notification');
     }
+    get lang() {
+        return this.model('lang');
+    }
     model(name, schema) {
         if (this.models[name])
             return this.models[name];
@@ -187,10 +190,10 @@ class LipthusDb extends events_1.EventEmitter {
     }
     addSchemasDir(dir) {
         const isValid = file => !file.match(/\.d\.ts$/) && file.match(/.+\.[tj]s/);
-        return fs.readdir(dir)
+        return fs_1.promises.readdir(dir)
             .then((schemas) => Promise.all(schemas.filter(isValid).map(file => {
             const fPath = dir + '/' + file;
-            return fs.stat(fPath).then((stat) => {
+            return fs_1.promises.stat(fPath).then((stat) => {
                 if (stat.isDirectory())
                     return;
                 const s = require(fPath);
@@ -205,7 +208,7 @@ class LipthusDb extends events_1.EventEmitter {
             });
         })), (err) => debug(err) // catch schemas dir does not exists'))
         )
-            .then(() => fs.readdir(dir + '/plugins')
+            .then(() => fs_1.promises.readdir(dir + '/plugins')
             .then((plugins) => {
             (plugins || []).filter(isValid).forEach(plugin => {
                 const basename = path.basename(plugin, path.extname(plugin));

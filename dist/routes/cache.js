@@ -9,7 +9,7 @@ function default_1(req, res, next) {
         .then(file => {
         if (!file)
             return next();
-        modules_1.BinDataFile.fromMongo(file).send(req, res);
+        return modules_1.BinDataFile.fromMongo(file).send(req, res);
     })
         .catch(next);
 }

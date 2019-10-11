@@ -36,7 +36,7 @@ export function getSchema(site: Site) {
 				return this.collection.remove({_id: this._id}).catch(console.error.bind(console));
 			}
 
-			if (definition.configs[key][0] === 'bdf')
+			if (definition.configs[key][0] === 'bdf' && val)
 				return BinDataFile.fromMongo(val, {collection: 'config', id: this._id, field: 'value'});
 
 			return val;

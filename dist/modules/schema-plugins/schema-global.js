@@ -127,8 +127,8 @@ function schemaGlobalMethods(schema) {
             case 'location':
                 return Promise.resolve(new Location(val));
             case 'Number':
-                if (opt.origType === 'money')
-                    return Promise.resolve(req.ml.money(val, opt.currency));
+                // if (opt.origType === 'money')
+                // 	return Promise.resolve(req.ml.money(val, opt.currency));
                 if (opt.origType === 'selector')
                     return this.getName(k, req);
             case 'String':

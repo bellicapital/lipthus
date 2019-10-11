@@ -1,14 +1,15 @@
 import * as Debug from "debug";
 
+import {promises as fsPromises} from "fs";
+
 const debug = Debug('site:w3c');
-const fs = require('mz/fs');
 const os = require('os');
 const md5 = require('md5');
 const w3cjs = require('w3cjs');
 const {util} = require('./util');
 const tmpdir = os.tmpdir() + '/w3cv/';
 
-fs.mkdir(tmpdir).catch((err: any) => {
+fsPromises.mkdir(tmpdir).catch((err: any) => {
 	if (err.code !== 'EEXIST')
 		throw err;
 });
@@ -71,7 +72,7 @@ const w3c = {
 
 		debug('writing tmp file', filename);
 
-		return fs.writeFile(filename, JSON.stringify(content))
+		return fsPromises.writeFile(filename, JSON.stringify(content))
 			.then(() => {
 				debug('file written');
 
@@ -82,9 +83,9 @@ const w3c = {
 	getCached(uri: string) {
 		const file = tmpdir + md5(uri);
 
-		return fs.access(file)
+		return fsPromises.access(file)
 			.then(() => {
-				return fs.readFile(file, 'utf8')
+				return fsPromises.readFile(file, 'utf8')
 					.then((r: any) => {
 						debug('read cached', uri);
 

@@ -19,7 +19,10 @@ import {NotificationModel} from "../schemas/notification";
 import {Collection, Db} from "mongodb";
 import {Connection} from "mongoose";
 
-const fs = require('mz/fs');
+import {promises as fsPromises} from "fs";
+import {LipthusCacheResponseModel} from "../schemas/cache-response";
+import {LipthusLanguageModel} from "../schemas/lang";
+
 const debug = Debug('site:db');
 
 (mongoose as any).dbs = {};
@@ -195,7 +198,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		return this.model('cache');
 	}
 
-	get cacheResponse() {
+	get cacheResponse(): LipthusCacheResponseModel {
 		return this.model('cacheResponse');
 	}
 
@@ -205,6 +208,10 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 	get notification(): NotificationModel {
 		return this.model('notification');
+	}
+
+	get lang(): LipthusLanguageModel {
+		return this.model('lang');
 	}
 
 	model(name: string, schema?: LipthusSchema) { // if (name === 'newsletter') console.trace(name)
@@ -262,12 +269,12 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	addSchemasDir(dir: string) {
 		const isValid = file => !file.match(/\.d\.ts$/) && file.match(/.+\.[tj]s/);
 
-		return fs.readdir(dir)
+		return fsPromises.readdir(dir)
 			.then((schemas: Array<string>) =>
 					Promise.all(schemas.filter(isValid).map(file => {
 						const fPath = dir + '/' + file;
 
-						return fs.stat(fPath).then((stat: any) => {
+						return fsPromises.stat(fPath).then((stat: any) => {
 							if (stat.isDirectory())
 								return;
 
@@ -284,7 +291,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 					}))
 				, (err: Error) => debug(err)	// catch schemas dir does not exists'))
 			)
-			.then(() => fs.readdir(dir + '/plugins')
+			.then(() => fsPromises.readdir(dir + '/plugins')
 				.then((plugins: Array<string>) => {
 					(plugins || []).filter(isValid).forEach(plugin => {
 						const basename = path.basename(plugin, path.extname(plugin));

@@ -19,6 +19,7 @@ import logout from "./logout";
 import videos from "./videos";
 import videoPoster from "./video-poster";
 import lmns from "./lmns";
+import paypalresponse from "./paypalresponse";
 import resimg from "./resimg";
 import item_comments from "./item-comments";
 import logReq from "./log-req";
@@ -60,7 +61,6 @@ export default async function (app: LipthusApplication) {
 	router.get('/thumbs/:id\\_:width\\_:height\\_:crop:nwm?.png', thumb as any);
 	// router.get('/thumbs/:schema/:id/:field\\_:width\\_:height\\_:crop:nwm?.png', thumb);
 
-	require('./admin')(app, router);
 	require('./config')(app);
 
 	router.all('/_test/:method', require('./test'));
@@ -80,10 +80,10 @@ export default async function (app: LipthusApplication) {
 	const dir = app.get('dir');
 	router.all('/unsubscribe', require(existsSync(dir + '/routes/unsubscribe.js') ? dir + '/routes/unsubscribe' : './unsubscribe'));
 
-	router.get('/resimg/*', resimg as any);
-	router.get('/optimg/:fn', optimg as any);
-	router.get('/c/:id.:ext*', cache as any);
-	router.post('/paypalresponse', require('./paypalresponse'));
+	router.get('/resimg/*', resimg);
+	router.get('/optimg/*', optimg);
+	router.get('/c/:id.:ext*', cache);
+	router.post('/paypalresponse', paypalresponse);
 	router.all('/dsresponse', require('./dsresponse'));
 	router.get('/dsresponsetest', require('./dsresponsetest'));
 	router.get('/notifications', require('./notifications'));

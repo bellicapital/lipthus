@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("util");
 const path = require("path");
@@ -65,15 +74,19 @@ class BinDataFile {
         return this.name;
     }
     send(req, res) {
-        if (!this.MongoBinData)
-            return Promise.reject(new Error('MongoBinData is empty'));
-        const data = Buffer.from(this.MongoBinData.buffer);
-        if (this.contentType)
-            res.type(this.contentType);
-        res.set('Expires', new Date().addDays(60).toUTCString());
-        if (this.mtime)
-            res.set('Last-modified', this.mtime.toUTCString());
-        return res.send(data);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (res.headersSent)
+                throw new Error('Headers already sent' + req.originalUrl);
+            if (!this.MongoBinData)
+                throw new Error('MongoBinData is empty');
+            const data = Buffer.from(this.MongoBinData.buffer);
+            if (this.contentType)
+                res.type(this.contentType);
+            res.set('Expires', new Date().addDays(60).toUTCString());
+            if (this.mtime)
+                res.set('Last-modified', this.mtime.toUTCString());
+            return res.send(data);
+        });
     }
     getKey() {
         if (!this.key)
@@ -85,7 +98,7 @@ class BinDataFile {
     }
     static fromMongo(mongo, colRef) {
         if (!mongo)
-            return mongo;
+            throw new Error('empty mongo object');
         if (mongo.toObject)
             mongo = mongo.toObject();
         return /^image\/.*$/.test(mongo.contentType)

@@ -12,6 +12,8 @@ import { DbParams, LipthusConnection } from "../interfaces/global.interface";
 import { NotificationModel } from "../schemas/notification";
 import { Collection } from "mongodb";
 import { Connection } from "mongoose";
+import { LipthusCacheResponseModel } from "../schemas/cache-response";
+import { LipthusLanguageModel } from "../schemas/lang";
 declare const LipthusDb_base: new () => any;
 export declare class LipthusDb extends LipthusDb_base {
     site: Site;
@@ -33,7 +35,7 @@ export declare class LipthusDb extends LipthusDb_base {
         uri: string;
         options: any;
     };
-    addLipthusSchemas(): any;
+    addLipthusSchemas(): Promise<any>;
     onConnError(e: any): void;
     onDisconnected(): void;
     onReconnected(): void;
@@ -48,12 +50,13 @@ export declare class LipthusDb extends LipthusDb_base {
     readonly user: UserModel;
     readonly settings: SettingModel;
     readonly cache: LipthusCacheModel;
-    readonly cacheResponse: any;
+    readonly cacheResponse: LipthusCacheResponseModel;
     readonly nationalities: NationalitiesModel;
     readonly notification: NotificationModel;
+    readonly lang: LipthusLanguageModel;
     model(name: string, schema?: LipthusSchema): any;
     schema(name: string, schema: LipthusSchema): void;
-    addSchemasDir(dir: string): any;
+    addSchemasDir(dir: string): Promise<void>;
     addPlugin(file: {
         name: string;
         getPlugin: any;

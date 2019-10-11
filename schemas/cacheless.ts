@@ -1,13 +1,16 @@
-"use strict";
-
-const fs = require('mz/fs');
+import * as debug0 from 'debug';
+import {promises as fsPromises} from 'fs';
+import {LipthusSchema} from "../lib";
 const path = require('path');
 const less = require('less');
 const md5 = require('md5');
-const debug = require('debug')('site:css');
+const debug = debug0('site:css');
 
-module.exports = function cacheless(Schema){
-	const s = new Schema({
+export const name = "cacheless";
+
+// noinspection JSUnusedGlobalSymbols
+export function getSchema() {
+	const s = new LipthusSchema({
 		mtime: Number,
 		source: {type: String, index: true, unique: true},
 		compress: Boolean,
@@ -18,8 +21,8 @@ module.exports = function cacheless(Schema){
 	});
 
 	s.statics = {
-		getCachedFile: function(file, compress){
-			return fs.stat(file)
+		getCachedFile: function (file, compress) {
+			return fsPromises.stat(file)
 				.then(stat => this.getCached({
 					src: file,
 					compress: compress,
@@ -28,14 +31,14 @@ module.exports = function cacheless(Schema){
 					mapUrl: path.basename(file, '.less') + '.map'
 				}));
 		},
-		getCachedFiles: function(files, basename){
+		getCachedFiles: function (files: Array<string>, basename: string) {
 			let code = '';
 			let mtime = 0;
 
 			const promises = [];
 
 			files.forEach(file => {
-				promises.push(fs.stat(file));
+				promises.push(fsPromises.stat(file));
 
 				code += '@import "' + file + '";';
 			});
@@ -44,11 +47,13 @@ module.exports = function cacheless(Schema){
 				.then(
 					v => {
 						v.forEach(stat => {
-							if (stat.mtime > mtime)
-								mtime = stat.mtime;
+							const smt = stat.mtime.getTime();
+
+							if (smt > mtime)
+								mtime = smt;
 						});
 
-						mtime = Math.floor(mtime.getTime() / 1000);
+						mtime = Math.floor(mtime / 1000);
 
 						return this.getCached({
 							src: basename,
@@ -59,7 +64,7 @@ module.exports = function cacheless(Schema){
 						});
 					},
 					err => {
-						if(err.code === 'ENOENT'){
+						if (err.code === 'ENOENT') {
 							err.status = 404;
 							debug(err.message);
 						}
@@ -67,7 +72,7 @@ module.exports = function cacheless(Schema){
 						throw err;
 					});
 		},
-		getCached: function(opt){
+		getCached: function (opt) {
 			const src = opt.src;
 			const compress = opt.compress;
 			const mtime = opt.mtime;
@@ -81,7 +86,7 @@ module.exports = function cacheless(Schema){
 					const lessVars = site.lessVars();
 					const varsmd5 = md5(JSON.stringify(lessVars));
 
-					if(
+					if (
 						cached
 						&& cached.mtime >= mtime
 						&& cached.compress === compress
@@ -98,23 +103,23 @@ module.exports = function cacheless(Schema){
 
 					return less.render(opt.code, lessopt)
 						.then(r => {
-							const update = {
-								source: src,
-								mtime: mtime,
-								varsmd5: varsmd5,
-								content: r,
-								compress: compress
-							};
+								const update = {
+									source: src,
+									mtime: mtime,
+									varsmd5: varsmd5,
+									content: r,
+									compress: compress
+								};
 
-							return db.cacheless.updateOne({source: src}, update, {upsert: true})
-								.then(() => r);
-						},
-						err => {
-							throw new Error('Less render - ' + err.message + '\n' + JSON.stringify(err, null, '\t'));
-						});
+								return db.cacheless.updateOne({source: src}, update, {upsert: true})
+									.then(() => r);
+							},
+							err => {
+								throw new Error('Less render - ' + err.message + '\n' + JSON.stringify(err, null, '\t'));
+							});
 				});
 		}
 	};
 
 	return s;
-};
+}

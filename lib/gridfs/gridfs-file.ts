@@ -5,18 +5,17 @@ import {exec} from "child_process";
 import {BinDataFile, BinDataImage, LipthusDb} from "../../modules";
 import * as md5 from "md5";
 import * as debug0 from "debug";
-import {LipthusRequest, LipthusResponse} from "../../index";
+import {LipthusCache, LipthusRequest, LipthusResponse} from "../../index";
 import {LipthusError} from "../../classes/lipthus-error";
 import {optimage} from "../optimage";
 import {Collection, GridFSBucket} from "mongodb";
-import * as fs from "fs";
+import {existsSync, createWriteStream, promises as fsPromises} from "fs";
 import {promisify} from "util";
 import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
 import {Response} from "express";
 import {LipthusFile} from "../file-stream";
 
 const multimedia = require('multimedia-helper');
-const fsp = require('mz/fs');
 const debug = debug0('site:gridfs-file');
 const pExec = promisify(exec);
 const cacheDir = '/var/cache/video-versions/';
@@ -213,7 +212,7 @@ export class GridFSFile {
 
 		const fileName = this.videoVersionFileName(k);
 
-		if (fs.existsSync(fileName))
+		if (existsSync(fileName))
 			return new LipthusFile(fileName, this.versions[k]);
 
 		return this.checkVideoVersion(k, force);
@@ -226,7 +225,7 @@ export class GridFSFile {
 	checkVideoVersion(k: string, force: boolean) {
 		const fileName = this.videoVersionFileName(k);
 
-		if (fs.existsSync(fileName))
+		if (existsSync(fileName))
 			return new LipthusFile(fileName, this.versions[k]);
 		else
 			return this.createVideoVersion(k, force);
@@ -247,11 +246,11 @@ export class GridFSFile {
 		return new Promise((ok, ko) => {
 			const file = tmpdir + this._id + '_' + this.filename;
 
-			if (fs.existsSync(file))
+			if (existsSync(file))
 				return ok(file);
 
 			this.getBucket().openDownloadStream(this.id)
-				.pipe(fs.createWriteStream(file))
+				.pipe(createWriteStream(file))
 				.on('error', ko)
 				.on('end', () => {
 					debug('tmp file created: ' + file);
@@ -260,7 +259,7 @@ export class GridFSFile {
 		});
 	}
 
-	createVideoVersion(k: string, force: boolean): Promise<any> {
+	async createVideoVersion(k: string, force: boolean): Promise<any> {
 		if (!this.processLog[k])
 			this.processLog[k] = {};
 
@@ -278,7 +277,7 @@ export class GridFSFile {
 				if (!this.processLog[k].end)
 					err.code = 1;
 
-				return Promise.reject(err);
+				throw err;
 			}
 		}
 
@@ -286,8 +285,8 @@ export class GridFSFile {
 
 		const dir = cacheDir + this.db.name;
 
-		if (!fs.existsSync(dir))
-			fs.mkdirSync(dir, {recursive: true});
+		if (!existsSync(dir))
+			await fsPromises.mkdir(dir, {recursive: true});
 
 		const fileName = dir + '/' + this._id + '.' + k;
 
@@ -318,7 +317,7 @@ export class GridFSFile {
 						this.processLog[k].result = r || 'ok';
 						this.update({processLog: this.processLog}).catch(console.error.bind(console));
 
-						if (!fs.existsSync(fileName))
+						if (!existsSync(fileName))
 							throw new Error('tmp file not created: ' + fileName);
 
 						return multimedia(fileName)
@@ -332,7 +331,7 @@ export class GridFSFile {
 								update['versions.' + k] = metadata;
 
 								return this.update(update)
-									.then(() => fsp.unlink(tmpFile));
+									.then(() => fsPromises.unlink(tmpFile));
 							});
 					});
 			})
@@ -469,7 +468,7 @@ export class GridFSFile {
 			});
 	}
 
-	getVideoFrameByNumber(number: number): Promise<BinDataImage> {
+	async getVideoFrameByNumber(number: number): Promise<BinDataImage> {
 		const Cache = this.db.cache;
 		const opt = {
 			name: number + '_' + this.basename('jpg'),
@@ -477,94 +476,70 @@ export class GridFSFile {
 			source: this._id
 		};
 
-		return Cache.findOne(opt)
-			.then((cached: any) => {
-				if (cached) {
-					delete cached.expires;
-					delete cached._id;
-					delete cached.__v;
+		const cached: LipthusCache = await Cache.findOne(opt);
 
-					return BinDataFile.fromMongo(cached);
-				}
+		if (cached) {
+			delete cached.expires;
+			delete cached._id;
+			delete cached.__v;
 
-				return this.tmpFile()
-					.then((tmpFile: any) => {
-						const tmpFile2 = tmpdir + 'frame_' + number + '_' + this._id + '.jpg';
-						const cmd = 'ffmpeg -i "' + tmpFile + '" -f image2 -frames:v 1 -ss ' + ((number - 1) / this.fps!) + ' ' + tmpFile2;
+			return <BinDataImage> BinDataFile.fromMongo(cached);
+		}
 
-						debug(cmd);
+		const tmpFile = await this.tmpFile();
+		const tmpFile2 = tmpdir + 'frame_' + number + '_' + this._id + '.jpg';
+		const cmd = 'ffmpeg -i "' + tmpFile + '" -f image2 -frames:v 1 -ss ' + ((number - 1) / this.fps!) + ' ' + tmpFile2;
 
-						return new Promise((ok, ko) => {
-							exec(cmd, err => {
-								if (err)
-									return ko(err);
+		debug(cmd);
 
-								fsp.exists(tmpFile2)
-									.then((exists: boolean) => {
-										if (!exists)
-											return ko(new Error('tmp file not created ' + tmpFile2));
+		await pExec(cmd);
 
-										optimage(tmpFile2)
-											.then((buffer: Buffer) => {
-												fsp.unlink(tmpFile2).catch(ko);
+		if (!existsSync(tmpFile2))
+			throw new Error('tmp file not created ' + tmpFile2);
 
-												const now = new Date();
-												const bdi = new BinDataImage({
-													name: opt.name,
-													contentType: 'image/jpeg',
-													key: now.getTime().toString(),
-													mtime: now,
-													uploadDate: now,
-													size: buffer.length,
-													md5: md5(buffer),
-													MongoBinData: new Types.Buffer(buffer).toObject(),
-													width: this.metadata.width,
-													height: this.metadata.height,
-													tag: 'videoframe',
-													source: this._id
-												});
+		const buffer: Buffer = await optimage(tmpFile2);
 
-												return Cache.create(bdi).then(() => ok(bdi));
-											})
-											.catch(ko);
-									});
-							});
-						});
-					});
-			});
+		await fsPromises.unlink(tmpFile2);
+
+		const now = new Date();
+		const bdi = new BinDataImage({
+			name: opt.name,
+			contentType: 'image/jpeg',
+			key: now.getTime().toString(),
+			mtime: now,
+			uploadDate: now,
+			size: buffer.length,
+			md5: md5(buffer),
+			MongoBinData: new Types.Buffer(buffer).toObject(),
+			width: this.metadata.width,
+			height: this.metadata.height,
+			tag: 'videoframe',
+			source: this._id
+		});
+
+		await Cache.create(bdi);
+
+		return bdi;
 	}
 
-	_pdfThumb(): Promise<BinDataImage | any> {
+	async _pdfThumb(): Promise<BinDataImage | any> {
 		const tmpFile2 = tmpdir + 'thumb_' + this._id + '.png';
+		const tmpFile = await this.tmpFile();
+		const cmd = 'convert -thumbnail 150x150 -background white -alpha remove "' + tmpFile + '"[0] ' + tmpFile2;
 
-		return this.tmpFile()
-			.then(tmpFile => {
-				return new Promise((ok, ko) => {
-					const cmd = 'convert -thumbnail 150x150 -background white -alpha remove "' + tmpFile + '"[0] ' + tmpFile2;
+		await pExec(cmd);
 
-					exec(cmd, err => {
-						if (err)
-							return ko(err);
+		if (!existsSync(tmpFile2))
+			throw new Error('tmp file not created ' + tmpFile2);
 
-						fsp.exists(tmpFile2)
-							.then((exists: boolean) => {
-								if (!exists)
-									return ko(new Error('tmp file not created ' + tmpFile2));
-
-								BinDataFile.fromFile({
-									name: this.basename('png'),
-									path: tmpFile2,
-									contentType: 'image/png',
-									width: 150,
-									height: 150,
-									mtime: this.mTime()
-								})
-									.then(ok)
-									.catch(ko);
-							});
-					});
-				});
-			});
+		return BinDataFile.fromFile({
+			name: this.basename('png'),
+			path: tmpFile2,
+			contentType: 'image/png',
+			width: 150,
+			height: 150,
+			mtime: this.mTime()
+		});
 	}
 }
 

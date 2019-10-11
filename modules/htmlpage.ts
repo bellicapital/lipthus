@@ -4,8 +4,8 @@ import {HeadManager} from "./htmlheadmanager";
 import {KeyAny} from "../interfaces/global.interface";
 import {MultilangText} from "./schema-types/mltext";
 import * as pug from "pug";
+import {existsSync} from "fs";
 
-const fs = require('mz/fs');
 const debug = require('debug')('site:htmlpage');
 const jsLangKeys = [
 	'_YES', '_NO', '_CREATE', '_EDIT', '_DELETE', '_DATE', '_TITLE', '_NAME', '_DESCRIPTION', '_PREFERENCES',
@@ -145,7 +145,7 @@ export class HtmlPage {
 			this.layout = 'layout';
 
 		// view
-		if (!this.view && fs.existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
+		if (!this.view && existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
 			this.view = this.key;
 
 		if (this.locals.justContent)
@@ -210,9 +210,9 @@ export class HtmlPage {
 				this.head.addJSLang(vars);
 
 				// page
-				if (fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
+				if (existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
 					this.head.addJS(this.deviceType + '/' + this.key + '.js', {priority: 10});
-				else if (fs.existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
+				else if (existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
 					this.head.addJS(this.key + '.js', {priority: 10});
 
 				if (this.key)
@@ -237,9 +237,9 @@ export class HtmlPage {
 				// css
 				this.head.addCSS(this.layout, {priority: 20});
 
-				if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
+				if (this.layout && existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
 					this.addJS(this.deviceType + '/' + this.layout + '.js', {priority: 20});
-				else if (this.layout && fs.existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
+				else if (this.layout && existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
 					this.addJS(this.layout + '.js', {priority: 20});
 
 				if (req.app.get('env') === 'development') {
@@ -333,10 +333,10 @@ export class HtmlPage {
 
 		this.view = req.site.srcDir + '/views/' + this.deviceType + '/notfound';
 
-		if (!fs.existsSync(this.view + '.pug'))
+		if (!existsSync(this.view + '.pug'))
 			this.view = req.site.srcDir + '/views/notfound';
 
-		if (!fs.existsSync(this.view + '.pug'))
+		if (!existsSync(this.view + '.pug'))
 			this.view = 'status/404';
 
 		this.head.addCSS('notfound');
@@ -350,7 +350,7 @@ export class HtmlPage {
 				delete this.metaKeywords;
 				delete this.metaDescription;
 
-				if (fs.existsSync(req.site.dir + '/routes/notfound.js'))
+				if (existsSync(req.site.dir + '/routes/notfound.js'))
 					return require(req.site.dir + '/routes/notfound')(req, this.res);
 			})
 			.then(() => this.send())
@@ -569,7 +569,7 @@ export class HtmlPage {
 		let view = null;
 
 		vDirs.some(dir => {
-			if (fs.existsSync(dir + '/' + base + '.pug') || fs.existsSync(dir + '/' + base + '/index.pug')) {
+			if (existsSync(dir + '/' + base + '.pug') || existsSync(dir + '/' + base + '/index.pug')) {
 				view = base;
 				return true;
 			}
@@ -610,7 +610,7 @@ export class HtmlPage {
 			return dirOpt.some(opt => {
 				view = dir + '/' + opt;
 
-				return fs.existsSync(view);
+				return existsSync(view);
 			});
 		});
 
@@ -620,16 +620,16 @@ export class HtmlPage {
 	msg(msg: string) {
 		this.view = this.req.site.srcDir + '/views/' + this.deviceType + '/message';
 
-		if (!fs.existsSync(this.view + '.pug')) {
+		if (!existsSync(this.view + '.pug')) {
 			this.view = this.req.site.srcDir + '/views/message';
 
-			if (!fs.existsSync(this.view + '.pug'))
+			if (!existsSync(this.view + '.pug'))
 				this.view = 'message';
 		}
 
 		this.res.locals.message = msg;
 
-		if (!fs.existsSync(this.req.site.dir + '/routes/message.js'))
+		if (!existsSync(this.req.site.dir + '/routes/message.js'))
 			return this.send();
 
 		require(this.req.site.dir + '/routes/message').call(this, this.req, this.res, () => this.send());

@@ -12,8 +12,8 @@ const debug = Debug('site:config');
 export class Config {
 	[key: string]: any;
 
-	groups: {[key: string]: { title: string; configs: {[configKey: string]: ConfigVar}; }} = {};
-	configs: {[configKey: string]: ConfigVar} = {};
+	groups: { [key: string]: { title: string; configs: { [configKey: string]: ConfigVar }; } } = {};
+	configs: { [configKey: string]: ConfigVar } = {};
 	adminmail?: string;
 	allow_register?: boolean;
 	external_protocol = 'https';
@@ -47,7 +47,7 @@ export class Config {
 		const obj: Array<ConfigDoc> = await this.checkDefaults()
 			.then(() => this.model.find());
 
-		const inDb: {[s: string]: ConfigDoc} = {};
+		const inDb: { [s: string]: ConfigDoc } = {};
 		const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
 
 		obj.forEach(c => inDb[c.get('name')] = c);
@@ -63,7 +63,7 @@ export class Config {
 				const g: any = {group: group_name, name: key};
 
 				c.forEach((v: any, idx) =>
-						g[keys[idx]] = v);
+					g[keys[idx]] = v);
 
 				if (inDb[key]) {
 					g.value = inDb[key].getValue();
@@ -98,25 +98,19 @@ export class Config {
 	}
 
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update?: any, cb = (v: any) => {}) {
+	async get(k: string, update = false) {
 		if (update) {
-			this.model.findOne({name: k}, (err: Error, obj: any) => {
-				if (err) return cb(err);
+			const obj = await this.model.findOne({name: k});
 
-				if (!obj) return cb({error: 'Config ' + k + ' not found'});
+			if (!obj) return {error: 'Config ' + k + ' not found'};
 
-				if (!this.configs[k])
-					console.error(new Error('Config ' + k + ' does not exists'));
-				else
-					this.configs[k].setValue(obj.value);
-
-				cb.call(this.configs[k], this.configs[k].value);
-			});
-		} else {
-			cb.call(this.configs[k], this.configs[k].value);
-
-			return this.configs[k].value;
+			if (!this.configs[k])
+				console.error(new Error('Config ' + k + ' does not exists'));
+			else
+				this.configs[k].setValue(obj.value);
 		}
+
+		return this.configs[k].value;
 	}
 
 	set(k: string, v: any, ns?: string | true, save?: boolean): any {
@@ -161,11 +155,8 @@ export class Config {
 		return ret;
 	}
 
-	metaRobots(cb?: (a: any) => {}) {
-		if (!cb)
-			return this.configs.meta_robots.options[this.configs.meta_robots.value];
-
-		this.get('meta_robots', true, () => cb(this.metaRobots()));
+	metaRobots() {
+		return this.configs.meta_robots.options[this.configs.meta_robots.value];
 	}
 
 	async check() {
@@ -183,7 +174,8 @@ export class Config {
 
 		debug('Inserting config collection default values');
 
-		const r: { stdout: string, stderr: string } = await exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
+		const r: { stdout: string, stderr: string } = await exec('mongorestore --uri="' + this.site.db.connectParams().uri + '" -d ' + this.site.db.name
+			+ ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
 
 		const c2: number = await this.model.countDocuments({});
 

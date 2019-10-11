@@ -1,41 +1,24 @@
 import {optimage} from "../lib/optimage";
 import {LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
-import {stat} from "fs";
-import {promisify} from "util";
-
-const pStat = promisify(stat);
-const Mime = require('mime');
-const {BinDataImage} = require('../modules');
+import {existsSync} from "fs";
+import {handleBdiRequest} from "./bdf";
 
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
-	const opt: any = {
-		tag: 'opt-local-image',
-		name: req.params.fn
-	};
+	handleBdiRequest(req, res, notCached)
+		.catch(next);
+}
 
-	const file = req.site.srcDir + '/public/img/' + opt.name;
+async function notCached (req: LipthusRequest) {
+	const r = /^\/optimg\/(.+)$/.exec(req.path);
 
-	pStat(file)
-		.then(rStat => {
-			if (!rStat)
-				return res.status(404).send('not found');
+	if (!r)
+		return;
 
-			opt.mtime = rStat.mtime;
+	const file = req.site.srcDir + '/public/img/' + r[1];
 
-			req.db.cache
-				.findOne(opt)
-				.then(cached => cached ||
-					optimage(file)
-						.then(r =>
-							req.db.cache.create(Object.assign(opt, {
-								contentType: Mime.getType(opt.name),
-								MongoBinData: r,
-								size: r.length
-							}))
-						)
-				)
-				.then(cached => BinDataImage.fromMongo(cached).send(req, res))
-				.catch(next);
-		});
+	if (!existsSync(file))
+		return;
+
+	return optimage(file);
 }

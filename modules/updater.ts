@@ -38,11 +38,11 @@ function checkAppVersion(site: Site) {
 		return;
 
 	const versionUpdates = require(site.dir + '/updates').default;
-	
+
 	// Old way updates are deprecated
 	if (!versionUpdates.length)
 		return;
-	
+
 	return checkRequireScript(
 		versionUpdates,
 		'siteversion',
@@ -52,23 +52,26 @@ function checkAppVersion(site: Site) {
 	);
 }
 
-function checkRequireScript(versionUpdates: Array<VersionUpdate>, varName: string, from: string, to: string, site: Site) {
+async function checkRequireScript(versionUpdates: Array<VersionUpdate>, varName: string, from: string, to: string, site: Site) {
 	console.log('upgrading ' + varName + ' to ' + to);
 
-	return versionUpdates
+	const toUpdate = versionUpdates
 		.filter(update => compareVersions(update.version, from) === 1)
-		.sort((a, b) => compareVersions(a.version, b.version))
-		.reduce((p, update) => p
-				.then(() => update.updater(site))
-				// Store the current update version
-				.then(() => site.config.set(varName, update.version, true))
-				.then(() => console.log(varName + ' update patch ' + update.version + ' applied'))
-			, Promise.resolve())
-		// All updates has been executed successfully. Store the final
-		.then(() => {
-			if (site.config.get(varName) !== to)
-				return site.config.set(varName, to, null, true);
-		});
+		.sort((a, b) => compareVersions(a.version, b.version));
+
+	for (const update of toUpdate) {
+		await update.updater(site);
+
+		// Store the current update version
+		await site.config.set(varName, update.version, true);
+
+		console.log(varName + ' update patch ' + update.version + ' applied');
+	}
+
+	const value = await site.config.get(varName);
+
+	if (value !== to)
+		return site.config.set(varName, to, null, true);
 }
 
 interface VersionUpdate {

@@ -65,24 +65,19 @@ class Config {
         });
     }
     // noinspection JSUnusedLocalSymbols
-    get(k, update, cb = (v) => { }) {
-        if (update) {
-            this.model.findOne({ name: k }, (err, obj) => {
-                if (err)
-                    return cb(err);
+    get(k, update = false) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (update) {
+                const obj = yield this.model.findOne({ name: k });
                 if (!obj)
-                    return cb({ error: 'Config ' + k + ' not found' });
+                    return { error: 'Config ' + k + ' not found' };
                 if (!this.configs[k])
                     console.error(new Error('Config ' + k + ' does not exists'));
                 else
                     this.configs[k].setValue(obj.value);
-                cb.call(this.configs[k], this.configs[k].value);
-            });
-        }
-        else {
-            cb.call(this.configs[k], this.configs[k].value);
+            }
             return this.configs[k].value;
-        }
+        });
     }
     set(k, v, ns, save) {
         if (ns === true)
@@ -111,10 +106,8 @@ class Config {
         Object.each(this.groups[cat].configs, (k, c) => ret[k] = c.value);
         return ret;
     }
-    metaRobots(cb) {
-        if (!cb)
-            return this.configs.meta_robots.options[this.configs.meta_robots.value];
-        this.get('meta_robots', true, () => cb(this.metaRobots()));
+    metaRobots() {
+        return this.configs.meta_robots.options[this.configs.meta_robots.value];
     }
     check() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -130,7 +123,8 @@ class Config {
             if (c)
                 return;
             debug('Inserting config collection default values');
-            const r = yield exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
+            const r = yield exec('mongorestore --uri="' + this.site.db.connectParams().uri + '" -d ' + this.site.db.name
+                + ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
             const c2 = yield this.model.countDocuments({});
             if (!c2 && r.stderr)
                 throw new Error(r.stderr);

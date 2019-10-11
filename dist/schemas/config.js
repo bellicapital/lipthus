@@ -26,7 +26,7 @@ function getSchema(site) {
                 debug('Deleting not defined Config ' + key);
                 return this.collection.remove({ _id: this._id }).catch(console.error.bind(console));
             }
-            if (definition.configs[key][0] === 'bdf')
+            if (definition.configs[key][0] === 'bdf' && val)
                 return modules_1.BinDataFile.fromMongo(val, { collection: 'config', id: this._id, field: 'value' });
             return val;
         }

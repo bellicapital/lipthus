@@ -1,4 +1,6 @@
 import { UploadedFile } from "../interfaces/uploaded-file";
+import { ColRef } from "../interfaces/global.interface";
+import { LipthusRequest } from "../index";
 export declare class BinDataFile {
     name: string;
     uploadDate: Date;
@@ -18,10 +20,10 @@ export declare class BinDataFile {
     getUri(): string;
     uriName(ext?: string): string;
     formDataValue(): string;
-    send(req: any, res: any): any;
+    send(req: LipthusRequest, res: any): Promise<any>;
     getKey(): string;
     toString(): string;
-    static fromMongo(mongo: any, colRef?: ColRef): any;
+    static fromMongo(mongo: any, colRef?: ColRef): BinDataImage | BinDataFile;
     static fromString(str: string, colRef: any, datetime?: Date): BinDataImage | BinDataFile | void;
     /**
      *
@@ -71,5 +73,4 @@ export declare class DbfInfo implements DbfInfoParams {
     constructor(p: DbfInfoParams);
 }
 import { BinDataImage } from './bdi';
-import { ColRef } from "../interfaces/global.interface";
 export default BinDataFile;
