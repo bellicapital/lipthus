@@ -1,5 +1,4 @@
 
-
 upstream example {
   server unix:/tmp/example-web.sock;
 }
@@ -54,90 +53,17 @@ server {
 	}
 
 	location / {
-		include /etc/nginx/cache_params;
+		include /etc/nginx/snippets/cache_params;
 		proxy_pass http://example;
 		include /etc/nginx/proxy_params;
 	}
 
 	location @nodejs {
-		include /etc/nginx/cache_params;
+		include /etc/nginx/snippets/cache_params;
 		proxy_pass http://example;
 		include /etc/nginx/proxy_params;
 	}
 
 	include /etc/nginx/block-wp.nginx;
 	include /var/node_apps/example-web/nginx-redirects.conf;
-}
-
-server {
-	listen 80;
-	server_name sensualbarcelona.com;
-	location /robots.txt {
-		alias /var/node_apps/example-web/public/robots.txt;
-	}
-	return 301 https://$host$request_uri;
-}
-
-server {
-	listen 443 ssl;
-
-	server_name sensualbarcelona.com;
-
-	# certs sent to the client in SERVER HELLO are concatenated in ssl_certificate
-	ssl_certificate /etc/letsencrypt/live/sensualbarcelona.com/fullchain.pem;
-	ssl_certificate_key /etc/letsencrypt/live/sensualbarcelona.com/privkey.pem;
-
-	include /etc/nginx/ssl-common;
-
-	## verify chain of trust of OCSP response using Root CA and Intermediate certs
-	ssl_trusted_certificate /etc/letsencrypt/live/sensualbarcelona.com/chain.pem;
-
-	error_log /var/log/nginx/sensualbarcelona-tls-error.log warn;
-	access_log /var/log/nginx/sensualbarcelona-tls-access.log;
-
-	location = /robots.txt {
-		alias /var/node_apps/example-web/public/robots.txt;
-	}
-
-	location ~ /(favicon.ico|apple-touch-icon) {
-		root /var/node_apps/example-web/public/img/icons;
-	}
-
-	location /s/ {
-		include /etc/nginx/snippets/static.nginx;
-		alias /var/node_apps/example-web/public/;
-	}
-
-	location /cms/ {
-		include /etc/nginx/snippets/static.nginx;
-		alias /var/node_apps/example-web/node_modules/lipthus/public/;
-	}
-
-	location /bdf/ {
-		root /var/node_apps/example-web/.cache;
-		try_files $uri @nodejs;
-
-		include /etc/nginx/snippets/static.nginx;
-	}
-
-	location ~ \.(aspx|php|jsp|cgi)$ {
-		return 410;
-	}
-
-	location / {
-		add_header  X-Robots-Tag "noindex, nofollow";
-		include /etc/nginx/cache_params;
-		proxy_pass http://example;
-		include /etc/nginx/proxy_params;
-	}
-
-	location @nodejs {
-		add_header  X-Robots-Tag "noindex, nofollow";
-		include /etc/nginx/cache_params;
-		proxy_pass http://example;
-		include /etc/nginx/proxy_params;
-	}
-
-	include /etc/nginx/block-wp.nginx;
-	rewrite ^/(.*)/$ /$1 permanent;
 }
