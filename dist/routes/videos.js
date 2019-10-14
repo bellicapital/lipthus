@@ -45,8 +45,9 @@ function default_1(req, res, next) {
         if (ext === 'tag') {
             const basename = encodeURIComponent(file.basename().toLocaleLowerCase());
             const basePath = req.protocol + '://' + req.headers.host + '/videos/' + dbName + '.' + file._id + '/';
+            const mTime = file.thumb && file.thumb.mtime ? file.thumb.mtime.getTime() : 0;
             res.locals = {
-                poster: req.protocol + '://' + req.headers.host + '/video-poster/' + dbName + '/' + file._id + '.jpg',
+                poster: req.protocol + '://' + req.headers.host + '/video-poster/' + dbName + '/' + file._id + '_' + mTime + '.jpg',
                 mp4: basePath + basename + '.mp4',
                 webm: basePath + basename + '.webm'
             };
