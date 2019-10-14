@@ -20,7 +20,8 @@ function default_1(req, res, next) {
 exports.default = default_1;
 function notCached(req) {
     return __awaiter(this, void 0, void 0, function* () {
-        const r = req.params.fn.match(/^([^-]+)(-(\d+)x?(\d*))?\.jpg$/);
+        // 1 => _id, 3 => mtime (used only to refresh), 5 => width, 6 => height
+        const r = req.params.fn.match(/^([^-_]+)(_(\d+))?(-(\d+)x?(\d*))?\.jpg$/);
         if (!r)
             throw 404;
         const id = r[1];
@@ -35,12 +36,12 @@ function notCached(req) {
         }
         else
             thumb = index_1.BinDataImage.fromMongo(video.thumb);
-        const width = parseInt(r[3], 10);
+        const width = parseInt(r[5], 10);
         if (!width)
             return video.thumb.MongoBinData.buffer;
         return thumb.toBuffer({
             width: width,
-            height: parseInt(r[4], 10) || (video.thumb.height * width / video.thumb.width)
+            height: parseInt(r[6], 10) || (video.thumb.height * width / video.thumb.width)
         });
     });
 }

@@ -83,7 +83,8 @@ class GridFSFile {
             if (this.metadata) {
                 Object.assign(ret, this.metadata);
                 if (this.folder === 'videos') {
-                    ret.thumb = '/video-poster/' + this.databaseName + '/' + this._id + '.jpg';
+                    const mTime = this.thumb && this.thumb.mtime ? this.thumb.mtime.getTime() : 0;
+                    ret.thumb = '/video-poster/' + this.databaseName + '/' + this._id + '_' + mTime + '.jpg';
                     ret.versions = {};
                     videoExt.forEach(ext => {
                         ret.versions[ext] = '/videos/' + this.databaseName + '.' + this._id + '/' + ret.basename + '.' + ext;

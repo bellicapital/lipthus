@@ -8,7 +8,8 @@ export default async function (req: LipthusRequest, res: LipthusResponse, next: 
 }
 
 async function notCached(req: LipthusRequest): Promise<Buffer> {
-	const r = req.params.fn.match(/^([^-]+)(-(\d+)x?(\d*))?\.jpg$/);
+	// 1 => _id, 3 => mtime (used only to refresh), 5 => width, 6 => height
+	const r = req.params.fn.match(/^([^-_]+)(_(\d+))?(-(\d+)x?(\d*))?\.jpg$/);
 
 	if (!r)
 		throw 404;
@@ -30,13 +31,13 @@ async function notCached(req: LipthusRequest): Promise<Buffer> {
 	} else
 		thumb = BinDataImage.fromMongo(video.thumb);
 
-	const width = parseInt(r[3], 10);
+	const width = parseInt(r[5], 10);
 
 	if (!width)
 		return video.thumb.MongoBinData.buffer;
 
 	return thumb.toBuffer({
 		width: width,
-		height: parseInt(r[4], 10) || (video.thumb.height * width / video.thumb.width)
+		height: parseInt(r[6], 10) || (video.thumb.height * width / video.thumb.width)
 	});
 }
