@@ -42,6 +42,55 @@ class ShoppingCart {
         this.setEmail();
         this.setAddress();
     }
+    static set(req, res, name, value) {
+        const cart = ShoppingCart.getClientCart(req);
+        cart.set(name, value);
+        if (req.user && name === 'phone' && value && req.user.phone.indexOf(value) === -1)
+            req.user.phone.push(value);
+        return cart.saveToClient()
+            .then(cart.getInfo.bind(cart));
+    }
+    static getClientCart(req) {
+        if (req.clientCart)
+            return req.clientCart;
+        const cart = new ShoppingCart(req);
+        if (cart.preferences.expire && cart.modified && cart.modified.getTime() < Date.now() - cart.preferences.expire * 60000)
+            cart.destroy();
+        else if (!cart.deliveryAddress && req.user && req.user.address)
+            cart.deliveryAddress = req.user.address;
+        return (req.clientCart = cart);
+    }
+    static load(req, res) {
+        const page = res.htmlPage;
+        // page.formScripts()
+        page.head
+            .addGMap()
+            .addJS('form/formLocation.js')
+            .addCSS('form', 20)
+            .addJS('shoppingcart.js')
+            .addCSS('shoppingcart', 18);
+        const cart = ShoppingCart.getClientCart(req);
+        return cart.loadML()
+            .then((ml) => {
+            page.addJSLang({
+                _SUB_ADDRESS: ml._SUB_ADDRESS
+            });
+            res.locals.carticon = cart.getIcon();
+            return cart;
+        });
+    }
+    static getJsonInfo(req, res) {
+        return ShoppingCart.load(req, res)
+            .then((cart) => cart.getInfo());
+    }
+    static addItem(req, res, colname, itemid, extras) {
+        const cart = ShoppingCart.getClientCart(req);
+        return cart.add(colname, itemid, extras)
+            .then(() => cart.getInfo());
+    }
+    static changeQuantity(req, res, colname, itemid, quantity, extras) {
+        return ShoppingCart.getClientCart(req).changeItemQuantity(colname, itemid, quantity, extras);
+    }
     setName() {
         if (!this.name && this.user)
             this.name = this.user.getName(true);
@@ -298,11 +347,6 @@ class ShoppingCart {
             });
         });
     }
-    itemsCount() {
-        let ret = 0;
-        this.items.forEach(item => ret += item.quantity);
-        return ret;
-    }
     changeItemQuantity(colname, itemid, quantity, extras) {
         let itemTotal = 0;
         return this.getShopItem(colname, itemid, extras)
@@ -326,55 +370,6 @@ class ShoppingCart {
             deliveryAmount: this.deliveryAmount ? this.deliveryAmount.shopFormat() : 0,
             errors: this.check()
         }));
-    }
-    static set(req, res, name, value) {
-        const cart = ShoppingCart.getClientCart(req);
-        cart.set(name, value);
-        if (req.user && name === 'phone' && value && req.user.phone.indexOf(value) === -1)
-            req.user.phone.push(value);
-        return cart.saveToClient()
-            .then(cart.getInfo.bind(cart));
-    }
-    static getClientCart(req) {
-        if (req.clientCart)
-            return req.clientCart;
-        const cart = new ShoppingCart(req);
-        if (cart.preferences.expire && cart.modified && cart.modified.getTime() < Date.now() - cart.preferences.expire * 60000)
-            cart.destroy();
-        else if (!cart.deliveryAddress && req.user && req.user.address)
-            cart.deliveryAddress = req.user.address;
-        return (req.clientCart = cart);
-    }
-    static load(req, res) {
-        const page = res.htmlPage;
-        // page.formScripts()
-        page.head
-            .addGMap()
-            .addJS('form/formLocation.js')
-            .addCSS('form', 20)
-            .addJS('shoppingcart.js')
-            .addCSS('shoppingcart', 18);
-        const cart = ShoppingCart.getClientCart(req);
-        return cart.loadML()
-            .then((ml) => {
-            page.addJSLang({
-                _SUB_ADDRESS: ml._SUB_ADDRESS
-            });
-            res.locals.carticon = cart.getIcon();
-            return cart;
-        });
-    }
-    static getJsonInfo(req, res) {
-        return ShoppingCart.load(req, res)
-            .then((cart) => cart.getInfo());
-    }
-    static addItem(req, res, colname, itemid, extras) {
-        const cart = ShoppingCart.getClientCart(req);
-        return cart.add(colname, itemid, extras)
-            .then(() => cart.getInfo());
-    }
-    static changeQuantity(req, res, colname, itemid, quantity, extras) {
-        return ShoppingCart.getClientCart(req).changeItemQuantity(colname, itemid, quantity, extras);
     }
 }
 ShoppingCart.schema = {

@@ -6,6 +6,7 @@ class GoogleTranslator {
         this.apiKey = apiKey;
         this.gt = api(apiKey);
     }
+    // noinspection JSUnusedGlobalSymbols
     availableLangs(cb) {
         this.gt.getSupportedLanguages((err, result) => {
             if (err)

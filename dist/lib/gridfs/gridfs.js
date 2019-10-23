@@ -18,6 +18,10 @@ class GridFS {
         this.loaded = false;
         this.db = db;
     }
+    static getMultimedia(filePath) {
+        return multimedia(filePath)
+            .catch((err) => debug(err));
+    }
     get(id) {
         const _id = typeof id === 'string' ? mongoose_1.Types.ObjectId(id) : id;
         return new gridfs_file_1.GridFSFile(_id, this.db.lipthusDb);
@@ -134,10 +138,6 @@ class GridFS {
                 .on('error', ko)
                 .pipe(fs.createWriteStream(tmp));
         });
-    }
-    static getMultimedia(filePath) {
-        return multimedia(filePath)
-            .catch((err) => debug(err));
     }
 }
 exports.GridFS = GridFS;
