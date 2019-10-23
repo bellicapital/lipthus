@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = require("passport");
 const md5 = require('md5');
@@ -123,11 +114,11 @@ exports.default = (site) => {
      * @todo: add getUser in req.constructor.prototype
      */
     return (req, res, next) => {
-        req.getUser = () => __awaiter(void 0, void 0, void 0, function* () {
+        req.getUser = async () => {
             if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
-                req.user = yield req.site.userCollection.findById(req.user);
+                req.user = await req.site.userCollection.findById(req.user);
             return req.user;
-        });
+        };
         next();
     };
 };

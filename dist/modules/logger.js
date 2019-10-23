@@ -7,6 +7,39 @@ class LipthusLogger {
         this.req = req;
         Object.defineProperty(req, 'logger', { value: this });
     }
+    static init(app) {
+        app.db.collection('logger.updates')
+            .createIndex({ itemid: 1 })
+            .catch(console.warn.bind(console));
+        app.use(LipthusLogger.middleware);
+        if (app.site.config.botLog)
+            app.use(LipthusLogger.botMiddleware);
+    }
+    static middleware(req, res, next) {
+        const logger = new LipthusLogger(req);
+        req.logError = logger.logError.bind(logger);
+        next();
+    }
+    static botMiddleware(req, res, next) {
+        // req.device.type = 'bot';
+        // req.headers['user-agent'] = "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)";
+        if (req.device.type !== 'bot' || botRe.test(req.path))
+            return next();
+        req.db.botlog
+            .log(req)
+            .then(() => next())
+            .catch(next);
+    }
+    // Ajax helpers
+    static notfoundArray(req, res, cb) {
+        return req.logger.notfoundArray(cb);
+    }
+    static notfoundDetails(req, res, a, cb) {
+        req.logger.notfoundDetails(a, cb);
+    }
+    static notfoundRemove(req, res, a, cb) {
+        req.logger.notfoundRemove(a, cb);
+    }
     collection(type) {
         return this.req.db.collection('logger.' + type);
     }
@@ -100,39 +133,6 @@ class LipthusLogger {
     }
     notfoundRemove(a, cb) {
         this.collection('notfound').deleteOne({ url: a }, cb);
-    }
-    static init(app) {
-        app.db.collection('logger.updates')
-            .createIndex({ itemid: 1 })
-            .catch(console.warn.bind(console));
-        app.use(LipthusLogger.middleware);
-        if (app.site.config.botLog)
-            app.use(LipthusLogger.botMiddleware);
-    }
-    static middleware(req, res, next) {
-        const logger = new LipthusLogger(req);
-        req.logError = logger.logError.bind(logger);
-        next();
-    }
-    static botMiddleware(req, res, next) {
-        // req.device.type = 'bot';
-        // req.headers['user-agent'] = "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)";
-        if (req.device.type !== 'bot' || botRe.test(req.path))
-            return next();
-        req.db.botlog
-            .log(req)
-            .then(() => next())
-            .catch(next);
-    }
-    // Ajax helpers
-    static notfoundArray(req, res, cb) {
-        return req.logger.notfoundArray(cb);
-    }
-    static notfoundDetails(req, res, a, cb) {
-        req.logger.notfoundDetails(a, cb);
-    }
-    static notfoundRemove(req, res, a, cb) {
-        req.logger.notfoundRemove(a, cb);
     }
 }
 exports.LipthusLogger = LipthusLogger;

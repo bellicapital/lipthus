@@ -1,7 +1,6 @@
 import {LipthusApplication, LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction, Router} from "express";
 import {fsRoute} from "./fs";
-import info from "./info";
 import {Setup} from "./setup";
 import {userPage} from "./user";
 import {existsSync} from "fs";
@@ -70,10 +69,8 @@ export default async function (app: LipthusApplication) {
 	router.post('/form/:schema/:itemid/:cmd', form as any);
 	router.get('/form/:schema/:itemid/get', form as any);
 	router.all('/form/:schema/:cmd', form as any);
-	router.get('/info/:method', info as any);
 	router.all('/users/:uid', userPage);
 	router.all('/subscriptions/:action', require('./subscriptions'));
-	router.get('/users/:uid/subscriptions', require('./user-subscriptions'));
 
 	router.get('/lmns/:schema/:id', lmns as any);
 
@@ -87,9 +84,6 @@ export default async function (app: LipthusApplication) {
 	router.all('/dsresponse', require('./dsresponse'));
 	router.get('/dsresponsetest', require('./dsresponsetest'));
 	router.get('/notifications', require('./notifications'));
-	router.get('/comments', require('./comments-mng'));
-	router.get('/comments/:col', require('./comments-mng'));
-	router.post('/comments/:col', require('./comments-mng-post'));
 	router.get('/item-comments/:schema/:itemid', item_comments as any);
 	router.get('/logout', logout as any);
 	// require('./login')(app);

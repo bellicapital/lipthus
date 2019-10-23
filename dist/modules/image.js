@@ -6,9 +6,6 @@ class Image {
         this.width = file.width;
         this.height = file.height;
     }
-    fitCalc(max_width, max_height, crop) {
-        return Image.fitCalc(this.width, this.height, max_width, max_height, crop);
-    }
     static fitCalc(width, height, max_width, max_height, crop) {
         if (width <= max_width && height <= max_height)
             return {
@@ -26,6 +23,9 @@ class Image {
             width: width > max_width ? max_width : width,
             height: height > max_height ? max_height : height
         };
+    }
+    fitCalc(max_width, max_height, crop) {
+        return Image.fitCalc(this.width, this.height, max_width, max_height, crop);
     }
 }
 exports.default = Image;

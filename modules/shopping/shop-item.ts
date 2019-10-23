@@ -5,10 +5,6 @@ import {KeyString} from "../../interfaces/global.interface";
 
 export class ShopItemExtra {
 
-	public key: string;
-	public value: any;
-	public price: number;
-
 	static schema = new LipthusSchema({
 		key: String,
 		value: String,
@@ -17,6 +13,10 @@ export class ShopItemExtra {
 		name: 'ShopItemExtra'
 		// _id: false
 	});
+
+	public key: string;
+	public value: any;
+	public price: number;
 
 	constructor(d: any) {
 		this.key = d.key;
@@ -56,12 +56,6 @@ export class ShopItemExtra {
  */
 export class ShopItem {
 
-	public quantity = 1;
-	public price: number;
-	public ref: any;
-	public extras: Array<any> = [];
-	public description: KeyString = {};
-
 	static schema = new LipthusSchema({
 		quantity: {type: Number, default: 1},
 		description: {},
@@ -72,6 +66,12 @@ export class ShopItem {
 		name: 'ShopItem'
 		// _id: false
 	});
+
+	public quantity = 1;
+	public price: number;
+	public ref: any;
+	public extras: Array<any> = [];
+	public description: KeyString = {};
 
 	constructor(d: any) {
 		if (d.constructor.name === 'EmbeddedDocument')

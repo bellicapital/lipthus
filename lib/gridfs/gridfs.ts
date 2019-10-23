@@ -17,6 +17,11 @@ export class GridFS {
 	public loaded = false;
 	public err?: Error;
 
+	static getMultimedia(filePath: string): Promise<any> {
+		return multimedia(filePath)
+			.catch((err: Error) => debug(err));
+	}
+
 	constructor(public db: Db, public ns: string = 'fs') {
 		this.db = db;
 	}
@@ -171,10 +176,5 @@ export class GridFS {
 				.on('error', ko)
 				.pipe(fs.createWriteStream(tmp));
 		});
-	}
-
-	static getMultimedia(filePath: string): Promise<any> {
-		return multimedia(filePath)
-			.catch((err: Error) => debug(err));
 	}
 }

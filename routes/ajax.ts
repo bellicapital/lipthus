@@ -6,6 +6,34 @@ class AjaxProcess extends AjaxGlobalMethods {
 
 	public query: any;
 
+	static sanitizeArgs(a: any, req: LipthusRequest) {
+		switch (typeof a) {
+			case 'string':
+				switch (a) {
+					case 'false':
+						a = false;
+						break;
+					case 'true':
+						a = true;
+						break;
+					case 'req':
+						a = req;
+						break;
+					case 'uid':
+						a = req.user;
+						break;
+				}
+				break;
+			case 'object':
+				if (a instanceof Array)
+					a = a.map(ele => AjaxProcess.sanitizeArgs(ele, req));
+
+				break;
+		}
+
+		return a;
+	}
+
 	constructor(req: LipthusRequest) {
 		super(req);
 	}
@@ -157,34 +185,6 @@ class AjaxProcess extends AjaxGlobalMethods {
 			else
 				return finish(schema[q.m].apply(schema, q.a.concat([oldCompat])));
 		});
-	}
-
-	static sanitizeArgs(a: any, req: LipthusRequest) {
-		switch (typeof a) {
-			case 'string':
-				switch (a) {
-					case 'false':
-						a = false;
-						break;
-					case 'true':
-						a = true;
-						break;
-					case 'req':
-						a = req;
-						break;
-					case 'uid':
-						a = req.user;
-						break;
-				}
-				break;
-			case 'object':
-				if (a instanceof Array)
-					a = a.map(ele => AjaxProcess.sanitizeArgs(ele, req));
-
-				break;
-		}
-
-		return a;
 	}
 }
 

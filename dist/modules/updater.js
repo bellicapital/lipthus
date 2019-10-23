@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Debug = require("debug");
 const updates_1 = require("../updates");
@@ -39,20 +30,18 @@ function checkAppVersion(site) {
         return;
     return checkRequireScript(versionUpdates, 'siteversion', site.config.siteversion, site.package.version, site);
 }
-function checkRequireScript(versionUpdates, varName, from, to, site) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('upgrading ' + varName + ' to ' + to);
-        const toUpdate = versionUpdates
-            .filter(update => compareVersions(update.version, from) === 1)
-            .sort((a, b) => compareVersions(a.version, b.version));
-        for (const update of toUpdate) {
-            yield update.updater(site);
-            // Store the current update version
-            yield site.config.set(varName, update.version, true);
-            console.log(varName + ' update patch ' + update.version + ' applied');
-        }
-        const value = yield site.config.get(varName);
-        if (value !== to)
-            return site.config.set(varName, to, null, true);
-    });
+async function checkRequireScript(versionUpdates, varName, from, to, site) {
+    console.log('upgrading ' + varName + ' to ' + to);
+    const toUpdate = versionUpdates
+        .filter(update => compareVersions(update.version, from) === 1)
+        .sort((a, b) => compareVersions(a.version, b.version));
+    for (const update of toUpdate) {
+        await update.updater(site);
+        // Store the current update version
+        await site.config.set(varName, update.version, true);
+        console.log(varName + ' update patch ' + update.version + ' applied');
+    }
+    const value = await site.config.get(varName);
+    if (value !== to)
+        return site.config.set(varName, to, null, true);
 }

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("util");
 const path = require("path");
@@ -29,72 +20,6 @@ class BinDataFile {
         this.weight = data.weight || 0;
         if (colRef)
             this.setColRef(colRef);
-    }
-    setColRef(colRef) {
-        if (colRef)
-            Object.defineProperty(this, 'colRef', { value: colRef });
-    }
-    info() {
-        const ret = new DbfInfo({
-            name: this.name,
-            contentType: this.contentType,
-            uploadDate: this.uploadDate,
-            path: this.getPath(),
-            weight: this.weight,
-            mtime: this.mtime,
-            size: this.size,
-            key: this.getKey()
-        });
-        ret.uri = ret.path + this.uriName();
-        return ret;
-    }
-    //noinspection JSUnusedGlobalSymbols
-    toJSON() {
-        return this.info();
-    }
-    getPath() {
-        if (!this.colRef)
-            return;
-        let ret = '/bdf/';
-        if (this.colRef.db)
-            ret += this.colRef.db + '.';
-        ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
-        return ret;
-    }
-    getUri() {
-        return this.colRef ? this.getPath() + this.uriName() : null;
-    }
-    uriName(ext) {
-        const curExt = path.extname(this.name);
-        const bn = path.basename(this.name, curExt);
-        return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
-    }
-    // noinspection JSUnusedGlobalSymbols
-    formDataValue() {
-        return this.name;
-    }
-    send(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (res.headersSent)
-                throw new Error('Headers already sent' + req.originalUrl);
-            if (!this.MongoBinData)
-                throw new Error('MongoBinData is empty');
-            const data = Buffer.from(this.MongoBinData.buffer);
-            if (this.contentType)
-                res.type(this.contentType);
-            res.set('Expires', new Date().addDays(60).toUTCString());
-            if (this.mtime)
-                res.set('Last-modified', this.mtime.toUTCString());
-            return res.send(data);
-        });
-    }
-    getKey() {
-        if (!this.key)
-            this.key = this.uploadDate.getTime().toString();
-        return this.key;
-    }
-    toString() {
-        return 'data:' + this.contentType + ';base64,' + this.MongoBinData.toString('base64');
     }
     static fromMongo(mongo, colRef) {
         if (!mongo)
@@ -218,19 +143,75 @@ class BinDataFile {
     static isBdf(o) {
         return !!o.MongoBinData;
     }
+    setColRef(colRef) {
+        if (colRef)
+            Object.defineProperty(this, 'colRef', { value: colRef });
+    }
+    info() {
+        const ret = new DbfInfo({
+            name: this.name,
+            contentType: this.contentType,
+            uploadDate: this.uploadDate,
+            path: this.getPath(),
+            weight: this.weight,
+            mtime: this.mtime,
+            size: this.size,
+            key: this.getKey()
+        });
+        ret.uri = ret.path + this.uriName();
+        return ret;
+    }
+    //noinspection JSUnusedGlobalSymbols
+    toJSON() {
+        return this.info();
+    }
+    getPath() {
+        if (!this.colRef)
+            return;
+        let ret = '/bdf/';
+        if (this.colRef.db)
+            ret += this.colRef.db + '.';
+        ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
+        return ret;
+    }
+    getUri() {
+        return this.colRef ? this.getPath() + this.uriName() : null;
+    }
+    uriName(ext) {
+        const curExt = path.extname(this.name);
+        const bn = path.basename(this.name, curExt);
+        return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
+    }
+    // noinspection JSUnusedGlobalSymbols
+    formDataValue() {
+        return this.name;
+    }
+    async send(req, res) {
+        if (res.headersSent)
+            throw new Error('Headers already sent' + req.originalUrl);
+        if (!this.MongoBinData)
+            throw new Error('MongoBinData is empty');
+        const data = Buffer.from(this.MongoBinData.buffer);
+        if (this.contentType)
+            res.type(this.contentType);
+        res.set('Expires', new Date().addDays(60).toUTCString());
+        if (this.mtime)
+            res.set('Last-modified', this.mtime.toUTCString());
+        return res.send(data);
+    }
+    getKey() {
+        if (!this.key)
+            this.key = this.uploadDate.getTime().toString();
+        return this.key;
+    }
+    toString() {
+        return 'data:' + this.contentType + ';base64,' + this.MongoBinData.toString('base64');
+    }
 }
 exports.BinDataFile = BinDataFile;
 class DbfInfo {
     constructor(p) {
-        this.path = p.path;
-        this.name = p.name;
-        this.md5 = p.md5;
-        this.contentType = p.contentType;
-        this.uploadDate = p.uploadDate;
-        this.weight = p.weight;
-        this.mtime = p.mtime;
-        this.size = p.size;
-        this.key = p.key;
+        Object.assign(this, p);
     }
 }
 exports.DbfInfo = DbfInfo;

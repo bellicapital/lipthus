@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 class Multilang {
     constructor(req) {
@@ -269,55 +260,53 @@ Multilang.availableLangs = {
     ja: '日本語',
     ko: '한국어'
 };
-function MultilangModule(app) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const site = app.site;
-        yield site.db.lang.check();
-        site.langUrls = {};
-        return Multilang.availableLanguages(site)
-            .then((availableLangs) => {
-            Object.keys(availableLangs).forEach(code => {
-                site.availableTanslatorLangs[code] = availableLangs[code];
+async function MultilangModule(app) {
+    const site = app.site;
+    await site.db.lang.check();
+    site.langUrls = {};
+    return Multilang.availableLanguages(site)
+        .then((availableLangs) => {
+        Object.keys(availableLangs).forEach(code => {
+            site.availableTanslatorLangs[code] = availableLangs[code];
+        });
+        if (site.environment.translator && site.environment.translator.exclude)
+            site.environment.translator.exclude.forEach((code) => delete site.availableTanslatorLangs[code]);
+        if (!site.availableTanslatorLangs[site.config.language])
+            site.config.set('language', Multilang.defaultLang);
+        if (site.config.languages.indexOf(site.config.language) === -1)
+            site.config.languages.push(site.config.language);
+        site.config.languages.forEach((code) => {
+            site.langs[code] = site.availableTanslatorLangs[code];
+        });
+        if (!site.config.index_all_lang_subdomains)
+            site.availableLangs = site.langs;
+        else {
+            Object.keys(site.availableTanslatorLangs).forEach(code => {
+                site.availableLangs[code] = site.availableTanslatorLangs[code];
             });
-            if (site.environment.translator && site.environment.translator.exclude)
-                site.environment.translator.exclude.forEach((code) => delete site.availableTanslatorLangs[code]);
-            if (!site.availableTanslatorLangs[site.config.language])
-                site.config.set('language', Multilang.defaultLang);
-            if (site.config.languages.indexOf(site.config.language) === -1)
-                site.config.languages.push(site.config.language);
-            site.config.languages.forEach((code) => {
-                site.langs[code] = site.availableTanslatorLangs[code];
+        }
+        if (site.environment.urls) {
+            site.langUrls = site.environment.urls;
+        }
+        else if (site.config.lang_subdomains) {
+            Object.keys(site.availableLangs).forEach(code => site.langUrls[code] = '//' + code + '.' + site.domainName);
+            let mainSubdomain = site.config.lang_main_subdomain || (site.config.force_www && 'www') || '';
+            if (mainSubdomain)
+                mainSubdomain += '.';
+            site.langUrls[site.config.language] = '//' + mainSubdomain + site.domainName;
+        }
+        else {
+            Object.keys(site.availableLangs).forEach(code => {
+                site.langUrls[code] = '//' + site.domainName + '/' + code;
             });
-            if (!site.config.index_all_lang_subdomains)
-                site.availableLangs = site.langs;
-            else {
-                Object.keys(site.availableTanslatorLangs).forEach(code => {
-                    site.availableLangs[code] = site.availableTanslatorLangs[code];
-                });
-            }
-            if (site.environment.urls) {
-                site.langUrls = site.environment.urls;
-            }
-            else if (site.config.lang_subdomains) {
-                Object.keys(site.availableLangs).forEach(code => site.langUrls[code] = '//' + code + '.' + site.domainName);
-                let mainSubdomain = site.config.lang_main_subdomain || (site.config.force_www && 'www') || '';
-                if (mainSubdomain)
-                    mainSubdomain += '.';
-                site.langUrls[site.config.language] = '//' + mainSubdomain + site.domainName;
-            }
-            else {
-                Object.keys(site.availableLangs).forEach(code => {
-                    site.langUrls[code] = '//' + site.domainName + '/' + code;
-                });
-            }
-            app.use((req, res, next) => {
-                if (/^\/(bdf|videos|resimg|optimg|c)\//.test(req.path))
-                    return next();
-                req.ml = new Multilang(req);
-                req.ml.load('ecms-global')
-                    .then(() => next())
-                    .catch(next);
-            });
+        }
+        app.use((req, res, next) => {
+            if (/^\/(bdf|videos|resimg|optimg|c)\//.test(req.path))
+                return next();
+            req.ml = new Multilang(req);
+            req.ml.load('ecms-global')
+                .then(() => next())
+                .catch(next);
         });
     });
 }

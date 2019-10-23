@@ -119,44 +119,31 @@ export class Subscriptor {
 		const site = this.app.site;
 		const commentCol = site.db.comment;
 
-		commentCol.on('itemCreated', (commentId: any) => {
-			commentCol.findById(commentId)
-				.then((comment: any) => {
-					const modelName = comment.ref.namespace.replace('dynobjects.', '');
-					const itemScript = this.getItemScript(modelName);
+		commentCol.on('itemCreated', async (commentId: any) => {
+			const comment: any = await commentCol.findById(commentId);
+			const modelName = comment.ref.namespace.replace('dynobjects.', '');
+			const itemScript = this.getItemScript(modelName);
 
-					return comment.getItem()
-						.then((item: any) => {
-							if (!item)
-								return console.error('Comment Item not found');
+			return comment.getItem()
+				.then((item: any) => {
+					if (!item)
+						return console.error('Comment Item not found');
 
-							if (itemScript && itemScript.newComment)
-								return itemScript.newComment.call(this, comment, item);
+					if (itemScript && itemScript.newComment)
+						return itemScript.newComment.call(this, comment, item);
 
-							this.newComment(comment, item);
-						});
-				})
-				.catch(console.error.bind(console));
+					this.newComment(comment, item);
+				});
 		});
 
-		commentCol.on('itemActivated', (commentId: any) => {
-			commentCol.findById(commentId)
-				.then((comment: any) => {
-					const modelName = comment.ref.namespace.replace('dynobjects.', '');
-					const itemScript: any = this.getItemScript(modelName);
+		commentCol.on('itemActivated', async (commentId: any) => {
+			const comment: any = await commentCol.findById(commentId);
+			const item: any = await comment.getItem();
 
-					return comment.getItem()
-						.then((item: any) => {
-							if (!item)
-								return console.error('Comment Item not found');
+			if (!item)
+				return console.error('Comment Item not found');
 
-							if (itemScript && itemScript.newComment)
-								return itemScript.newComment(comment, item);
-
-							this.newComment(comment, item);
-						});
-				})
-				.catch(console.error.bind(console));
+			this.newComment(comment, item);
 		});
 	}
 
@@ -193,44 +180,22 @@ export class Subscriptor {
 			return site.plugins[name].itemScript;
 	}
 
-	_onItemCreated(item: any, name: string, db: LipthusDb) {
-		const site = this.app.site;
-		const itemScript = this.getItemScript(name);
-
-		if (itemScript)
-			return itemScript.itemCreated.call(this, item);
-
+	async _onItemCreated(item: any, name: string, db: LipthusDb) {
 		if (!item.active) return;
 
-		this.getSubscriptors(db.name, name, 'events', 'newItem', false)
-			.then((subscribed: Array<any>) => {
-				if (!subscribed.length) return;
+		const subscribed: Array<any> = await this.getSubscriptors(db.name, name, 'events', 'newItem', false);
 
-				site.notifier.itemCreated(item, subscribed);
-			})
-			.catch((err: Error) => {
-				throw err;
-			});
+		if (subscribed.length)
+			await this.app.site.notifier.itemCreated(item, subscribed);
 	}
 
-	_onItemActivated(item: any, name: string, db: LipthusDb) {
+	async _onItemActivated(item: any, name: string, db: LipthusDb) {
 		if (!item.active) return;
 
-		const site = this.app.site;
-		const itemScript = this.getItemScript(name);
+		const subscribed = await this.getSubscriptors(db.name, name, 'items', item._id, false);
 
-		this.getSubscriptors(db.name, name, 'items', item._id, false)
-			.then((subscribed: Array<any>) => {
-				if (!subscribed.length) return;
-
-				if (itemScript)
-					return itemScript.itemActivated.call(this, item, subscribed);
-
-				site.notifier.itemActivated(item, subscribed);
-			})
-			.catch((err: Error) => {
-				throw err;
-			});
+		if (subscribed.length)
+			await this.app.site.notifier.itemActivated(item, subscribed);
 	}
 
 	userConfirm(id: any) {
@@ -293,15 +258,6 @@ export class Subscriptor {
 			});
 	}
 
-	getItemOptions(schema: string, item: any, cb: any) {
-		const script = this.getItemScript(schema);
-
-		if (!script || !script.getOptions)
-			return cb(null, {});
-
-		return script.getOptions.call(this, item, cb);
-	}
-
 	/**
 	 *
 	 * @param {String} email
@@ -343,7 +299,7 @@ export class Subscriptor {
 			.then(() => found);
 	}
 
-	newComment(comment: any, item: any) {
+	async newComment(comment: any, item: any) {
 		const site = this.app.site;
 
 		if (!comment.active) {	// notify to admin
@@ -394,9 +350,8 @@ export class Subscriptor {
 						X_UNSUBSCRIBE_URL: site.protocol + ':' + site.langUrl(lang) + '/subscriptions/' + user._id
 					};
 
-					site.notifier.parseContent(lang, content, 'comment_notify', (err3: Error, body: any) =>
-						site.notifier.toUser(user, {subject: subject, content: body})
-					);
+					site.notifier.parseContent(lang, content, 'comment_notify')
+						.then((body: any) => site.notifier.toUser(user, {subject: subject, content: body}));
 
 				});
 			});
@@ -407,45 +362,4 @@ export class Subscriptor {
 		this.app.db.loggerSubscription.log(event, email, content, lang);
 	}
 
-
-	// ajax functions
-
-	static ajaxRemoveUserItem(req: any, res: any, uid: any, db: string, col: string, itemId: string, cb: any) {
-		if (req.method !== 'POST')
-			return cb();
-
-		req.db.user.findById(uid, function (err: Error, user: User) {
-			if (err)
-				return cb(err);
-
-			if (!user)
-				return cb(new Error('User not found'));
-
-			try {
-				const items = user.subscriptions[db][col].items;
-				let idx = -1;
-
-				items.some((item: any, i: number) => {
-					if (item.toString() === itemId) {
-						idx = i;
-						return true;
-					}
-				});
-
-				if (idx === -1)
-					return cb(new Error('Not subscribed'));
-
-				items.splice(idx, 1);
-
-				user.set('subscriptions.' + db + '.' + col + '.items', items);
-				user.markModified('subscriptions');
-
-				user.save()
-					.then(() => ({ok: true}))
-					.catch(cb);
-			} catch (e) {
-				cb(e);
-			}
-		});
-	}
 }

@@ -18,6 +18,9 @@ class Ng2helper {
         this.ffound = [];
         this.notffound = [];
     }
+    static serve(app, dir, route, userLevel, routes) {
+        return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
+    }
     serveIfBuild() {
         return pExists(this.dir)
             .then(exists => {
@@ -65,9 +68,6 @@ class Ng2helper {
             return Promise.resolve(true);
         return req.getUser()
             .then(user => user && user.level >= this.userLevel);
-    }
-    static serve(app, dir, route, userLevel, routes) {
-        return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
     }
 }
 const methods = {

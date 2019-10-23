@@ -4,20 +4,6 @@ import {NextFunction} from "express";
 
 export class Multilang {
 
-	public lang: string;
-	public configLang: string;
-	public langs: KeyString;
-	public fblocales: KeyAny;
-	public langUrls: KeyString;
-	public loaded: KeyAny;
-	public all: KeyAny;
-	public translator: any;
-	public baseHost?: string;
-
-	private locale?: string;
-	private _availableLangNames?: KeyString;
-	private _allLangNames?: KeyString;
-
 	static defaultLang = 'es';
 	static defaultLocale = 'es_ES';
 	static availableLangs = {
@@ -46,6 +32,22 @@ export class Multilang {
 		ja: '日本語',
 		ko: '한국어'
 	};
+
+	public lang: string;
+	public configLang: string;
+	public langs: KeyString;
+	public fblocales: KeyAny;
+	public langUrls: KeyString;
+	public loaded: KeyAny;
+	public all: KeyAny;
+	public translator: any;
+	public baseHost?: string;
+
+	private locale?: string;
+	private _availableLangNames?: KeyString;
+	private _allLangNames?: KeyString;
+
+
 
 	constructor(public req: LipthusRequest) {
 		const site = req.site;

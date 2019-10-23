@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("events");
 const Debug = require("debug");
@@ -112,53 +103,49 @@ class Site extends events_1.EventEmitter {
         this.db.connect();
     }
     // noinspection JSUnusedGlobalSymbols
-    addDb(name, schemasDir) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // old compat
-            if (typeof name !== 'string')
-                name = name.name;
-            const db = new db_1.LipthusDb({ name: name }, this);
-            db._conn = Object.assign(this.db._conn.useDb(name), {
-                lipthusDb: db,
-                site: this,
-                app: this.app
-            });
-            this.dbs[name] = db;
-            db.setFs();
-            yield db.addLipthusSchemas();
-            if (schemasDir)
-                yield db.addSchemasDir(schemasDir);
-            return db;
+    async addDb(name, schemasDir) {
+        // old compat
+        if (typeof name !== 'string')
+            name = name.name;
+        const db = new db_1.LipthusDb({ name: name }, this);
+        db._conn = Object.assign(this.db._conn.useDb(name), {
+            lipthusDb: db,
+            site: this,
+            app: this.app
         });
+        this.dbs[name] = db;
+        db.setFs();
+        await db.addLipthusSchemas();
+        if (schemasDir)
+            await db.addSchemasDir(schemasDir);
+        return db;
     }
-    init() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.createApp();
-            this.mailer = new mailer_1.Mailer(this.environment.mail, this);
-            yield this.config.load();
-            const config = this.config;
-            if (config.static_host)
-                this.staticHost = this.externalProtocol + '://' + config.static_host;
-            this.registerMethods = {
-                site: config.site_credentials,
-                google: config.googleApiKey && !!config.googleSecret,
-                facebook: !!config.fb_app_id
-            };
-            yield this.hooks('pre', 'checkVersion');
-            yield updater_1.checkVersions(this);
-            yield this.hooks('pre', 'setupApp');
-            yield this.setupApp();
-            yield this.hooks('post', 'setupApp');
-            yield ng2_1.default(this.app);
-            yield this.loadPlugins();
-            yield this.hooks('post', 'plugins');
-            subscriptor_1.Subscriptor.init(this.app);
-            debug(this.key + ' ready');
-            yield this.hooks('pre', 'finish');
-            yield this.finish();
-            yield this.hooks('post', 'finish');
-            this.emit('ready');
-        });
+    async init() {
+        this.createApp();
+        this.mailer = new mailer_1.Mailer(this.environment.mail, this);
+        await this.config.load();
+        const config = this.config;
+        if (config.static_host)
+            this.staticHost = this.externalProtocol + '://' + config.static_host;
+        this.registerMethods = {
+            site: config.site_credentials,
+            google: config.googleApiKey && !!config.googleSecret,
+            facebook: !!config.fb_app_id
+        };
+        await this.hooks('pre', 'checkVersion');
+        await updater_1.checkVersions(this);
+        await this.hooks('pre', 'setupApp');
+        await this.setupApp();
+        await this.hooks('post', 'setupApp');
+        await ng2_1.default(this.app);
+        await this.loadPlugins();
+        await this.hooks('post', 'plugins');
+        subscriptor_1.Subscriptor.init(this.app);
+        debug(this.key + ' ready');
+        await this.hooks('pre', 'finish');
+        await this.finish();
+        await this.hooks('post', 'finish');
+        this.emit('ready');
     }
     get notifier() {
         if (!this._notifier)
@@ -187,32 +174,28 @@ class Site extends events_1.EventEmitter {
         debug('site hook ' + hook + ' ' + method + ' ' + fn.name);
         return fn(this);
     }
-    loadPlugins() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const plugins = this.package.config.plugins;
-            if (!plugins)
-                return;
-            for (const k of Object.keys(plugins)) {
-                this.plugins[k] = yield require(this.srcDir + '/node_modules/cmjs-' + k)(this.app);
-                Object.defineProperty(this, k, { value: this.plugins[k] });
-            }
-        });
+    async loadPlugins() {
+        const plugins = this.package.config.plugins;
+        if (!plugins)
+            return;
+        for (const k of Object.keys(plugins)) {
+            this.plugins[k] = await require(this.srcDir + '/node_modules/cmjs-' + k)(this.app);
+            Object.defineProperty(this, k, { value: this.plugins[k] });
+        }
     }
     toString() {
         return this.config && this.config.sitename || this.key;
     }
-    finish() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield routes_1.default(this.app);
-            yield this.routeNotFound();
-            this.app.use(errorhandler_1.errorHandler);
-            // para status 40x no disparamos error
-            this.app.use(notfoundmin_1.default);
-            if (!this.options.skipListening)
-                yield this.listen();
-            else
-                debug('Skip listening');
-        });
+    async finish() {
+        await routes_1.default(this.app);
+        await this.routeNotFound();
+        this.app.use(errorhandler_1.errorHandler);
+        // para status 40x no disparamos error
+        this.app.use(notfoundmin_1.default);
+        if (!this.options.skipListening)
+            await this.listen();
+        else
+            debug('Skip listening');
     }
     lessVars() {
         let ret;
@@ -239,15 +222,13 @@ class Site extends events_1.EventEmitter {
             ret += ':' + this.environment.port;
         return ret;
     }
-    sendMail(opt, throwError) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const email = yield this.db.mailsent.create({ email: opt });
-            yield email.send();
-            this.emit('mailsent', email);
-            if (throwError && email.error)
-                throw email.error;
-            return email;
-        });
+    async sendMail(opt, throwError) {
+        const email = await this.db.mailsent.create({ email: opt });
+        await email.send();
+        this.emit('mailsent', email);
+        if (throwError && email.error)
+            throw email.error;
+        return email;
     }
     createApp() {
         const app = this.app;
@@ -356,46 +337,44 @@ class Site extends events_1.EventEmitter {
         app.use(cookieParser());
         app.use(security_1.security.main);
     }
-    setupApp() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const app = this.app;
-            Object.defineProperties(app, {
-                db: { value: this.db },
-                dbs: { value: this.dbs }
-            });
-            Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
-            app.set('protocol', this.protocol);
-            app.set('externalProtocol', this.externalProtocol);
-            app.use(g_page_speed_1.GPageSpeedMiddleWare);
-            app.use(require('./client')(app));
-            app.locals.sitename = this.config.sitename;
-            yield multilang_1.MultilangModule(app);
-            app.use(flash());
-            app.use(htmlpage_1.HtmlPageMiddleware);
-            logger_1.LipthusLogger.init(app);
-            if (this.config.sitemap && !this.environment.customSitemap)
-                app.use((yield Promise.resolve().then(() => require('./sitemap'))).default(this));
-            if (this.config.fb_app_id)
-                (yield Promise.resolve().then(() => require('./facebook'))).default(app);
-            if (this.config.sessionExpireDays) {
-                app.use((yield Promise.resolve().then(() => require('./session'))).default(this));
-                app.use((yield Promise.resolve().then(() => require('./auth'))).default(this));
+    async setupApp() {
+        const app = this.app;
+        Object.defineProperties(app, {
+            db: { value: this.db },
+            dbs: { value: this.dbs }
+        });
+        Object.each(require(this.lipthusDir + '/configs/defaults'), (k, v) => app.set(k, v));
+        app.set('protocol', this.protocol);
+        app.set('externalProtocol', this.externalProtocol);
+        app.use(g_page_speed_1.GPageSpeedMiddleWare);
+        app.use(require('./client')(app));
+        app.locals.sitename = this.config.sitename;
+        await multilang_1.MultilangModule(app);
+        app.use(flash());
+        app.use(htmlpage_1.HtmlPageMiddleware);
+        logger_1.LipthusLogger.init(app);
+        if (this.config.sitemap && !this.environment.customSitemap)
+            app.use((await Promise.resolve().then(() => require('./sitemap'))).default(this));
+        if (this.config.fb_app_id)
+            (await Promise.resolve().then(() => require('./facebook'))).default(app);
+        if (this.config.sessionExpireDays) {
+            app.use((await Promise.resolve().then(() => require('./session'))).default(this));
+            app.use((await Promise.resolve().then(() => require('./auth'))).default(this));
+        }
+        app.use((req, res, next) => {
+            res.timer.end('lipthus');
+            res.timer.start('page');
+            if (req.session) {
+                req.session.last = {
+                    host: req.hostname,
+                    url: req.originalUrl
+                };
             }
-            app.use((req, res, next) => {
-                res.timer.end('lipthus');
-                res.timer.start('page');
-                if (req.session) {
-                    req.session.last = {
-                        host: req.hostname,
-                        url: req.originalUrl
-                    };
-                }
-                else {
-                    req.session = {};
-                    req.getUser = () => Promise.resolve();
-                }
-                next();
-            });
+            else {
+                req.session = {};
+                req.getUser = () => Promise.resolve();
+            }
+            next();
         });
     }
     logo(width = 340, height = 48) {

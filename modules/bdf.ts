@@ -23,110 +23,6 @@ export class BinDataFile {
 	public md5: string;
 	public weight: number;
 
-	constructor(data: any, colRef?: any) {
-
-		this.name = data.name;
-		this.uploadDate = ensureDate(data.uploadDate);
-		this.mtime = ensureDate(data.mtime);
-		this.contentType = data.contentType;
-		this.size = data.size;
-		this.MongoBinData = data.MongoBinData;
-		this.key = data.key;
-		this.md5 = data.md5;
-		this.weight = data.weight || 0;
-
-		if (colRef)
-			this.setColRef(colRef);
-	}
-
-	setColRef(colRef: any) {
-		if (colRef)
-			Object.defineProperty(this, 'colRef', {value: colRef});
-	}
-
-	info() {
-		const ret: any = new DbfInfo({
-			name: this.name,
-			contentType: this.contentType,
-			uploadDate: this.uploadDate,
-			path: this.getPath(),
-			weight: this.weight,
-			mtime: this.mtime,
-			size: this.size,
-			key: this.getKey()
-		});
-
-		ret.uri = ret.path + this.uriName();
-
-		return ret;
-	}
-
-	//noinspection JSUnusedGlobalSymbols
-	toJSON() {
-		return this.info();
-	}
-
-	getPath() {
-		if (!this.colRef)
-			return;
-
-		let ret = '/bdf/';
-
-		if (this.colRef.db)
-			ret += this.colRef.db + '.';
-
-		ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
-
-		return ret;
-	}
-
-	getUri() {
-		return this.colRef ? this.getPath() + this.uriName() : null;
-	}
-
-	uriName(ext?: string) {
-		const curExt = path.extname(this.name);
-		const bn = path.basename(this.name, curExt);
-
-		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
-	}
-
-	// noinspection JSUnusedGlobalSymbols
-	formDataValue() {
-		return this.name;
-	}
-
-	async send(req: LipthusRequest, res: any) {
-		if (res.headersSent)
-			throw new Error('Headers already sent' + req.originalUrl);
-
-		if (!this.MongoBinData)
-			throw new Error('MongoBinData is empty');
-
-		const data = Buffer.from(this.MongoBinData.buffer);
-
-		if (this.contentType)
-			res.type(this.contentType);
-
-		res.set('Expires', new Date().addDays(60).toUTCString());
-
-		if (this.mtime)
-			res.set('Last-modified', this.mtime.toUTCString());
-
-		return res.send(data);
-	}
-
-	getKey() {
-		if (!this.key)
-			this.key = this.uploadDate.getTime().toString();
-
-		return this.key;
-	}
-
-	toString() {
-		return 'data:' + this.contentType + ';base64,' + (this.MongoBinData as any).toString('base64');
-	}
-
 	static fromMongo(mongo: any, colRef?: ColRef): BinDataImage | BinDataFile {
 		if (!mongo)
 			throw new Error('empty mongo object');
@@ -139,7 +35,7 @@ export class BinDataFile {
 			: new BinDataFile(mongo, colRef);
 	}
 
-	static fromString(str: string, colRef: any, datetime = new Date()): BinDataImage | BinDataFile | void {
+	static fromString(str: string, colRef?: any, datetime = new Date()): BinDataImage | BinDataFile | void {
 		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
 
 		if (!r)
@@ -270,6 +166,110 @@ export class BinDataFile {
 	static isBdf(o: any) {
 		return !!o.MongoBinData;
 	}
+
+	constructor(data: any, colRef?: any) {
+
+		this.name = data.name;
+		this.uploadDate = ensureDate(data.uploadDate);
+		this.mtime = ensureDate(data.mtime);
+		this.contentType = data.contentType;
+		this.size = data.size;
+		this.MongoBinData = data.MongoBinData;
+		this.key = data.key;
+		this.md5 = data.md5;
+		this.weight = data.weight || 0;
+
+		if (colRef)
+			this.setColRef(colRef);
+	}
+
+	setColRef(colRef: any) {
+		if (colRef)
+			Object.defineProperty(this, 'colRef', {value: colRef});
+	}
+
+	info() {
+		const ret: any = new DbfInfo({
+			name: this.name,
+			contentType: this.contentType,
+			uploadDate: this.uploadDate,
+			path: this.getPath(),
+			weight: this.weight,
+			mtime: this.mtime,
+			size: this.size,
+			key: this.getKey()
+		});
+
+		ret.uri = ret.path + this.uriName();
+
+		return ret;
+	}
+
+	//noinspection JSUnusedGlobalSymbols
+	toJSON() {
+		return this.info();
+	}
+
+	getPath() {
+		if (!this.colRef)
+			return;
+
+		let ret = '/bdf/';
+
+		if (this.colRef.db)
+			ret += this.colRef.db + '.';
+
+		ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
+
+		return ret;
+	}
+
+	getUri() {
+		return this.colRef ? this.getPath() + this.uriName() : null;
+	}
+
+	uriName(ext?: string) {
+		const curExt = path.extname(this.name);
+		const bn = path.basename(this.name, curExt);
+
+		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	formDataValue() {
+		return this.name;
+	}
+
+	async send(req: LipthusRequest, res: any) {
+		if (res.headersSent)
+			throw new Error('Headers already sent' + req.originalUrl);
+
+		if (!this.MongoBinData)
+			throw new Error('MongoBinData is empty');
+
+		const data = Buffer.from(this.MongoBinData.buffer);
+
+		if (this.contentType)
+			res.type(this.contentType);
+
+		res.set('Expires', new Date().addDays(60).toUTCString());
+
+		if (this.mtime)
+			res.set('Last-modified', this.mtime.toUTCString());
+
+		return res.send(data);
+	}
+
+	getKey() {
+		if (!this.key)
+			this.key = this.uploadDate.getTime().toString();
+
+		return this.key;
+	}
+
+	toString() {
+		return 'data:' + this.contentType + ';base64,' + (this.MongoBinData as any).toString('base64');
+	}
 }
 
 export interface DbfInfoParams {
@@ -297,15 +297,7 @@ export class DbfInfo implements DbfInfoParams {
 	key: string;
 
 	constructor(p: DbfInfoParams) {
-		this.path = p.path;
-		this.name = p.name;
-		this.md5 = p.md5;
-		this.contentType = p.contentType;
-		this.uploadDate = p.uploadDate;
-		this.weight = p.weight;
-		this.mtime = p.mtime;
-		this.size = p.size;
-		this.key = p.key;
+		Object.assign(this, p);
 	}
 }
 

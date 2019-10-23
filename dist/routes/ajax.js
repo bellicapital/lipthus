@@ -5,6 +5,31 @@ class AjaxProcess extends modules_1.AjaxGlobalMethods {
     constructor(req) {
         super(req);
     }
+    static sanitizeArgs(a, req) {
+        switch (typeof a) {
+            case 'string':
+                switch (a) {
+                    case 'false':
+                        a = false;
+                        break;
+                    case 'true':
+                        a = true;
+                        break;
+                    case 'req':
+                        a = req;
+                        break;
+                    case 'uid':
+                        a = req.user;
+                        break;
+                }
+                break;
+            case 'object':
+                if (a instanceof Array)
+                    a = a.map(ele => AjaxProcess.sanitizeArgs(ele, req));
+                break;
+        }
+        return a;
+    }
     process() {
         this.init();
         return this.security()
@@ -126,31 +151,6 @@ class AjaxProcess extends modules_1.AjaxGlobalMethods {
             else
                 return finish(schema[q.m].apply(schema, q.a.concat([oldCompat])));
         });
-    }
-    static sanitizeArgs(a, req) {
-        switch (typeof a) {
-            case 'string':
-                switch (a) {
-                    case 'false':
-                        a = false;
-                        break;
-                    case 'true':
-                        a = true;
-                        break;
-                    case 'req':
-                        a = req;
-                        break;
-                    case 'uid':
-                        a = req.user;
-                        break;
-                }
-                break;
-            case 'object':
-                if (a instanceof Array)
-                    a = a.map(ele => AjaxProcess.sanitizeArgs(ele, req));
-                break;
-        }
-        return a;
     }
 }
 class AjaxError extends Error {

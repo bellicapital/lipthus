@@ -21,9 +21,10 @@ const plugins = {
 
 export class LipthusSchema extends Schema {
 
+	public static Types = Schema.Types;
+
 	public tree: any;
 	public db: any;
-	public static Types = Schema.Types;
 	public paths: any;
 
 	constructor(obj: any, public options: any = {}) {

@@ -16,6 +16,10 @@ class Ng2helper {
 	public ffound: Array<string> = [];
 	public notffound: Array<string> = [];
 
+	static serve(app: LipthusApplication, dir: string, route: string, userLevel?: number, routes?: Array<string>) {
+		return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
+	}
+
 	constructor(public app: LipthusApplication, public dir: string, public route: string, public userLevel = 0, public routes: Array<string> = ['/']) {
 
 	}
@@ -79,10 +83,6 @@ class Ng2helper {
 
 		return req.getUser()
 			.then(user => user && user.level >= this.userLevel);
-	}
-
-	static serve(app: LipthusApplication, dir: string, route: string, userLevel?: number, routes?: Array<string>) {
-		return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
 	}
 }
 

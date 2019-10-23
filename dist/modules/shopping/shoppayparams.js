@@ -1,13 +1,9 @@
 "use strict";
-
-
 class ShopPayParams {
-	constructor(opt) {
+    constructor(opt) {
         this.pay_test = true;
-
         this.paypal_primary_email = '';
         this.paypal_primary_email_sandbox = '';
-
         this.url_tpvv = '';
         this.url_tpvv_test = '';
         this.merchantCode = '';
@@ -17,30 +13,23 @@ class ShopPayParams {
         this.merchantName = '';
         this.baseUrlOK = '/payments/:id';
         this.baseUrlKO = '/payments/:id';
-
         Object.each(opt, (k, v) => this[k] = v);
-
-        if(process.env.NODE_ENV === 'development')
+        if (process.env.NODE_ENV === 'development')
             this.pay_test = true;
-
-        Object.defineProperty(this, 'signature', {get: function(){
-            return this.pay_test ? this.merchantSignatureTest : this.merchantSignature;
-        }});
+        Object.defineProperty(this, 'signature', { get: function () {
+                return this.pay_test ? this.merchantSignatureTest : this.merchantSignature;
+            } });
     }
-
-	url() {
+    url() {
         return this.pay_test ? this.url_tpvv_test : this.url_tpvv;
     }
-
-	urlOK(id) {
+    urlOK(id) {
         return this.baseUrlOK.replace(':id', id);
     }
-
-	urlKO(id) {
+    urlKO(id) {
         return this.baseUrlKO.replace(':id', id);
     }
-
-	formVars(req, cb) {
+    formVars(req, cb) {
         req.ml.load('ecms-shopping').then(lc => {
             cb(null, {
                 pay_test: {
@@ -93,17 +82,17 @@ class ShopPayParams {
                     caption: lc._PAY_MERCHANTNAME,
                     value: this.merchantName
                 },
-                baseUrlOK:{
+                baseUrlOK: {
                     formtype: 'text',
                     caption: 'baseUrlOK',
                     value: this.baseUrlOK
                 },
-                baseUrlKO:{
+                baseUrlKO: {
                     formtype: 'text',
                     caption: 'baseUrlKO',
                     value: this.baseUrlKO
                 },
-                dsresponseUrl:{
+                dsresponseUrl: {
                     formtype: 'text',
                     caption: 'dsresponseUrl',
                     value: this.dsresponseUrl
@@ -111,10 +100,8 @@ class ShopPayParams {
             });
         });
     }
-
-    static getFormVars(req, res, cb){
+    static getFormVars(req, res, cb) {
         req.site.config.pay.formVars(req, cb);
     }
 }
-
 module.exports = ShopPayParams;

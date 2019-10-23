@@ -4,16 +4,6 @@ export default class Image {
 	public width: number;
 	public height: number;
 
-	constructor(file: any) {
-		Object.assign(this, file);
-		this.width = file.width;
-		this.height = file.height;
-	}
-
-	fitCalc(max_width: number, max_height: number, crop: boolean) {
-		return Image.fitCalc(this.width, this.height, max_width, max_height, crop);
-	}
-
 	static fitCalc(width: number, height: number, max_width: number, max_height: number, crop: boolean) {
 		if (width <= max_width && height <= max_height)
 			return {
@@ -34,5 +24,15 @@ export default class Image {
 			width: width > max_width ? max_width : width,
 			height: height > max_height ? max_height : height
 		};
+	}
+
+	constructor(file: any) {
+		Object.assign(this, file);
+		this.width = file.width;
+		this.height = file.height;
+	}
+
+	fitCalc(max_width: number, max_height: number, crop: boolean) {
+		return Image.fitCalc(this.width, this.height, max_width, max_height, crop);
 	}
 }

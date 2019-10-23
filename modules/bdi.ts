@@ -20,6 +20,55 @@ export class BinDataImage extends BinDataFile {
 	public title: KeyString;
 	public hidden: boolean;
 	public text: string;
+	public extra: any;
+
+	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
+		return BinDataFile.fromFile(p, opt)
+			.then(bdi => (bdi as BinDataImage).postFromFile());
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	/**
+	 *
+	 * @param params {{
+	 *      data: string (raw image data),
+	 *      name: string,
+	 *      [lastModified]: Date,
+	 *      [size]: number,
+	 *      [contentType]: string
+	 *      weight?: number
+	 * }}
+	 * @param colRef
+	 * @returns {Promise.<BinDataImage>}
+	 */
+	static fromFrontEnd(params: any, colRef: any): Promise<BinDataImage | undefined> {
+		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
+
+		if (!r)
+			return Promise.reject(new Error('No valid data'));
+
+		const ext = r[1].split('/')[1];
+		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
+		const date = params.lastModified || new Date();
+		const obj = {
+			contentType: r[1],
+			size: buffer.length,
+			md5: md5(buffer),
+			uploadDate: new Date(),
+			mtime: date,
+			name: params.name || 'str-' + date.getTime() + '.' + ext,
+			MongoBinData: new Binary(buffer),
+			weight: params.weight
+		};
+
+		if (params.size && params.size !== obj.size)
+			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
+
+		if (params.contentType && params.contentType !== obj.contentType)
+			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
+
+		return new BinDataImage(obj, colRef).postFromFile();
+	}
 
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
@@ -63,7 +112,8 @@ export class BinDataImage extends BinDataFile {
 			md5: this.md5,
 			key: this.getKey(),
 			hidden: this.hidden,
-			text: this.text
+			text: this.text,
+			extra: this.extra
 		});
 
 		ret.uri = ret.path;
@@ -293,54 +343,6 @@ export class BinDataImage extends BinDataFile {
 				throw err;
 			});
 	}
-
-	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
-		return BinDataFile.fromFile(p, opt)
-			.then(bdi => (bdi as BinDataImage).postFromFile());
-	}
-
-	// noinspection JSUnusedGlobalSymbols
-	/**
-	 *
-	 * @param params {{
-	 *      data: string (raw image data),
-	 *      name: string,
-	 *      [lastModified]: Date,
-	 *      [size]: number,
-	 *      [contentType]: string
-	 *      weight?: number
-	 * }}
-	 * @param colRef
-	 * @returns {Promise.<BinDataImage>}
-	 */
-	static fromFrontEnd(params: any, colRef: any): Promise<BinDataImage | undefined> {
-		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
-
-		if (!r)
-			return Promise.reject(new Error('No valid data'));
-
-		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
-		const date = params.lastModified || new Date();
-		const obj = {
-			contentType: r[1],
-			size: buffer.length,
-			md5: md5(buffer),
-			uploadDate: new Date(),
-			mtime: date,
-			name: params.name || 'str-' + date.getTime() + '.' + ext,
-			MongoBinData: new Binary(buffer),
-			weight: params.weight
-		};
-
-		if (params.size && params.size !== obj.size)
-			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
-
-		if (params.contentType && params.contentType !== obj.contentType)
-			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
-
-		return new BinDataImage(obj, colRef).postFromFile();
-	}
 }
 
 export interface DbfImageInfoParams extends DbfInfoParams {
@@ -353,6 +355,7 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	title?: string;
 	hidden?: boolean;
 	text?: string;
+	extra?: any;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -365,18 +368,10 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	title?: string;
 	hidden?: boolean;
 	text?: string;
+	extra?: any;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
-
-		this.width = p.width;
-		this.height = p.height;
-		this.naturalWidth = p.naturalWidth;
-		this.naturalHeight = p.naturalHeight;
-		this.alt = p.alt;
-		this.title = p.title;
-		this.hidden = p.hidden;
-		this.text = p.text;
 	}
 
 	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg'): DbfThumb {
@@ -437,26 +432,16 @@ export class DbfThumb {
 	width: number;
 	height: number;
 	originalUri?: string;
+	// noinspection JSUnusedGlobalSymbols
 	originalWidth: number;
+	// noinspection JSUnusedGlobalSymbols
 	originalHeight: number;
 	alt: KeyString;
 	title: KeyString;
 	text: string;
 
 	constructor(values: any) {
-		this.uri = values.uri;
-		this.name = values.name;
-		this.width = values.width;
-		this.height = values.height;
-		this.originalWidth = values.originalWidth;
-		this.originalHeight = values.originalHeight;
-		this.alt = values.alt;
-		this.title = values.title;
-		this.text = values.text;
-	}
-
-	toHtml() {
-		return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';
+		Object.assign(this, values);
 	}
 }
 
