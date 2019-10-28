@@ -29,7 +29,6 @@ class LipthusDb extends events_1.EventEmitter {
         this.name = params.name;
         mongoose.dbs[this.name] = this;
         this.app = site.app;
-        super.setMaxListeners(20);
     }
     connect() {
         const { uri, options } = this.connectParams();
@@ -39,6 +38,7 @@ class LipthusDb extends events_1.EventEmitter {
             site: this.site,
             app: this.app
         });
+        this._conn.setMaxListeners(20);
         this._conn.once('connected', this.onConnOpen.bind(this));
         this._conn.on('error', this.onConnError.bind(this));
         this._conn.on('disconnected', this.onDisconnected.bind(this));

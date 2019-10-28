@@ -58,8 +58,6 @@ export class LipthusDb extends EventEmitter {
 		(mongoose as any).dbs[this.name] = this;
 
 		this.app = site.app;
-
-		super.setMaxListeners(20);
 	}
 
 	connect() {
@@ -71,6 +69,8 @@ export class LipthusDb extends EventEmitter {
 			site: this.site,
 			app: this.app
 		});
+
+		this._conn.setMaxListeners(20);
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
