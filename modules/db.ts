@@ -22,6 +22,7 @@ import {Connection} from "mongoose";
 import {promises as fsPromises} from "fs";
 import {LipthusCacheResponseModel} from "../schemas/cache-response";
 import {LipthusLanguageModel} from "../schemas/lang";
+import {LipthusApplication} from "../index";
 
 const debug = Debug('site:db');
 
@@ -31,7 +32,10 @@ mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 // mongoose.set('debug', true);
 
-export class LipthusDb extends (EventEmitter as new() => any) {
+export class LipthusDb extends EventEmitter {
+
+	// tmp solution. @todo: define all models
+	[k: string]: any;
 
 	public name: string;
 	public params: DbParams;
@@ -39,6 +43,7 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 	public schemas: {[s: string]: LipthusSchema} = {};
 	public models: {[s: string]: any} = {};
 	public fs!: GridFS;
+	public app: LipthusApplication;
 	public mongoose = mongoose;
 	public _conn: LipthusConnection;
 
@@ -52,9 +57,9 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 		this.name = params.name;
 		(mongoose as any).dbs[this.name] = this;
 
-		Object.defineProperties(this, {
-			app: {value: site.app, configurable: true}
-		});
+		this.app = site.app;
+
+		super.setMaxListeners(20);
 	}
 
 	connect() {
@@ -212,6 +217,18 @@ export class LipthusDb extends (EventEmitter as new() => any) {
 
 	get lang(): LipthusLanguageModel {
 		return this.model('lang');
+	}
+
+	get cacheless() {
+		return this.model('cacheless');
+	}
+
+	get fsfiles() {
+		return this.model('fsfiles');
+	}
+
+	get comment() {
+		return this.model('comment');
 	}
 
 	model(name: string, schema?: LipthusSchema) { // if (name === 'newsletter') console.trace(name)
