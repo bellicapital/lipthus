@@ -28,9 +28,8 @@ class LipthusDb extends events_1.EventEmitter {
         this.params = params;
         this.name = params.name;
         mongoose.dbs[this.name] = this;
-        Object.defineProperties(this, {
-            app: { value: site.app, configurable: true }
-        });
+        this.app = site.app;
+        super.setMaxListeners(20);
     }
     connect() {
         const { uri, options } = this.connectParams();
@@ -148,6 +147,15 @@ class LipthusDb extends events_1.EventEmitter {
     }
     get lang() {
         return this.model('lang');
+    }
+    get cacheless() {
+        return this.model('cacheless');
+    }
+    get fsfiles() {
+        return this.model('fsfiles');
+    }
+    get comment() {
+        return this.model('comment');
     }
     model(name, schema) {
         if (this.models[name])
