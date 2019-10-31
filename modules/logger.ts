@@ -40,21 +40,6 @@ export class LipthusLogger {
 	}
 
 
-// Ajax helpers
-
-	static notfoundArray(req: LipthusRequest, res: LipthusResponse, cb: Promise<any>) {
-		return req.logger.notfoundArray(cb);
-	}
-
-	static notfoundDetails(req: LipthusRequest, res: LipthusResponse, a: any, cb: any): void {
-		req.logger.notfoundDetails(a, cb);
-	}
-
-	static notfoundRemove(req: LipthusRequest, res: LipthusResponse, a: any, cb: any): void {
-		req.logger.notfoundRemove(a, cb);
-	}
-
-
 	constructor(public req: LipthusRequest) {
 		Object.defineProperty(req, 'logger', {value: this});
 	}
@@ -162,18 +147,6 @@ export class LipthusLogger {
 			ret.code = res.statusCode;
 
 		return ret;
-	}
-
-	notfoundArray(cb: any): Promise<any> {
-		return this.collection('notfound').distinct('url', cb);
-	}
-
-	notfoundDetails(a: string, cb: any): void {
-		this.collection('notfound').find({url: a}).toArray(cb);
-	}
-
-	notfoundRemove(a: string, cb: any): void {
-		this.collection('notfound').deleteOne({url: a}, cb);
 	}
 }
 

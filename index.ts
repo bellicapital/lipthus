@@ -106,6 +106,7 @@ export interface LipthusApplication extends express.Application {
 export {CachedFile} from './classes/cached-file';
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusWebSocketServer} from './classes/web-socket-server';
+export {Server as WebSocketServer} from "ws";
 export {LipthusDocument} from './interfaces/lipthus-document';
 // noinspection JSUnusedGlobalSymbols
 export const nodeModule = (key: string) => require(key);

@@ -30,16 +30,6 @@ class LipthusLogger {
             .then(() => next())
             .catch(next);
     }
-    // Ajax helpers
-    static notfoundArray(req, res, cb) {
-        return req.logger.notfoundArray(cb);
-    }
-    static notfoundDetails(req, res, a, cb) {
-        req.logger.notfoundDetails(a, cb);
-    }
-    static notfoundRemove(req, res, a, cb) {
-        req.logger.notfoundRemove(a, cb);
-    }
     collection(type) {
         return this.req.db.collection('logger.' + type);
     }
@@ -124,15 +114,6 @@ class LipthusLogger {
         if (res.statusCode && res.statusCode !== 200)
             ret.code = res.statusCode;
         return ret;
-    }
-    notfoundArray(cb) {
-        return this.collection('notfound').distinct('url', cb);
-    }
-    notfoundDetails(a, cb) {
-        this.collection('notfound').find({ url: a }).toArray(cb);
-    }
-    notfoundRemove(a, cb) {
-        this.collection('notfound').deleteOne({ url: a }, cb);
     }
 }
 exports.LipthusLogger = LipthusLogger;

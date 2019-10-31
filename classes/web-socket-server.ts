@@ -1,5 +1,5 @@
-import {Server as WebSocketServer, ServerOptions} from "ws";
-import {LipthusRequest} from "../index";
+import {ServerOptions} from "ws";
+import {LipthusRequest, WebSocketServer} from "../index";
 import * as debug0 from "debug";
 import * as WebSocket from "ws";
 
