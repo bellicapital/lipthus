@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../index");
+const ws_1 = require("ws");
 const debug0 = require("debug");
 const debug = debug0('site:listen');
-class LipthusWebSocketServer extends index_1.WebSocketServer {
+class LipthusWebSocketServer extends ws_1.Server {
     constructor(options, callback) {
         super(options, callback);
         this.on("connection", (ws, req) => {

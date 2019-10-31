@@ -1,12 +1,12 @@
-import {ServerOptions} from "ws";
-import {LipthusRequest, WebSocketServer} from "../index";
+import {Server, ServerOptions} from "ws";
+import {LipthusRequest} from "../index";
 import * as debug0 from "debug";
 import * as WebSocket from "ws";
 
 const debug = debug0('site:listen');
 
 
-export class LipthusWebSocketServer extends WebSocketServer {
+export class LipthusWebSocketServer extends Server {
 
 	constructor (options?: ServerOptions, callback?: () => void) {
 		super(options, callback);
