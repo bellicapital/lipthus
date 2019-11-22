@@ -97,6 +97,9 @@ async function notCached(req: LipthusRequest): Promise<Buffer> {
 	if (!req.params.p && !wm)
 		return obj.MongoBinData.buffer;
 
+	if (req.params.p === '_original')
+		return obj.originalImage.MongoBinData.buffer;
+
 	const opt: any = {
 		'ref.id': new Types.ObjectId(req.params.id),
 		'ref.field': req.params.field,

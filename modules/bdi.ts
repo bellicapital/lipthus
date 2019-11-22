@@ -16,11 +16,12 @@ export class BinDataImage extends BinDataFile {
 
 	public width: number;
 	public height: number;
-	public alt: KeyString;
-	public title: KeyString;
-	public hidden: boolean;
-	public text: string;
-	public extra: any;
+	public alt?: KeyString;
+	public title?: KeyString;
+	public hidden?: boolean;
+	public text?: string;
+	public extra?: any;
+	public originalImage?: OriginalImage;
 
 	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
 		return BinDataFile.fromFile(p, opt)
@@ -79,6 +80,8 @@ export class BinDataImage extends BinDataFile {
 		this.title = data.title || {};
 		this.hidden = !!data.hidden;
 		this.text = data.text;
+		this.extra = data.extra;
+		this.originalImage = data.originalImage;
 	}
 
 	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -165,6 +168,11 @@ export class BinDataImage extends BinDataFile {
 
 		if (this.text)
 			ret.text = this.text;
+
+		if (this.originalImage) {
+			ret.originalImage = Object.assign({}, this.originalImage);
+			delete ret.originalImage.MongoBinData;
+		}
 
 		return ret;
 	}
@@ -452,3 +460,10 @@ export interface PostParams {
 }
 
 export default BinDataImage;
+
+export interface OriginalImage {
+	MongoBinData: any;
+	width: number;
+	height: number;
+	contentType: string;
+}

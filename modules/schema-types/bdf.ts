@@ -35,7 +35,7 @@ export class Bdf extends SchemaType {
 			});
 		}
 
-		throw new (SchemaType as any).CastError('Bdf', val);
+		throw new (SchemaType as any).CastError('Bdf', val, 'path?');
 	}
 
 

@@ -66,6 +66,10 @@ export class HtmlPage {
 
 		this.initiated = true;
 
+		if (!this.req.ml) {
+			console.log(this.req.originalUrl);
+			// return;
+		}
 		this.lang = this.req.ml.lang;
 
 		return this.checkUserLevel()
@@ -350,8 +354,13 @@ export class HtmlPage {
 				delete this.metaKeywords;
 				delete this.metaDescription;
 
-				if (existsSync(req.site.dir + '/routes/notfound.js'))
-					return require(req.site.dir + '/routes/notfound')(req, this.res);
+				try {
+					const customNotFound = require(req.site.dir + '/routes/notfound');
+					console.log(customNotFound);
+					if (customNotFound)
+						return customNotFound(req, this.res);
+				} catch (err) {
+				}
 			})
 			.then(() => this.send())
 			.catch(this.req.next);
