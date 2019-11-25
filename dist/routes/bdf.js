@@ -41,11 +41,8 @@ async function notCached(req) {
         if (colName.indexOf('.') > 0) {
             const m = colName.split('.', 2);
             const dbName = m[0];
-            if (!req.site.dbs[dbName]) {
-                console.error('originalUrl: ' + req.originalUrl);
-                console.error('referer: ' + req.get('Referer'));
-                throw new Error('db ' + dbName + ' not found');
-            }
+            if (!req.site.dbs[dbName])
+                throw 404;
             colName = m[1];
             collection = req.site.dbs[dbName][colName];
         }
