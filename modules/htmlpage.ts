@@ -300,7 +300,7 @@ export class HtmlPage {
 			await this.finalCSS();
 			await this.finalJS();
 
-			if (this.robots)
+			if (this.robots && !this.res.headersSent)
 				this.res.set({'X-Robots-Tag': this.robots});
 		}
 

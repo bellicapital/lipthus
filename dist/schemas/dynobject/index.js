@@ -34,18 +34,16 @@ module.exports = function dynobject() {
             return this.getSchemas()
                 .then((schemas) => Object.each(schemas, (name, schema) => this.db.lipthusDb.schema(name, schema)));
         },
-        getSchemas: function () {
+        getSchemas: async function () {
             if (this.schema.options.schemas)
-                return Promise.resolve(this.schema.options.schemas);
-            this.schema.options.schemas = {};
-            return this.find()
-                .then((arr) => {
-                arr.forEach(o => {
-                    const schema = DoSchema.fromModel(o);
-                    this.schema.options.schemas[schema.options.name] = schema;
-                });
                 return this.schema.options.schemas;
+            this.schema.options.schemas = {};
+            const arr = await this.find();
+            arr.forEach(o => {
+                const schema = DoSchema.fromModel(o);
+                this.schema.options.schemas[schema.options.name] = schema;
             });
+            return this.schema.options.schemas;
         },
         getKeys: function () {
             return Object.keys(s.get('schemas'));
@@ -62,19 +60,17 @@ module.exports = function dynobject() {
             });
             return ret;
         },
-        getItemsArray: function (req) {
+        getItemsArray: async function (req) {
             const ret = {};
-            return this.find()
-                .then((obj) => ret.handlers = obj.map(o => o.getDynValues(req)))
-                .then(() => req.site.db.dynobjectsmenu.find())
-                .then((m) => {
-                ret.menus = m.map(menu => {
-                    const json = menu.jsonInfo();
-                    delete json.__v;
-                    return json;
-                });
-                return ret;
+            const obj = await this.find();
+            ret.handlers = obj.map(o => o.getDynValues(req));
+            const m = await req.site.db.dynobjectsmenu.find();
+            ret.menus = m.map(menu => {
+                const json = menu.jsonInfo();
+                delete json.__v;
+                return json;
             });
+            return ret;
         },
         checkAll: function (req, cb) {
             const ret = { dynobjects: {} };
