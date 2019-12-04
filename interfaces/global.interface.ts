@@ -8,9 +8,18 @@ export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusRe
 export type RequestHandlerParams = RequestHandler | ErrorRequestHandler | Array<RequestHandler | ErrorRequestHandler>;
 export type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((...handlers: RequestHandlerParams[]) => T);
 
+export type Hook = (site: Site) => Promise<any> | any;
 export interface Hooks {
-	pre: any;
-	post: any;
+	pre?: {
+		checkVersion?: Hook;
+		setupApp?: Hook;
+		finish?: Hook;
+	};
+	post?: {
+		setupApp?: Hook;
+		plugins?: Hook;
+		finish?: Hook;
+	};
 }
 
 export interface KeyString {

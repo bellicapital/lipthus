@@ -65,7 +65,7 @@ export class Site extends EventEmitter {
 	public environment: EnvironmentParams;
 	public langs: KeyString = {};
 	public availableLangs: KeyAny = {};
-	public availableTanslatorLangs: KeyAny = {};
+	public availableTranslatorLangs: KeyAny = {};
 	public sitemap?: any;
 	private _notifier: any;
 	private _userCol?: UserModel;
@@ -581,16 +581,6 @@ export class Site extends EventEmitter {
 	}
 }
 
-export interface SiteOptions {
-	pre?: {
-		checkVersion?: any;
-		setupApp?: any;
-		finish?: any;
-	};
-	post?: {
-		setupApp?: any;
-		plugins?: any;
-		finish?: any;
-	};
+export interface SiteOptions extends Hooks {
 	skipListening?: boolean;
 }

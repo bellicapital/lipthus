@@ -326,7 +326,7 @@ export class Multilang {
 		const names: Array<any> = [];
 
 		return this.allLangNames().then(allLangNames => {
-			Object.keys(site.availableTanslatorLangs)
+			Object.keys(site.availableTranslatorLangs)
 				.forEach(code => allLangNames[code] && names.push([code, allLangNames[code]]));
 
 			names.sort((a, b) => a[1].localeCompare(b[1]));
@@ -357,27 +357,27 @@ export async function MultilangModule(app: LipthusApplication) {
 	return Multilang.availableLanguages(site)
 		.then((availableLangs: any) => {
 			Object.keys(availableLangs).forEach(code => {
-				site.availableTanslatorLangs[code] = availableLangs[code];
+				site.availableTranslatorLangs[code] = availableLangs[code];
 			});
 
 			if (site.environment.translator && site.environment.translator.exclude)
-				site.environment.translator.exclude.forEach((code: string) => delete site.availableTanslatorLangs[code]);
+				site.environment.translator.exclude.forEach((code: string) => delete site.availableTranslatorLangs[code]);
 
-			if (!site.availableTanslatorLangs[site.config.language])
+			if (!site.availableTranslatorLangs[site.config.language])
 				site.config.set('language', Multilang.defaultLang);
 
 			if (site.config.languages.indexOf(site.config.language) === -1)
 				site.config.languages.push(site.config.language);
 
 			site.config.languages.forEach((code: string) => {
-				site.langs[code] = site.availableTanslatorLangs[code];
+				site.langs[code] = site.availableTranslatorLangs[code];
 			});
 
 			if (!site.config.index_all_lang_subdomains)
 				site.availableLangs = site.langs;
 			else {
-				Object.keys(site.availableTanslatorLangs).forEach(code => {
-					site.availableLangs[code] = site.availableTanslatorLangs[code];
+				Object.keys(site.availableTranslatorLangs).forEach(code => {
+					site.availableLangs[code] = site.availableTranslatorLangs[code];
 				});
 			}
 
