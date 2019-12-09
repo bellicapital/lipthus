@@ -1,6 +1,7 @@
 import {BinDataFile} from "../bdf";
 import {Schema, SchemaType} from "mongoose";
 import {KeyAny} from "../../interfaces/global.interface";
+import BinDataImage from "../bdi";
 
 
 export class BinDataFileList {
@@ -8,19 +9,22 @@ export class BinDataFileList {
 	 * First element
 	 * @returns {BinDataFile}
 	 */
-	getFirst() {
+	getFirst(): BinDataFile | BinDataImage {
 		const keys = Object.keys(this);
 
 		if (!keys.length)
 			return;
 
-		return Object.keys(this).map(key => (this as any)[key]).sort((a, b) => a.weight - b.weight)[0];
+		return Object.keys(this).map(key => (this as any)[key]).filter((im: any) => !im.hidden).sort((a, b) => a.weight - b.weight)[0];
 	}
 
-	getThumb(width: number, height: number, crop: boolean, enlarge: boolean) {
+	getThumb(width: number, height: number, crop?: boolean, enlarge?: boolean) {
 		const first = this.getFirst();
 
-		return first ? first.info(width, height, crop === undefined ? true : crop, enlarge) : null;
+		if (first instanceof BinDataImage)
+			return first.info(width, height, crop === undefined ? true : crop, enlarge);
+		else
+			return first;
 	}
 
 	info(width: number, height: number, crop: boolean, enlarge: boolean) {
@@ -28,7 +32,7 @@ export class BinDataFileList {
 	}
 
 	toObject() {
-		const ret = <any> [];
+		const ret = <any>[];
 		const keys = Object.keys(this);
 
 		keys.forEach(key => ret.push((this as any)[key]));
@@ -38,7 +42,7 @@ export class BinDataFileList {
 
 	// noinspection JSUnusedGlobalSymbols
 	formDataValue() {
-		const arr = <any> [];
+		const arr = <any>[];
 
 		Object.keys(this).forEach(key => arr.push(key + ':' + (this as any)[key].name || (this as any)[key]));
 

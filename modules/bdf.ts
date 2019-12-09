@@ -1,8 +1,10 @@
 import {UploadedFile} from "../interfaces/uploaded-file";
 import {promisify} from 'util';
+import * as path from "path";
+import {ColRef} from "../interfaces/global.interface";
+import {LipthusRequest} from "../index";
 
 const fs = require('fs');
-const path = require('path');
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
@@ -20,6 +22,150 @@ export class BinDataFile {
 	public key: string;
 	public md5: string;
 	public weight: number;
+
+	static fromMongo(mongo: any, colRef?: ColRef): BinDataImage | BinDataFile {
+		if (!mongo)
+			throw new Error('empty mongo object');
+
+		if (mongo.toObject)
+			mongo = mongo.toObject();
+
+		return /^image\/.*$/.test(mongo.contentType)
+			? new BinDataImage(mongo, colRef)
+			: new BinDataFile(mongo, colRef);
+	}
+
+	static fromString(str: string, colRef?: any, datetime = new Date()): BinDataImage | BinDataFile | void {
+		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
+
+		if (!r)
+			return;
+
+		const ext = r[1].split('/')[1];
+		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
+		const obj = {
+			contentType: r[1],
+			size: buffer.length,
+			md5: md5(buffer),
+			uploadDate: datetime,
+			mtime: datetime,
+			name: 'str-' + datetime.getTime() + '.' + ext,
+			MongoBinData: new Binary(buffer)
+		};
+
+		let ret;
+
+		if (/^image\/.*$/.test(obj.contentType)) {
+			ret = new BinDataImage(obj, colRef);
+			ret.getDimensions();
+		} else
+			ret = new BinDataFile(obj, colRef);
+
+		return ret;
+	}
+
+	/**
+	 *
+	 * @param param
+	 * @param opt
+	 *
+	 * @return Promise<BinDataFile>
+	 */
+	static fromFile(param: string | UploadedFile, opt = {}): Promise<BinDataFile | BinDataImage> {
+		const p: UploadedFile = typeof param === 'string' ? {path: param} as UploadedFile : param;
+
+		if (!p.mimetype)
+			p.mimetype = p.type || Mime.getType(p.name || p.path);
+
+		return promisify(fs.readFile)(p.path)
+			.then((buffer: Buffer) => {
+				p.buffer = buffer;
+
+				if (p.mtime)
+					return;
+
+				// incrusta mtime si no se ha aportado desde el cliente
+				return promisify(fs.stat)(p.path)
+					.then((stats: any) => p.mtime = stats.mtime);
+			})
+			.then(() => BinDataFile.fromBuffer({
+				originalname: p.name || p.originalname || path.basename(p.path),
+				mimetype: p.mimetype,
+				mtime: p.mtime,
+				buffer: p.buffer
+			}, opt));
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	static fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
+		return new Promise((ok, ko) => {
+			request({url: url, encoding: null}, (err: Error, res: any, body: any) => {
+				if (err)
+					return ko(err);
+
+				ok(BinDataFile.fromBuffer({
+					originalname: path.basename(url),
+					mimetype: res.headers['content-type'],
+					mtime: new Date(),
+					buffer: body
+				}));
+			});
+		});
+	}
+
+	static fromBuffer(p: any, opt?: any): Promise<BinDataFile | BinDataImage> {
+		const obj = {
+			name: p.name || p.originalname,
+			contentType: p.contentType || p.mimetype,
+			mtime: p.mtime || new Date(),
+			uploadDate: new Date(),
+			size: p.size || p.buffer.length,
+			md5: md5(p.buffer),
+			MongoBinData: new Binary(p.buffer)
+		};
+
+		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : Promise.resolve(new BinDataFile(obj));
+	}
+
+	//noinspection JSUnusedGlobalSymbols
+	/**
+	 * Use Bdf.fromString
+	 *
+	 * @deprecated
+	 * @param img
+	 * @param width
+	 * @param height
+	 * @param colRef
+	 * @param datetime
+	 * @returns {*}
+	 */
+	static fromData(img: string, width: number, height: number, colRef: any, datetime = new Date()) {
+		console.warn('@deprecated', 'Bdf.fromData');
+
+		if (!/^data:(image\/\w+);base64,/.test(img))
+			return new Error('wrong data');
+
+		const isImageResult = /^data:(image\/\w+);base64,/.exec(img);
+		const contentType = isImageResult && isImageResult[1];
+		const data = img.replace(/^data:image\/\w+;base64,/, "");
+
+		return new BinDataImage({
+			name: "fromData_" + Date.now() + ".png",
+			contentType: contentType,
+			mtime: datetime,
+			uploadDate: datetime,
+			size: data.length,
+			md5: md5(data),
+			width: width,
+			height: height,
+			MongoBinData: new Binary(Buffer.from(data, 'base64'))
+		}, colRef);
+	}
+
+	//noinspection JSUnusedGlobalSymbols
+	static isBdf(o: any) {
+		return !!o.MongoBinData;
+	}
 
 	constructor(data: any, colRef?: any) {
 
@@ -83,21 +229,25 @@ export class BinDataFile {
 	}
 
 	uriName(ext?: string) {
-		const curext = path.extname(this.name);
-		const bn = path.basename(this.name, curext);
+		const curExt = path.extname(this.name);
+		const bn = path.basename(this.name, curExt);
 
-		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curext);
+		return encodeURIComponent(bn.replace(/[\s()]*/g, '')) + (ext || curExt);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	formDataValue() {
 		return this.name;
 	}
 
-	send(req: any, res: any) {
-		if (!this.MongoBinData)
-			return Promise.reject(new Error('MongoBinData is empty'));
+	async send(req: LipthusRequest, res: any) {
+		if (res.headersSent)
+			throw new Error('Headers already sent' + req.originalUrl);
 
-		const data = this.MongoBinData.buffer;
+		if (!this.MongoBinData)
+			throw new Error('MongoBinData is empty');
+
+		const data = Buffer.from(this.MongoBinData.buffer);
 
 		if (this.contentType)
 			res.type(this.contentType);
@@ -119,150 +269,6 @@ export class BinDataFile {
 
 	toString() {
 		return 'data:' + this.contentType + ';base64,' + (this.MongoBinData as any).toString('base64');
-	}
-
-	static fromMongo(mongo: any, colRef?: ColRef) {
-		if (!mongo)
-			return mongo;
-
-		if (mongo.toObject)
-			mongo = mongo.toObject();
-
-		return /^image\/.*$/.test(mongo.contentType)
-			? new BinDataImage(mongo, colRef)
-			: new BinDataFile(mongo, colRef);
-	}
-
-	static fromString(str: string, colRef: any, datetime = new Date()) {
-		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(str);
-
-		if (!r)
-			return;
-
-		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], r[2]);
-		const obj = {
-			contentType: r[1],
-			size: buffer.length,
-			md5: md5(buffer),
-			uploadDate: datetime,
-			mtime: datetime,
-			name: 'str-' + datetime.getTime() + '.' + ext,
-			MongoBinData: new Binary(buffer)
-		};
-
-		let ret;
-
-		if (/^image\/.*$/.test(obj.contentType)) {
-			ret = new BinDataImage(obj, colRef);
-			ret.getDimentions();
-		} else
-			ret = new BinDataFile(obj, colRef);
-
-		return ret;
-	}
-
-	/**
-	 *
-	 * @param param
-	 * @param opt
-	 *
-	 * @return Promise<BinDataFile>
-	 */
-	static fromFile(param: string | UploadedFile, opt = {}): Promise<BinDataFile | BinDataImage> {
-		const p: UploadedFile = typeof param === 'string' ? {path: param} as UploadedFile : param;
-
-		if (!p.mimetype)
-			p.mimetype = p.type || Mime.getType(p.name || p.path);
-
-		return promisify(fs.readFile)(p.path)
-			.then((buffer: Buffer) => {
-				p.buffer = buffer;
-
-				if (p.mtime)
-					return;
-
-				// incrusta mtime si no se ha aportado desde el cliente
-				return promisify(fs.stat)(p.path)
-					.then((stats: any) => p.mtime = stats.mtime);
-			})
-			.then(() => BinDataFile.fromBuffer({
-				originalname: p.name || p.originalname || path.basename(p.path),
-				mimetype: p.mimetype,
-				mtime: p.mtime,
-				buffer: p.buffer
-			}, opt));
-	}
-
-	// noinspection JSUnusedGlobalSymbols
-	static fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
-		return new Promise((ok, ko) => {
-			request({url: url, encoding: null}, (err: Error, res: any, body: any) => {
-				if (err)
-					return ko(err);
-
-				ok(BinDataFile.fromBuffer({
-					originalname: path.basename(url),
-					mimetype: res.headers['content-type'],
-					mtime: new Date(),
-					buffer: body
-				}));
-			});
-		});
-	}
-
-	static fromBuffer(p: any, opt?: any): Promise<BinDataFile | BinDataImage> {
-		const obj = {
-			name: p.originalname,
-			contentType: p.mimetype,
-			mtime: p.mtime,
-			uploadDate: new Date(),
-			size: p.size || p.buffer.length,
-			md5: md5(p.buffer),
-			MongoBinData: new Binary(p.buffer)
-		};
-
-		return /^image\/.*$/.test(p.mimetype) ? new BinDataImage(obj).postFromFile(opt) : Promise.resolve(new BinDataFile(obj));
-	}
-
-	//noinspection JSUnusedGlobalSymbols
-	/**
-	 * Use Bdf.fromString
-	 *
-	 * @deprecated
-	 * @param img
-	 * @param width
-	 * @param height
-	 * @param colRef
-	 * @param datetime
-	 * @returns {*}
-	 */
-	static fromData(img: string, width: number, height: number, colRef: any, datetime = new Date()) {
-		console.warn('@deprecated', 'Bdf.fromData');
-
-		if (!/^data:(image\/\w+);base64,/.test(img))
-			return new Error('wrong data');
-
-		const isImageResult = /^data:(image\/\w+);base64,/.exec(img);
-		const contentType = isImageResult && isImageResult[1];
-		const data = img.replace(/^data:image\/\w+;base64,/, "");
-
-		return new BinDataImage({
-			name: "fromData_" + Date.now() + ".png",
-			contentType: contentType,
-			mtime: datetime,
-			uploadDate: datetime,
-			size: data.length,
-			md5: md5(data),
-			width: width,
-			height: height,
-			MongoBinData: new Binary(Buffer.from(data, 'base64'))
-		}, colRef);
-	}
-
-	//noinspection JSUnusedGlobalSymbols
-	static isBdf(o: any) {
-		return !!o.MongoBinData;
 	}
 }
 
@@ -291,20 +297,11 @@ export class DbfInfo implements DbfInfoParams {
 	key: string;
 
 	constructor(p: DbfInfoParams) {
-		this.path = p.path;
-		this.name = p.name;
-		this.md5 = p.md5;
-		this.contentType = p.contentType;
-		this.uploadDate = p.uploadDate;
-		this.weight = p.weight;
-		this.mtime = p.mtime;
-		this.size = p.size;
-		this.key = p.key;
+		Object.assign(this, p);
 	}
 }
 
 import {BinDataImage} from './bdi';
-import {ColRef} from "../interfaces/global.interface";
 
 export default BinDataFile;
 

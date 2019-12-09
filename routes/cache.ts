@@ -12,7 +12,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			if (!file)
 				return next();
 
-			BinDataFile.fromMongo(file).send(req, res);
+			return BinDataFile.fromMongo(file).send(req, res);
 		})
 		.catch(next);
 }

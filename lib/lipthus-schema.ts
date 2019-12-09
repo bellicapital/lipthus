@@ -3,11 +3,11 @@ import {Schema} from "mongoose";
 import "./query";
 import {createdPlugin, lastActivated, lastModifiedPlugin, locationPlugin, modifierPlugin, removedPlugin, submitterPlugin} from "../modules/schema-plugins";
 import * as mls from "../modules/schema-types/mlselector";
-import * as mlcb from "../modules/schema-types/mlcheckboxes";
-import * as mlbdf from "../modules/schema-types/bdf";
-import * as mlbdfl from "../modules/schema-types/bdf-list";
-import * as mlfs from "../modules/schema-types/fs";
-import * as mltext from "../modules/schema-types/mltext";
+import * as mlBdf from "../modules/schema-types/bdf";
+import * as mlBdfL from "../modules/schema-types/bdf-list";
+import * as mlFs from "../modules/schema-types/fs";
+import {MultilangType, MultilangText as MultilangTextClass} from "../modules/schema-types/mltext";
+import {MlCheckboxes as MlCheckboxesClass} from "../modules/schema-types/mlcheckboxes";
 
 const plugins = {
 	lastMod: lastModifiedPlugin
@@ -21,13 +21,17 @@ const plugins = {
 
 export class LipthusSchema extends Schema {
 
+	public static Types = Schema.Types;
+
 	public tree: any;
 	public db: any;
-	public static Types = Schema.Types;
 	public paths: any;
 
 	constructor(obj: any, public options: any = {}) {
 		super(obj, options);
+
+		if (!options.versionKey)
+			options.versionKey = '__v';
 
 		this.__setExtraOptions();
 		this.__setEvents();
@@ -155,13 +159,14 @@ export let SchemaTypes: typeof LipthusSchema.Types;
 export namespace LipthusSchemaTypes {
 	export const ObjectId = LipthusSchema.Types.ObjectId;
 	export const MlSelector = mls.MlSelector;
-	export const MlCheckboxes = mlcb.MlCheckboxes;
-	export const Bdf = mlbdf.Bdf;
-	export const BdfList = mlbdfl.BdfList;
-	export const Fs = mlfs.Fs;
-	export const FsList = mlfs.FsList;
-	export const Multilang = mltext.MultilangType;
-	export const MultilangText = mltext.MultilangText;
+	export const MlCheckboxes = MlCheckboxesClass;
+	export const Bdf = mlBdf.Bdf;
+	export const BdfList = mlBdfL.BdfList;
+	export const Fs = mlFs.Fs;
+	// noinspection JSUnusedGlobalSymbols
+	export const FsList = mlFs.FsList;
+	export const Multilang = MultilangType;
+	export const MultilangText = MultilangTextClass;
 }
 
 /**

@@ -3,64 +3,39 @@ import {LipthusSchema} from "../../lib";
 import {KeyAny} from "../../interfaces/global.interface";
 
 export function schemaGlobalStatics(schema: LipthusSchema) {
-	// temp solution for mongoose upgrade
-	try {
-		schema.statics.countDocuments = function (this: any, filter?: any) {
-			return this.count(filter);
-		};
-		schema.statics.updateOne = function (this: any, filter?: any) {
-			return this.update.apply(this, arguments);
-		};
-		schema.statics.updateMany = function (this: any, filter: any, update: any) {
-			return this.update.call(this, filter, update, {multi: true});
-		};
-		schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
-			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(update.$set || update.$unset);
 
-			['modified', 'modifier'].forEach(k => {
-				const mod = keys.indexOf(k);
+	schema.statics._updateNative = function (this: any, multiple: boolean, filter: any, update: any) {
+		const col = this.db.collection(this.schema.options.collection);
+		const keys = Object.keys(update.$set || update.$unset);
+		const func = multiple ? 'updateMany' : 'updateOne';
 
-				if (mod > -1)
-					keys.splice(mod, 1);
-			});
+		['modified', 'modifier'].forEach(k => {
+			const mod = keys.indexOf(k);
 
-			const ret = col.update.call(col, filter, update);
+			if (mod > -1)
+				keys.splice(mod, 1);
+		});
 
-			// evento
-			this.find(filter, (err: Error, docs: any) => {
-				if (err || !docs || !docs.length)
-					return;
+		const ret = col[func].call(col, filter, update);
 
-				docs.forEach((doc: any) => doc.emit('update', keys));
-			});
+		// event
+		this.find(filter, (err: Error, docs: any) => {
+			if (err || !docs || !docs.length)
+				return;
 
-			return ret;
-		};
-		schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
-			const col = this.db.collection(this.schema.options.collection);
-			const keys = Object.keys(update.$set || update.$unset);
+			docs.forEach((doc: any) => doc.emit('update', keys));
+		});
 
-			['modified', 'modifier'].forEach(k => {
-				const mod = keys.indexOf(k);
+		return ret;
+	};
 
-				if (mod > -1)
-					keys.splice(mod, 1);
-			});
+	schema.statics.updateOneNative = function (this: any, filter: any, update: any) {
+		return this._updateNative(false, filter, update);
+	};
 
-			const ret = col.update.call(col, filter, update, {multi: true});
-
-			// evento
-			this.find(filter, (err: Error, docs: any) => {
-				if (err || !docs || !docs.length)
-					return;
-
-				docs.forEach((doc: any) => doc.emit('update', keys));
-			});
-
-			return ret;
-		};
-	} catch (e) {}
+	schema.statics.updateManyNative = function (this: any, filter: any, update: any) {
+		return this._updateNative(true, filter, update);
+	};
 
 	schema.statics.findOneField = function (this: any, id: any, fieldName: string, cb: any) {
 		const ns = fieldName.split('.');
@@ -77,18 +52,11 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		
 		return this.findById(id, projection).then((obj?: any) => {
 			if (obj) {
-				let str = 'obj = obj';
-				
-				ns.forEach((v) => {
-					str += '[';
-					
-					if (/^\d+$/.test(v))
-						str += parseInt(v, 10) + ']';
-					else
-						str += '"' + v + '"]';
-				});
-				
-				eval(str);
+				// first level with Document.get(key)
+				obj = obj.get(ns.shift());
+
+				// others
+				ns.forEach((v) => obj = obj[v]);
 			}
 			
 			if (cb)
@@ -142,15 +110,6 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		arguments[0] = {_id: Types.ObjectId(id)};
 		
 		return this.updateNative.apply(this, arguments);
-	};
-
-	// No tiene sentido. Mongoose Model.findOneAndUpdate es eso
-	schema.statics.findAndModify = function (this: any) {
-		console.log('schema.statics.findAndModify is @deprecated');
-		
-		const col = this.db.collection(this.schema.options.collection);
-		
-		return col.findAndModify.apply(col, arguments);
 	};
 	
 	/**
@@ -294,27 +253,16 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 	};
 	
 	if (!schema.statics.getList)
-		schema.statics.getList = function (this: any, query: any, cb: any) {
-			if (!cb && typeof query === 'function') {
-				cb = query;
-				query = {};
-			}
-			
-			if (cb)
-				console.log('@deprecated cb in schema.statics.getList');
-			
-			const identifier = this.schema.options.identifier || 'title';
-			
+		schema.statics.getList = function (this: any, query: any = {}) {
+			const identifier = this.schema.get('identifier') || 'title';
+
 			return this
-				.find(query, identifier)
+				.find(query)
+				.select(identifier)
 				.then((list: Array<any>) => {
 					const ret: KeyAny = {};
 					
-					list.forEach(item => {
-						ret[item.id] = item[identifier];
-					});
-					
-					if (cb) cb(null, ret);
+					list.forEach(item => ret[item.get('_id')] = item.get(identifier));
 					
 					return ret;
 				});
@@ -325,7 +273,7 @@ export function schemaGlobalStatics(schema: LipthusSchema) {
 		if (field.indexOf('$') !== -1)
 			return new Promise((ok, ko) => this.distinctCount_(field, query, (err: Error, r: number) => err ? ko(err) : ok(r)));
 		
-		const agg = this.aggregate();
+		const agg: any = this.aggregate();
 		
 		if (query && Object.keys(query).length)
 			agg.match(query);

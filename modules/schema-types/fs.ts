@@ -4,20 +4,18 @@ import {GridFSFile} from "../../lib";
 import {BinDataFile} from "../bdf";
 import {KeyAny} from "../../interfaces/global.interface";
 
-const GridStore = (mongo as any).GridStore;
-
 export class FsList {
-	constructor(val: any, type: string, collection: string, itemid: Types.ObjectId, path: string, dbname: string) {
+	constructor(val: any, type: string, collection: string, itemId: Types.ObjectId, path: string, dbname: string) {
 		Object.each(val, (i, v) => {
 			if (v.constructor.name === 'ObjectID') {
-				(this as any)[i] = new GridFSFile(v, new GridStore((mongoose as any).dbs[dbname]._conn.db, v, "r", {root: 'fs'}));
+				(this as any)[i] = new GridFSFile(v, (mongoose as any).dbs[dbname]);
 				
 				if (type === 'video')
 					(this as any)[i].folder = 'videos';
 			} else if (v.MongoBinData) {
 				(this as any)[i] = BinDataFile.fromMongo(v, {
 					collection: collection,
-					id: itemid,
+					id: itemId,
 					field: path + '.' + i
 				});
 			} else {
@@ -76,7 +74,7 @@ export class FsList {
 		this.keys().forEach(k => {
 			const info = (this as any)[k].info.apply((this as any)[k], arguments);
 			
-			// Asegura la llave
+			// Ensure key
 			info.key = k;
 			
 			ret.push(info);

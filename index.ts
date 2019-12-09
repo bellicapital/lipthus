@@ -1,6 +1,5 @@
 import * as Debug from 'debug';
 import './lib/vanilla.extensions';
-import './lib/global.l';
 import {LipthusDb, Site, SiteOptions} from "./modules";
 import {User} from "./schemas/user";
 import * as express from "express";
@@ -10,6 +9,8 @@ import {LipthusLogger} from "./modules/logger";
 import {Multilang} from "./modules/multilang";
 import {HtmlPage} from "./modules/htmlpage";
 import {LipthusWebSocketServer} from "./classes/web-socket-server";
+import {Server as SServer} from "https";
+import {Server as Server} from "https";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -70,16 +71,18 @@ export interface LipthusRequest extends express.Request {
 	imgnwm?: boolean;
 	ipLocation: any;
 	nationalities: KeyString;
-	getUser: () => Promise<User>;
+	getUser: () => Promise<User | void>;
 	files: Array<any>;	// Array<UploadedFile>;
 	security: any;
-	logError: (err: LipthusError) => Promise<any>;
+	logError: (err: LipthusError) => Promise<void | Error>;
 	lessSourceMap: string;
 	cssResponse: CssResponse;
+	sessionID: string;
 	/**
 	 * @deprecated
 	 */
 	cmsDir: string;
+	csrfToken(): string;
 }
 
 export interface LipthusResponse extends express.Response {
@@ -89,18 +92,22 @@ export interface LipthusResponse extends express.Response {
 }
 
 export interface LipthusApplication extends express.Application {
-	use: ApplicationRequestHandler<this>;
+	use: any | ApplicationRequestHandler<this>;
 	db: LipthusDb;
 	site: Site;
 	wss: LipthusWebSocketServer;
+	server: SServer | Server;
+	subscriptor: any;
 
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;
 }
 
+export {CachedFile} from './classes/cached-file';
 export {LipthusError} from './classes/lipthus-error';
 export {LipthusWebSocketServer} from './classes/web-socket-server';
 export {LipthusDocument} from './interfaces/lipthus-document';
+// noinspection JSUnusedGlobalSymbols
 export const nodeModule = (key: string) => require(key);
 export {Setting, SettingModel} from "./schemas/settings";
 export {LipthusCache, LipthusCacheModel} from "./schemas/cache";

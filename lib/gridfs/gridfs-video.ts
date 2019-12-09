@@ -1,12 +1,10 @@
 import {GridFSFile} from "./gridfs-file";
-import {Types} from "mongoose";
 
 export class GridFSVideo extends GridFSFile {
 
 	public width!: number;
 	public height!: number;
 	public duration!: number;
-	public versions?: { [s: string]: GridFSVideo | Types.ObjectId };
 
 	info() {
 		const ret = super.info();
@@ -18,5 +16,26 @@ export class GridFSVideo extends GridFSFile {
 		}
 
 		return ret;
+	}
+
+	load(): Promise<GridFSVideo> {
+		return super.load()
+			.then((file: GridFSFile) => <GridFSVideo>file);
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	setThumbByPosition(position?: number) {
+		return this.getVideoFrame(position).then((bdf: any) => {
+			if (bdf) {
+				bdf.setColRef({
+					collection: this.namespace + '.files',
+					id: this._id,
+					field: 'thumb'
+				});
+
+				return this.update({thumb: bdf});
+			}
+		})
+			.then(() => this.thumb);
 	}
 }

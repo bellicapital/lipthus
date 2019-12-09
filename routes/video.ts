@@ -15,7 +15,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		return next(new Error('No id param'));
 
 	const m = id.match(/(^[^.]+)\.(.+)$/);
-	const dbname = m && m[1];
+	const dbName = m && m[1];
 
 	if (m)
 		id = m[2];
@@ -25,11 +25,11 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 
 	const fss: Array<any> = [];
 
-	if (dbname) {
-		if (!req.site.dbs[dbname])
+	if (dbName) {
+		if (!req.site.dbs[dbName])
 			return next();
 
-		fss.push(req.site.dbs[dbname].fs);
+		fss.push(req.site.dbs[dbName].fs);
 	} else {
 		Object.values(req.site.dbs).forEach(db => fss.push(db.fs));
 	}

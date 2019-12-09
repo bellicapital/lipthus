@@ -1,11 +1,8 @@
 import {LipthusSchema, LipthusSchemaTypes} from "../lib";
 import {LipthusRequest} from "../index";
-import {KeyAny, KeyString} from "../interfaces/global.interface";
+import {KeyString} from "../interfaces/global.interface";
 import {Document, Model} from "mongoose";
 import {MultilangText} from "../modules/schema-types/mltext";
-
-let cache: KeyAny = {};
-const lastUpdates: KeyAny = {};
 
 export const name = 'nationalities';
 
@@ -29,7 +26,8 @@ export function getSchema() {
 
 export interface Nationality extends Document, NationalitiesMethods {
 	code: string;
-	title: {[s: string]: MultilangText};
+	title: { [s: string]: MultilangText };
+	getLangList: (lang: string) => { [code: string]: string };
 }
 
 export interface NationalitiesModel extends Model<Nationality>, NationalitiesStatics {
@@ -40,41 +38,23 @@ export class NationalitiesMethods {
 
 export class NationalitiesStatics {
 
-	getList(req: LipthusRequest, lang?: string, forceReload?: boolean) {
+	getList(this: NationalitiesModel, req: LipthusRequest, lang?: string) {
 		const _lang = lang || req.ml.lang;
 
-		// 10 min cache per language
-		if (lastUpdates[_lang] && (lastUpdates[_lang] < (Date.now() - 600000)))
-			delete cache[_lang];
-
-		const end = () => {
-			if (_lang === req.ml.lang && !req.nationalities)
-				req.nationalities = cache[_lang];
-
-			return cache[_lang];
-		};
-
-		if (!forceReload && cache[_lang])
-			return Promise.resolve(end());
-
-		return this.getLangList(_lang)
-			.then((list: any) => {
-				cache[_lang] = list;
-				lastUpdates[_lang] = Date.now();
-
-				return end();
-			});
+		return this.getLangList(_lang);
 	}
 
-	getLangList(lang: string) {
+	getLangList(this: NationalitiesModel, lang: string) {
 		const sort: any = {};
 		const list: KeyString = {};
 
 		sort['title.' + lang] = 1;
 
-		return (this as any).find()
+		// noinspection TypeScriptValidateJSTypes
+		return this.find()
+			.collation({locale: lang})
 			.sort(sort)
-			.then((r: Array<any>) => r.map(t => t.title
+			.then((r: Array<any>) => r.map(t => t.title && t.title
 				.getLangOrTranslate(lang)
 				.then((name2: string) => list[t.code] = name2)
 			))
@@ -82,19 +62,13 @@ export class NationalitiesStatics {
 			.then(() => list);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	setVal(code: string, lang: string, value: string) {
 		const update = {$set: <any>{}};
 
 		update.$set["title." + lang] = value;
 
-		return (this as any).updateNative({code: code}, update, {upsert: true})
-			.then((r: any) => {
-				if (!r.result || !(r.result.nModified || r.result.upserted))
-					return false;
-
-				cache = {};
-
-				return true;
-			});
+		return (this as any).updateOne({code: code}, update, {upsert: true})
+			.then((r: any) => !(!r.result || !(r.result.nModified || r.result.upserted)));
 	}
 }

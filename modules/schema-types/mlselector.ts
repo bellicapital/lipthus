@@ -95,11 +95,25 @@ export class MlSelector extends SchemaType {
 		if (this.options.origType === 'nationality') {
 			return db.nationalities.getList(req)
 				.then((n: any) => n[this.val]);
-		} else
-			return Promise.resolve(this.val);
+		} else {
+			if (!this.options.options)
+				return Promise.resolve(this.val);
+
+			const o = this.options.options[this.val] || {};
+
+			return Promise.resolve(o[req.ml.lang] || o[req.ml.configLang] || this.val);
+		}
 	}
 	
 	toString() {
+		return this.val;
+	}
+
+	toObject() {
+		return this.val;
+	}
+
+	toJSON() {
 		return this.val;
 	}
 }

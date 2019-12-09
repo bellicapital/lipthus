@@ -29,28 +29,27 @@ module.exports = function dynobject() {
 	}, {
 		collection: 'dynobjects'
 	});
-	
+
 	s.statics = {
 		addSchemas: function () {
 			return this.getSchemas()
-				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.eucaDb.schema(name, schema)));
+				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.lipthusDb.schema(name, schema)));
 		},
-		getSchemas: function () {
+		getSchemas: async function () {
 			if (this.schema.options.schemas)
-				return Promise.resolve(this.schema.options.schemas);
+				return this.schema.options.schemas;
 
 			this.schema.options.schemas = {};
 
-			return this.find()
-				.then((objs: Array<any>) => {
-					objs.forEach(o => {
-						const schema = DoSchema.fromModel(o);
+			const arr: Array<any> = await this.find();
 
-						this.schema.options.schemas[schema.options.name] = schema;
-					});
+			arr.forEach(o => {
+				const schema = DoSchema.fromModel(o);
 
-					return this.schema.options.schemas;
-				});
+				this.schema.options.schemas[schema.options.name] = schema;
+			});
+
+			return this.schema.options.schemas;
 		},
 		getKeys: function () {
 			return Object.keys(s.get('schemas'));
@@ -61,41 +60,41 @@ module.exports = function dynobject() {
 		taggedKeys: function (tag: string) {
 			const ret: Array<any> = [];
 			const schemas = s.get('schemas');
-			
+
 			Object.keys(schemas).forEach(k => {
 				if (schemas[k].options.tag === tag)
 					ret.push(k);
 			});
-			
+
 			return ret;
 		},
-		getItemsArray: function (req: any) {
+		getItemsArray: async function (req: any) {
 			const ret: any = {};
-			
-			return this.find()
-				.then((obj: Array<any>) => ret.handlers = obj.map(o => o.getDynValues(req)))
-				.then(() => req.site.db.dynobjectsmenu.find())
-				.then((m: Array<any>) => {
-					ret.menus = m.map(menu => {
-						const json = menu.jsonInfo();
-						delete json.__v;
-						
-						return json;
-					});
-					
-					return ret;
-				});
+
+			const obj: Array<any> = await this.find();
+
+			ret.handlers = obj.map(o => o.getDynValues(req));
+			const m: Array<any> = await req.site.db.dynobjectsmenu.find();
+
+			ret.menus = m.map(menu => {
+				const json = menu.jsonInfo();
+				delete json.__v;
+
+				return json;
+			});
+
+			return ret;
 		},
 		checkAll: function (req: any, cb: any) {
 			const ret = {dynobjects: <KeyAny>{}};
-			
+
 			this.find((err: Error, dy: Array<any>) => {
 				let count = 0;
-				
+
 				dy.forEach(d => {
 					req.db[d.colname].checkAll(req, (err2: Error, r: any) => {
 						ret.dynobjects[d.colname] = r;
-						
+
 						if (++count === dy.length)
 							cb(null, ret);
 					});
@@ -103,38 +102,38 @@ module.exports = function dynobject() {
 			});
 		}
 	};
-	
+
 	s.methods = {
 		getDynValues: function (req: any) {
 			const ret = this.toObject();
-			
+
 			ret.id = ret._id;
 			delete ret._id;
 			delete ret.dynvars;
-			
+
 			ret.vars = req.db[ret.colname].getDefinitions();
-			
+
 			return ret;
 		},
-		getNodeTree: function (req: any, filter: Array<string> | string, levels = 1, incOrphans = true) {
+		getNodeTree: function (req: any, filter: Array<string> | string, levels: number = 1, incOrphans: boolean = true) {
 			if (!filter)
 				filter = [];
 			else if (typeof filter === 'string')
 				filter = filter.split(',');
-			
+
 			let models: Array<string>;
-			
+
 			if (incOrphans && this.accept.length) {
 				models = this.accept.slice(0); // clone
-				
+
 				if (models.indexOf(this.colname) === -1)
 					models.unshift(this.colname);
 			} else
 				models = [this.colname];
-			
+
 			if (filter.length)
 				models = _.difference(models, filter);
-			
+
 			const query = {
 				parents: {
 					$not: {
@@ -144,18 +143,18 @@ module.exports = function dynobject() {
 					}
 				}
 			};
-			
+
 			return Promise.all(
 				models.map(colname => {
 					const opt = {sort: <any> {}};
-					
+
 					if (!req.db.schemas[colname].tree.title.multilang)
 						opt.sort.title = 1;
 					else
 						opt.sort['title.' + req.ml.lang] = 1;
-					
+
 					const ret: Array<any> = [];
-					
+
 					return req.db[colname].find(query, '', opt)
 						.then((r: Array<any>) => Promise.all(
 							r.map(obj => obj.getNodeData(req, levels, filter)
@@ -166,6 +165,6 @@ module.exports = function dynobject() {
 			);
 		}
 	};
-	
+
 	return s;
 };

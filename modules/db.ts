@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import {Site} from "./site";
-import {DBRef} from "bson";
 import {LipthusSchema} from '../lib';
 import {schemaGlobalMethods} from "./schema-plugins/schema-global";
 import {schemaGlobalStatics} from "./schema-plugins/schema-statics";
@@ -15,61 +14,101 @@ import {SearchModel} from "../schemas/search";
 import {UserModel} from "../schemas/user";
 import {SettingModel} from "../schemas/settings";
 import {NationalitiesModel} from "../schemas/nationalities";
-import {DbParams} from "../interfaces/global.interface";
+import {DbParams, LipthusConnection} from "../interfaces/global.interface";
+import {NotificationModel} from "../schemas/notification";
+import {Collection, Db} from "mongodb";
+import {Connection} from "mongoose";
 
-const fs = require('mz/fs');
+import {promises as fsPromises} from "fs";
+import {LipthusCacheResponseModel} from "../schemas/cache-response";
+import {LipthusLanguageModel} from "../schemas/lang";
+import {LipthusApplication} from "../index";
+
 const debug = Debug('site:db');
 
-debug.log = console.log.bind(console);
-
 (mongoose as any).dbs = {};
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+// mongoose.set('debug', true);
 
-export class LipthusDb extends (EventEmitter as { new(): any; }) {
+export class LipthusDb extends EventEmitter {
+
+	// tmp solution. @todo: define all models
+	[k: string]: any;
 
 	public name: string;
+	public params: DbParams;
 	public connected = false;
 	public schemas: {[s: string]: LipthusSchema} = {};
 	public models: {[s: string]: any} = {};
+	public fs!: GridFS;
+	public app: LipthusApplication;
 	public mongoose = mongoose;
+	public _conn: LipthusConnection;
 
-	constructor(public params: DbParams, public site: Site) {
+	constructor(params: DbParams | string, public site: Site) {
 		super();
 
+		if (typeof params === "string")
+			params = {name: params};
+
+		this.params = params;
 		this.name = params.name;
 		(mongoose as any).dbs[this.name] = this;
 
-		Object.defineProperties(this, {
-			app: {value: site.app, configurable: true}
-		});
+		this.app = site.app;
 	}
 
 	connect() {
-		let uri = 'mongodb://';
+		const {uri, options} = this.connectParams();
 
-		if (this.params.user && this.params.pass)
-			uri += this.params.user + ':' + this.params.pass + '@';
+		this._conn = <LipthusConnection> Object.assign(mongoose.createConnection(uri, options), {
+			lipthusDb: this,
+			eucaDb: this, // deprecated
+			site: this.site,
+			app: this.app
+		});
 
-		uri += (this.params.host || 'localhost') + '/' + this.name;
-
-		const options = this.params.options || {};
-
-		if (!options.promiseLibrary)
-			options.promiseLibrary = global.Promise;
-
-		// Avoid a Deprecation warning
-		if (options.useNewUrlParser === undefined)
-			options.useNewUrlParser = true;
-
-		// Avoid a Deprecation warning
-		if (options.useCreateIndex === undefined)
-			options.useCreateIndex = true;
-
-		this._conn = mongoose.createConnection(uri, options);
+		this._conn.setMaxListeners(20);
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
 		this._conn.on('disconnected', this.onDisconnected.bind(this));
 		this._conn.on('reconnected', this.onReconnected.bind(this));
+	}
+
+	connectParams() {
+		const options = this.params.options || {};
+
+		if (!options.promiseLibrary)
+			options.promiseLibrary = global.Promise;
+
+		if (options.useNewUrlParser === undefined)
+			options.useNewUrlParser = true;
+
+		if (options.useUnifiedTopology === undefined)
+			options.useUnifiedTopology = true;
+
+		let uri = 'mongodb://';
+
+		if (this.params.user && this.params.pass)
+			uri += this.params.user + ':' + this.params.pass + '@';
+
+		if (this.params.replicaSet) {
+			options.replicaSet = this.params.replicaSet.name;
+
+			uri += this.params.replicaSet.members.join(',');
+		} else {
+			uri += (this.params.host || 'localhost');
+
+			if (this.params.port)
+				uri += ':' + this.params.port;
+		}
+
+		uri += '/' + this.name;
+
+		return {uri: uri, options: options};
 	}
 
 	addLipthusSchemas() {
@@ -102,34 +141,41 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 
 	onConnOpen() {
 		this.connected = true;
-		debug('Connected to db ' + this.name);
 
+		const name = this.params.replicaSet ? ' replica set ' + this.params.replicaSet.name : (this.params.host || 'localhost');
+		debug('Connected to db ' + this.name + ' on ' + name + ':' + (this.params.port || '27017'));
+
+		this.setFs();
+
+		this.emit('ready', this);
+	}
+
+	setFs() {
 		// native db
-		const ndb = this._conn.db;
+		const ndb: Db = this._conn.db;
 
 		this.fs = new GridFS(ndb, 'fs');
 
-		this._conn.lipthusDb = this;
-
-		Object.defineProperties(this._conn, {
-			eucaDb: {value: this}, // deprecated
-			site: {value: this.site},
-			app: {value: this.app}
-		});
-
-		Object.defineProperty(ndb, 'eucaDb', {value: this});
-
-		ndb.on('videoProcessed', (item: any) => this.emit('videoProcessed', item));
-
-		this.emit('ready', this);
+		try {
+			Object.defineProperty(ndb, 'lipthusDb', {value: this});
+		} catch (e) {}
 	}
 
 	toString() {
 		return this.name;
 	}
 
-	db(dbname: string) {
-		return this.site.dbs[dbname];
+	db(dbName: string) {
+		return this.site.dbs[dbName];
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	useDb(dbName: string): Connection {
+		const ret: any = this._conn.useDb(dbName);
+
+		ret.site = this.site;
+
+		return ret;
 	}
 
 	get dynobject() {
@@ -145,9 +191,10 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	}
 
 	get user(): UserModel {
-		return this.model('uset');
+		return this.model('user');
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	get settings(): SettingModel {
 		return this.model('settings');
 	}
@@ -156,7 +203,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		return this.model('cache');
 	}
 
-	get cacheResponse() {
+	get cacheResponse(): LipthusCacheResponseModel {
 		return this.model('cacheResponse');
 	}
 
@@ -164,11 +211,34 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		return this.model('nationalities');
 	}
 
-	model(name: string) { // if (name === 'newsletter') console.trace(name)
+	get notification(): NotificationModel {
+		return this.model('notification');
+	}
+
+	get lang(): LipthusLanguageModel {
+		return this.model('lang');
+	}
+
+	get cacheless() {
+		return this.model('cacheless');
+	}
+
+	get fsfiles() {
+		return this.model('fsfiles');
+	}
+
+	get comment() {
+		return this.model('comment');
+	}
+
+	model(name: string, schema?: LipthusSchema) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
 
-		if (!this.schemas[name]) {
+		if (!schema)
+			schema = this.schemas[name];
+
+		if (!schema) {
 			console.error(new Error("Schema " + name + " hasn't been registered"));
 			return;
 		}
@@ -176,7 +246,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		this.models[name] = this._conn.model(name, this.schemas[name]);
 
 		// force models with schema references
-		this.schemas[name].eachPath((k: string, p: any) => {
+		schema.eachPath((k: string, p: any) => {
 			const ref = p.constructor.name === 'SchemaArray' ? p.caster.options.ref : p.options.ref;
 
 			if (!ref || ref === name)
@@ -214,20 +284,18 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	}
 
 	addSchemasDir(dir: string) {
-		return fs.readdir(dir)
-			.then((schemas: Array<any>) =>
-					Promise.all(schemas.map(file => {
-						// avoid ts definition files
-						if (file.match(/\.d\.ts$/) || !file.match(/.+\.[tj]s/))
-							return;
+		const isValid = file => !file.match(/\.d\.ts$/) && file.match(/.+\.[tj]s/);
 
-						const fpath = dir + '/' + file;
+		return fsPromises.readdir(dir)
+			.then((schemas: Array<string>) =>
+					Promise.all(schemas.filter(isValid).map(file => {
+						const fPath = dir + '/' + file;
 
-						return fs.stat(fpath).then((stat: any) => {
+						return fsPromises.stat(fPath).then((stat: any) => {
 							if (stat.isDirectory())
 								return;
 
-							const s: SchemaScript | any = require(fpath);
+							const s: SchemaScript | any = require(fPath);
 							const name = s.name;
 
 							if (typeof s === 'function') {
@@ -240,9 +308,9 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 					}))
 				, (err: Error) => debug(err)	// catch schemas dir does not exists'))
 			)
-			.then(() => fs.readdir(dir + '/plugins')
+			.then(() => fsPromises.readdir(dir + '/plugins')
 				.then((plugins: Array<string>) => {
-					(plugins || []).forEach(plugin => {
+					(plugins || []).filter(isValid).forEach(plugin => {
 						const basename = path.basename(plugin, path.extname(plugin));
 						let file = require(dir + '/plugins/' + basename);
 
@@ -253,6 +321,9 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 								getPlugin: file
 							};
 						}
+
+						if (!file.name)
+							file.name = basename;
 
 						this.addPlugin(file);
 					});
@@ -273,7 +344,7 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 		this.schemas[file.name].plugin(file.getPlugin, this);
 	}
 
-	collection(name: string, options: any, cb: Function) {
+	collection(name: string, options?: any, cb?: any): Collection {
 		let n;
 
 		try {
@@ -291,18 +362,18 @@ export class LipthusDb extends (EventEmitter as { new(): any; }) {
 	 * @param {object|function} fields ({title: 1, active: -1})
 	 * @returns {Promise}
 	 */
-	deReference(ref: DBRef, fields: any) {
-		const modelname = ref.namespace.replace('dynobjects.', '');
+	deReference(ref: any, fields?: any) {
+		const modelName = ref.namespace.replace('dynobjects.', '');
 
-		const dbname = ref.db || this.name;
-		const db = this.site.dbs[dbname];
+		const dbName = ref.db || this.name;
+		const db = this.site.dbs[dbName];
 
 		if (!db)
-			return Promise.reject(new Error('db ' + dbname + ' not found or not defined in this site'));
+			return Promise.reject(new Error('db ' + dbName + ' not found or not defined in this site'));
 
-		if (!db[modelname])
-			return Promise.reject(new Error('model ' + modelname + ' not found in db ' + this));
+		if (!db[modelName])
+			return Promise.reject(new Error('model ' + modelName + ' not found in db ' + this));
 
-		return db[modelname].findById(ref.oid, fields);
+		return db[modelName].findById(ref.oid, fields);
 	}
 }

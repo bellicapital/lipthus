@@ -45,12 +45,6 @@
 				"string",
 				"_CF_WEBMASTER_MAIL"
 			],
-			"startpage": [
-				"page",
-				"_MD_AM_STARTPAGE",
-				"home",
-				"_MD_AM_STARTPAGEDSC"
-			],
 			"closesite": [
 				"bool",
 				"_MD_AM_CLOSESITE",
@@ -362,6 +356,11 @@
 				"bool",
 				"RSS Video",
 				true
+			],
+			"botLog": [
+				"bool",
+				"Log robots",
+				false
 			]
 		}
 	},
@@ -549,7 +548,7 @@
 			"googleSecret": [
 				"string",
 				"Google Secret key",
-				"wthnKIOzJ1lmOFQ354k8cPlY",
+				"",
 				"<a href='https://console.developers.google.com/apis/credentials'>Google Apis Credentials</a>"
 			],
 			"detect_gpsi": [
@@ -557,6 +556,16 @@
 				"Detect Page Speed Insights",
 				false,
 				"Detect Google Page Speed Insights origin"
+			],
+			"logReqUserLevel": [
+				"int",
+				"User level to access /log-req",
+				2
+			],
+			"sessionExpireDays": [
+				"int",
+				"Session cookie: Number of days to expire.",
+				1
 			]
 		}
 	},

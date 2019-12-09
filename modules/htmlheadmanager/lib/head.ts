@@ -216,7 +216,7 @@ export class HeadManager {
 
 				let f = 'language/' + this.req.ml.lang + '/lang.js';
 
-				if (!fs.existsSync(this.req.site.dir + '/js/' + f))
+				if (!fs.existsSync(this.req.site.srcDir + '/js/' + f))
 					f = 'language/es/lang.js';
 
 				this.js.add(f);

@@ -21,7 +21,7 @@ module.exports = function DsResponse(req, res, next){
 	debug('body', req.body);
 	debug('ip', req.ip);
 
-	fs.writeFile(req.site.dir + '/dsresponse_log.json', log, function(err){
+	fs.writeFile(req.site.srcDir + '/dsresponse_log.json', log, function(err){
 		if(err)
 			console.error(err.stack);
 	});

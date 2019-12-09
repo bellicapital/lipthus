@@ -16,6 +16,10 @@ class Ng2helper {
 	public ffound: Array<string> = [];
 	public notffound: Array<string> = [];
 
+	static serve(app: LipthusApplication, dir: string, route: string, userLevel?: number, routes?: Array<string>) {
+		return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
+	}
+
 	constructor(public app: LipthusApplication, public dir: string, public route: string, public userLevel = 0, public routes: Array<string> = ['/']) {
 
 	}
@@ -80,21 +84,20 @@ class Ng2helper {
 		return req.getUser()
 			.then(user => user && user.level >= this.userLevel);
 	}
-
-	static serve(app: LipthusApplication, dir: string, route: string, userLevel?: number, routes?: Array<string>) {
-		return new Ng2helper(app, dir, route, userLevel, routes).serveIfBuild();
-	}
 }
 
 
 const methods = {
 
 	serve(app: LipthusApplication): Promise<void> {
-		const dir = app.get('dir');
+		const dir = app.get('srcDir');
 		const lipthusRoutes = app.get('lipthusDir') + '/ng-routes';
-		const customRoutes = dir + '/ng-routes';
 		const serve = Ng2helper.serve;
 		const conf = app.site.package.config.ngRoutes || {};
+
+		let customRoutes = dir + '/dist/ng-routes';
+		customRoutes = dir + '/ng-routes';
+
 
 		return pExists(dir + '/angular-cli.json')
 			.then(exists => exists && serve(app, dir, '/home'))
@@ -142,7 +145,7 @@ const pExists = (file: string): Promise<boolean> => {
 	return Promise.resolve(fs.existsSync(file));
 };
 
-export = (app: LipthusApplication): Promise<void> => {
+export default (app: LipthusApplication): Promise<void> => {
 	return methods.build(app.get('dir'))
 		.then(() => methods.serve(app));
 };

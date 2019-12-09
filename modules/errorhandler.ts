@@ -60,14 +60,18 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 	res.status(err.status);
 
 	(req.logger || new LipthusLogger(req)).logError(err).then(() => {
-		console.error("Exception at " + req.originalUrl);
+		err.message = "Exception at " + req.originalUrl + "\n" + err.message;
 		console.error(err);
 	});
 
-	res.render(getView(err.status.toString(), req), {
-		message: err.message, // @deprecated
-		error: err
-	});
+	if (!res.headersSent) {
+		req.getUser().then(() =>
+			res.render(getView(err.status.toString(), req), {
+				message: err.message, // @deprecated
+				error: err
+			})
+		);
+	}
 }
 
 interface StatusError extends Error {

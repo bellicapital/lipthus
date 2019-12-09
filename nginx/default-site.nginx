@@ -1,0 +1,69 @@
+
+upstream example {
+  server unix:/tmp/example-web.sock;
+}
+
+server {
+	listen 443 ssl;
+
+	server_name example.com;
+
+	# certs sent to the client in SERVER HELLO are concatenated in ssl_certificate
+	ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+	include /etc/nginx/ssl-common;
+
+	## verify chain of trust of OCSP response using Root CA and Intermediate certs
+	ssl_trusted_certificate /etc/letsencrypt/live/example.com/chain.pem;
+
+	client_max_body_size 1g;
+
+	error_log /var/log/nginx/example-tls-error.log warn;
+	access_log /var/log/nginx/example-tls-access.log;
+
+	location = /robots.txt {
+		alias /var/node_apps/example-web/public/robots.txt;
+	}
+
+	location ~ /(favicon.ico|apple-touch-icon) {
+		include /etc/nginx/snippets/static.nginx;
+		root /var/node_apps/example-web/public/img/icons;
+	}
+
+	location /s/ {
+		include /etc/nginx/snippets/static.nginx;
+		alias /var/node_apps/example-web/public/;
+	}
+
+	location /cms/ {
+		include /etc/nginx/snippets/static.nginx;
+		alias /var/node_apps/example-web/node_modules/lipthus/public/;
+	}
+
+	location ~ ^/(bdf|resimg|optimg|video-poster)/ {
+		root /var/node_apps/example-web/.cache;
+		try_files $uri @nodejs;
+
+		include /etc/nginx/snippets/static.nginx;
+	}
+
+	location ~ \.(aspx|php|jsp|cgi)$ {
+		return 410;
+	}
+
+	location / {
+		include /etc/nginx/snippets/cache_params;
+		proxy_pass http://example;
+		include /etc/nginx/proxy_params;
+	}
+
+	location @nodejs {
+		include /etc/nginx/snippets/cache_params;
+		proxy_pass http://example;
+		include /etc/nginx/proxy_params;
+	}
+
+	include /etc/nginx/block-wp.nginx;
+	include /var/node_apps/example-web/nginx-redirects.conf;
+}

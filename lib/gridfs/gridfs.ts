@@ -1,45 +1,61 @@
 import {Types} from "mongoose";
 import * as fs from "fs";
-import {Db} from "mongodb";
+import {Db, GridFSBucket} from "mongodb";
 import {GridFSFile} from "./gridfs-file";
 import * as debug0 from "debug";
+import {GridFSVideo} from "./gridfs-video";
 
 const debug = debug0('site:gridfs');
 const path = require('path');
 const request = require('request');
 const Mime = require('mime');
 const multimedia = require('multimedia-helper');
-const {GridStore} = require('mongodb');
+
 
 export class GridFS {
 
 	public loaded = false;
 	public err?: Error;
 
-	constructor(public db: Db, public ns: string = GridStore.DEFAULT_ROOT_COLLECTION) {
-		this.db = db;
-		this.ns = ns || GridStore.DEFAULT_ROOT_COLLECTION;
+	static getMultimedia(filePath: string): Promise<any> {
+		return multimedia(filePath)
+			.catch((err: Error) => debug(err));
 	}
 
-	get(id: string | Types.ObjectId) {
+	constructor(public db: Db, public ns: string = 'fs') {
+		this.db = db;
+	}
+
+	get(id: string | Types.ObjectId): GridFSFile {
+		const _id: Types.ObjectId = typeof id === 'string' ? Types.ObjectId(id as string) : id;
+
+		return new GridFSFile(_id, (this.db as any).lipthusDb);
+	}
+
+	getVideo(id: string | Types.ObjectId): GridFSVideo {
 		if (typeof id === 'string')
 			id = Types.ObjectId(id);
 
-		return new GridFSFile(id, new GridStore(this.db, id, "r", {root: this.ns}));
+		return new GridFSVideo(id, (this.db as any).lipthusDb);
 	}
 
 	findById(id: string) {
 		return this.get(id).load();
 	}
 
+	// noinspection JSUnusedGlobalSymbols
+	findVideoById(id: string) {
+		return this.getVideo(id).load();
+	}
+
 	collection(cb: any) {
 		this.db.collection(this.ns + '.files', cb);
 	}
 
-	find() {
+	find(q?, o?) {
 		const args = arguments;
 
-		this.collection((err: Error, collection: any) => {
+		return this.collection((err: Error, collection: any) => {
 			if (err)
 				return args[args.length - 1]();
 
@@ -113,27 +129,40 @@ export class GridFS {
 							return;
 					}
 
-					const id = new Types.ObjectId();
-					const gs = new GridStore(this.db, id, file.fileName, "w", {root: this.ns, content_type: file.type});
+					const bucket = this.getBucket();
 
-					gs.open((err: Error, gs2: any) => {
-						if (err)
-							return ko(err);
-
-						gs2.writeFile(file.path, (err2: Error, doc: any) => {
-							if (err2)
-								return ko(err2);
-
-							this.get(doc.fileId).load()
+					fs.createReadStream(file.path)
+						.pipe(bucket.openUploadStream(file.fileName))
+						.on('error', ko)
+						.on('finish', (result: {
+							_id: Types.ObjectId;
+							length: number;
+							chunkSize: number;
+							uploadDate: Date;
+							filename: string;
+							md5: string;
+						}) => {
+							this.get(result._id).load()
 								.then(gsFile => gsFile.update(fileOptions))
-								.then(ok)
-								.catch(ko);
+								.then(ok, ko);
 						});
-					});
 				});
 		});
 	}
 
+	getBucket() {
+		return new GridFSBucket(this.db, {bucketName: this.ns});
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	/**
+	 *  Deletes a file with the given id
+	 */
+	deleteOne(id: Types.ObjectId) {
+		return this.getBucket().delete(id);
+	}
+
+	// noinspection JSUnusedGlobalSymbols
 	fromUrl(url: string, fileOptions: any = {}) {
 		const fn = path.basename(url);
 		const tmp = '/tmp/' + fn;
@@ -147,10 +176,5 @@ export class GridFS {
 				.on('error', ko)
 				.pipe(fs.createWriteStream(tmp));
 		});
-	}
-
-	static getMultimedia(filePath: string): Promise<any> {
-		return multimedia(filePath)
-			.catch((err: Error) => debug(err));
 	}
 }

@@ -1,11 +1,10 @@
 import * as Debug from 'debug';
 import {Site} from "./site";
-import {updates} from '../updates';
+import cmsUpdates from '../updates';
 import {existsSync} from 'fs';
+import * as compareVersions from 'compare-versions';
 
-const debug = Debug('site:updater');
-debug.log = console.log.bind(console);
-
+const debug = Debug('site:version');
 
 export function checkVersions(site: Site): Promise<any> {
 	return Promise.all([
@@ -15,50 +14,67 @@ export function checkVersions(site: Site): Promise<any> {
 }
 
 function checkCmsVersion(site: Site) {
-	debug('lipthus version:' + site.config.version);
-	
+	debug('lipthus: v' + site.config.version);
+
 	if (site.cmsPackage.version === site.config.version)
 		return;
-	
+
 	return checkRequireScript(
-		updates,
+		cmsUpdates,
 		'version',
+		site.config.version,
 		site.cmsPackage.version,
 		site
 	);
 }
 
 function checkAppVersion(site: Site) {
-	debug('site version:' + site.config.siteversion);
-	
+	debug(site.key + ' : v' + site.config.siteversion);
+
 	if (site.package.version === site.config.siteversion)
 		return;
-	
-	const file = site.dir + '/updates.ts';
-	
-	if (!existsSync(file))
+
+	if (!existsSync(site.srcDir + '/updates.ts'))
 		return;
-	
+
+	const versionUpdates = require(site.dir + '/updates').default;
+
+	// Old way updates are deprecated
+	if (!versionUpdates.length)
+		return;
+
 	return checkRequireScript(
-		require(file),
+		versionUpdates,
 		'siteversion',
+		site.config.siteversion,
 		site.package.version,
 		site
 	);
 }
 
-function checkRequireScript(func: any, varname: string, value: string, site: Site) {
-	console.log('upgrading ' + varname + ' to ' + value);
-	
-	return func(site, value)
-		.then((r: { ok: boolean }): void => {
-			/**
-			 * Iguala la versión en la bd
-			 */
-			if (process.env.NODE_ENV === 'production' || (r && r.ok === true))
-				return site.config.set(varname, value, true)
-					.then(() => console.log(varname + ' updated!'));
-			
-			console.warn(varname + ' not updated!. Updater script should resolve to "{ok: true}" in a non production enviroment');
-		});
+async function checkRequireScript(versionUpdates: Array<VersionUpdate>, varName: string, from: string, to: string, site: Site) {
+	console.log('upgrading ' + varName + ' to ' + to);
+
+	const toUpdate = versionUpdates
+		.filter(update => compareVersions(update.version, from) === 1)
+		.sort((a, b) => compareVersions(a.version, b.version));
+
+	for (const update of toUpdate) {
+		await update.updater(site);
+
+		// Store the current update version
+		await site.config.set(varName, update.version, true);
+
+		console.log(varName + ' update patch ' + update.version + ' applied');
+	}
+
+	const value = await site.config.get(varName);
+
+	if (value !== to)
+		return site.config.set(varName, to, null, true);
+}
+
+interface VersionUpdate {
+	version: string;
+	updater: (site: Site) => Promise<void>;
 }

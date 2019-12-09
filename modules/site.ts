@@ -1,51 +1,45 @@
-import {NextFunction, Router} from "express";
+import {NextFunction} from "express";
 import {EventEmitter} from "events";
-import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString} from "../interfaces/global.interface";
+import {DbParams, EnvironmentParams, Hooks, KeyAny, KeyString, LipthusConnection} from "../interfaces/global.interface";
 import * as Debug from "debug";
 import {LipthusDb} from "./db";
 import * as express from "express";
 import * as path from "path";
-import * as bodyParser from "body-parser";
+import {urlencoded} from "body-parser";
 import * as cookieParser from "cookie-parser";
 import * as os from "os";
 import {checkVersions} from "./updater";
 import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
-import {session} from "./session";
 import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
 import {security} from "./security";
 import {Config} from "./config";
 import {LipthusLogger} from "./logger";
-import '../lib/global.l';
 import notFoundMin from "../routes/notfoundmin";
 import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";
 import logger_req from "./logger-req";
-import auth from "./auth";
-import {exists as exists_, existsSync} from "fs";
-import {promisify} from "util";
+import {existsSync} from "fs";
 import listen from "./listen";
-import sitemap from "./sitemap";
+import {Notifier} from "./notifier";
+import multipart from './multipart';
+import {Subscriptor} from './subscriptor';
+import {Mailer} from "./mailer";
+import Ng from './ng2';
+import {GPageSpeedMiddleWare} from "./g-page-speed";
+import route from "../routes";
 
-const pExists = promisify(exists_);
 const debug = Debug('site:site');
 const device = require('express-device');
-const multipart = require('./multipart');
-const Subscriptor = require('./subscriptor');
-const Notifier = require('./notifier');
-const Mailer = require("./mailer");
-const facebook = require("./facebook");
 const csrf = csurf({cookie: true});
-const Ng = require('./ng2');
 // no se puede con import
 const flash = require('connect-flash');
-const favicons = require("connect-favicons");
-
-debug.log = console.log.bind(console);
+const favicon = require("connect-favicons");
 
 export class Site extends EventEmitter {
 
+	public srcDir: string;	// dir outside the site dist directory if started from the tsc compiled dir
 	public lipthusDir: string;
 	public lipthusBuildDir = path.dirname(__dirname);
 	public package: any;
@@ -61,19 +55,17 @@ export class Site extends EventEmitter {
 	public domainName: string;
 	public db: LipthusDb;
 	public app: LipthusApplication;
-	public pages: { [s: string]: any; } = {};
 	public plugins: any = {};
 	public _lessVars: any;
 	public dbconf: DbParams;
 	public dbs: { [s: string]: LipthusDb } = {};
 	public langUrls!: { [s: string]: string };
 	public translator: any;
-	public store?: any;
 	public registerMethods: any = {};
 	public environment: EnvironmentParams;
 	public langs: KeyString = {};
 	public availableLangs: KeyAny = {};
-	public availableTanslatorLangs: KeyAny = {};
+	public availableTranslatorLangs: KeyAny = {};
 	public sitemap?: any;
 	private _notifier: any;
 	private _userCol?: UserModel;
@@ -88,6 +80,8 @@ export class Site extends EventEmitter {
 	constructor(public dir: string, public options: SiteOptions = {}) {
 		super();
 
+		this.srcDir = path.basename(dir) === 'dist' ? path.dirname(dir) : dir;
+
 		if (this.options.pre)
 			this._hooks.pre = this.options.pre;
 
@@ -97,8 +91,8 @@ export class Site extends EventEmitter {
 		this.lipthusDir = path.basename(this.lipthusBuildDir) === 'dist' ? path.dirname(this.lipthusBuildDir) : this.lipthusBuildDir;
 		// noinspection JSDeprecatedSymbols
 		this.cmsDir = this.lipthusDir;
-		this.package = require(dir + '/package');
-		this.cmsPackage = require('../package');
+		this.package = require(this.srcDir + '/package');
+		this.cmsPackage = require(this.lipthusDir + '/package');
 
 		if (!this.package.config)
 			this.package.config = {};
@@ -129,18 +123,20 @@ export class Site extends EventEmitter {
 		if (process.env.LIPTHUS_ENV)
 			return require(this.dir + '/environments/' + process.env.LIPTHUS_ENV).environment;
 
-		if (existsSync(this.dir + '/custom-conf.json')) {
-			const ret = require(this.dir + '/custom-conf');
+		if (existsSync(this.srcDir + '/custom-conf.json')) {
+			const ret = require(this.srcDir + '/custom-conf');
 
-			return ret.include ? require(this.dir + '/' + ret.include) : ret;
+			return ret.include ? require(this.srcDir + '/' + ret.include) : ret;
 		}
-
-		const prod = process.env.NODE_ENV === 'production';
 
 		let file = this.dir + '/environments/environment';
 
-		if (prod)
+		if (process.env.NODE_ENV === 'production')
 			file += '.prod';
+		else if (process.env.NODE_ENV === 'staging')
+			file += '.staging';
+
+		console.log('Loading environment', file);
 
 		return require(file).environment;
 	}
@@ -150,62 +146,76 @@ export class Site extends EventEmitter {
 			.on('error', this.emit.bind(this, 'error'))
 			.on('ready', (db: LipthusDb) => {
 				db.addLipthusSchemas()
-					.then(() => this.db.addSchemasDir(this.dir + '/schemas'))
+					.then(() => existsSync(this.dir + '/schemas') && this.db.addSchemasDir(this.dir + '/schemas'))
 					.then(() => this.init())
 					.catch(this.emit.bind(this, 'error'));
-			})
-			.connect();
+			});
+
+		this.db.connect();
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	addDb(p: any, schemasDir?: string): Promise<LipthusDb> {
-		return new Promise((ok, ko) => {
-			new LipthusDb(p, this)
-				.on('error', ko)
-				.on('ready', (db: LipthusDb) => {
-					this.dbs[p.name] = db;
+	async addDb(name: string | any, schemasDir?: string): Promise<LipthusDb> {
+		// old compat
+		if (typeof name !== 'string')
+			name = name.name;
 
-					db.addLipthusSchemas()
-						.then(() => schemasDir && db.addSchemasDir(schemasDir))
-						.then(() => ok(db), ko);
-				})
-				.connect();
+		const db = new LipthusDb({name: name}, this);
+
+		db._conn = <LipthusConnection> Object.assign(this.db._conn.useDb(name), {
+			lipthusDb: db,
+			site: this,
+			app: this.app
 		});
+
+		this.dbs[name] = db;
+
+		db.setFs();
+
+		await db.addLipthusSchemas();
+
+		if (schemasDir)
+			await db.addSchemasDir(schemasDir);
+
+		return db;
 	}
 
-	init() {
+	async init() {
 		this.createApp();
 
 		this.mailer = new Mailer(this.environment.mail, this);
 
-		return this.config.load()
-			.then(() => {
-				const config = this.config;
+		await this.config.load();
 
-				if (config.static_host)
-					this.staticHost = this.externalProtocol + '://' + config.static_host;
+		const config = this.config;
 
-				this.registerMethods = {
-					site: config.site_credentials,
-					google: config.googleApiKey && !!config.googleSecret,
-					facebook: !!config.fb_app_id
-				};
-			})
-			.then(this.hooks.bind(this, 'pre', 'checkVersion'))
-			.then(checkVersions.bind(this, this))
-			.then(this.hooks.bind(this, 'pre', 'setupApp'))
-			.then(this.setupApp.bind(this))
-			.then(this.hooks.bind(this, 'post', 'setupApp'))
-			.then(() => Ng(this.app))
-			.then(this.getPages.bind(this))
-			.then(this.loadPlugins.bind(this))
-			.then(this.hooks.bind(this, 'post', 'plugins'))
-			.then(() => new Subscriptor(this.app))
-			.then(() => debug(this.key + ' ready'))
-			.then(this.hooks.bind(this, 'pre', 'finish'))
-			.then(this.finish.bind(this))
-			.then(this.hooks.bind(this, 'post', 'finish'))
-			.then(() => this.emit('ready'));
+		if (config.static_host)
+			this.staticHost = this.externalProtocol + '://' + config.static_host;
+
+		this.registerMethods = {
+			site: config.site_credentials,
+			google: config.googleApiKey && !!config.googleSecret,
+			facebook: !!config.fb_app_id
+		};
+
+		await this.hooks('pre', 'checkVersion');
+		await checkVersions(this);
+		await this.hooks('pre', 'setupApp');
+		await this.setupApp();
+		await this.hooks( 'post', 'setupApp');
+		await Ng(this.app);
+		await this.loadPlugins();
+		await this.hooks('post', 'plugins');
+
+		Subscriptor.init(this.app);
+
+		debug(this.key + ' ready');
+
+		await this.hooks('pre', 'finish');
+		await this.finish();
+		await this.hooks('post', 'finish');
+
+		this.emit('ready');
 	}
 
 	get notifier() {
@@ -215,7 +225,7 @@ export class Site extends EventEmitter {
 		return this._notifier;
 	}
 
-	get authDb() {
+	get authDb(): LipthusDb {
 		if (!this._authDb)
 			this._authDb = this.environment.authDb ? this.dbs[this.environment.authDb] : this.db;
 
@@ -248,48 +258,43 @@ export class Site extends EventEmitter {
 		return fn(this);
 	}
 
-	loadPlugins() {
+	async loadPlugins() {
 		const plugins = this.package.config.plugins;
-		const pr: Array<any> = [];
 
-		if (plugins)
-			Object.each(plugins, k => pr.push(require(this.dir + '/node_modules/cmjs-' + k)(this.app)));
+		if (!plugins)
+			return;
 
-		return Promise.all(pr)
-			.then(r => {
-				r.forEach(p => {
-					this.plugins[p.key] = p;
-					Object.defineProperty(this, p.key, {value: p});
-				});
-			});
+		for (const k of Object.keys(plugins)) {
+			this.plugins[k] = await require(this.srcDir + '/node_modules/cmjs-' + k)(this.app);
+
+			Object.defineProperty(this, k, {value: this.plugins[k]});
+		}
 	}
 
 	toString() {
 		return this.config && this.config.sitename || this.key;
 	}
 
-	finish() {
-		return this.setRoutes()
-			.then(() => {
-				this.routeNotFound();
+	async finish() {
+		await route(this.app);
+		await this.routeNotFound();
 
-				this.app.use(errorHandler);
+		this.app.use(errorHandler);
 
-				// para status 40x no disparamos error
-				this.app.use(notFoundMin as any);
+		// para status 40x no disparamos error
+		this.app.use(notFoundMin as any);
 
-				if (!this.options.skipListening)
-					return this.listen();
-				else
-					debug('Skip listening');
-			});
+		if (!this.options.skipListening)
+			await this.listen();
+		else
+			debug('Skip listening');
 	}
 
 	lessVars() {
 		let ret;
 
 		try {
-			ret = require(this.dir + '/public/css/vars');
+			ret = require(this.srcDir + '/public/css/vars');
 		} catch (e) {
 			ret = {};
 		}
@@ -319,18 +324,17 @@ export class Site extends EventEmitter {
 		return ret;
 	}
 
-	sendMail(opt: any, throwError?: boolean) {
-		return this.db.mailsent
-			.create({email: opt})
-			.then((email: any) => email.send())
-			.then((email: any) => {
-				this.emit('mailsent', email);
+	async sendMail(opt: any, throwError?: boolean) {
+		const email = await this.db.mailsent.create({email: opt});
 
-				if (throwError && email.error)
-					throw email.error;
+		await email.send();
 
-				return email;
-			});
+		this.emit('mailsent', email);
+
+		if (throwError && email.error)
+			throw email.error;
+
+		return email;
 	}
 
 	createApp() {
@@ -338,10 +342,12 @@ export class Site extends EventEmitter {
 
 		Object.defineProperty(this, 'app', {value: app});
 		Object.defineProperty(app, 'site', {value: this});
+		Object.defineProperty(app, 'db', {value: this.db});
 
 		app
 			.set('name', this.package.name)
 			.set('dir', this.dir)
+			.set('srcDir', this.srcDir)
 			.set('lipthusDir', this.lipthusDir)
 			.set('version', this.package.version)
 			.set('x-powered-by', false)
@@ -430,14 +436,14 @@ export class Site extends EventEmitter {
 		// noinspection JSDeprecatedSymbols
 		app.nodeModule = (name: string) => require(name);
 
-		app.set('views', [this.dir + '/views', this.lipthusDir + '/views']);
+		app.set('views', [this.srcDir + '/views', this.lipthusDir + '/views']);
 		app.set('view engine', 'pug');
 
 		// Para usar paths absolutos en pug extends
 		app.locals.basedir = '/';
 
 		app.use(logger_req);
-		app.use(favicons(this.dir + '/public/img/icons'));
+		app.use(favicon(this.srcDir + '/public/img/icons'));
 
 		if (process.env.NODE_ENV === 'development') {
 			app.locals.development = true;
@@ -448,7 +454,7 @@ export class Site extends EventEmitter {
 			redirect: false
 		};
 
-		app.use('/s', express.static(this.dir + '/public', staticOpt));
+		app.use('/s', express.static(this.srcDir + '/public', staticOpt));
 		app.use('/cms', express.static(this.lipthusDir + '/public', staticOpt));
 		app.use('/pc', require('jj-proxy-cache'));
 		app.use('/css', require('../lib/css'));
@@ -459,19 +465,18 @@ export class Site extends EventEmitter {
 		app.use(device.capture());
 		device.enableDeviceHelpers(app);
 
-		app.use(bodyParser.urlencoded({
+		app.use(urlencoded({
 			limit: '1gb',
 			extended: true
 		}));
-		app.use(bodyParser.json({type: 'application/json', limit: '1gb'}));
-		// asigna req.multipart()
+		app.use(express.json({limit: '1gb'}));
 		app.use(multipart);
 		app.use(cookieParser());
 
 		app.use(security.main);
 	}
 
-	setupApp() {
+	async setupApp() {
 		const app = this.app;
 
 		Object.defineProperties(app, {
@@ -484,44 +489,45 @@ export class Site extends EventEmitter {
 		app.set('protocol', this.protocol);
 		app.set('externalProtocol', this.externalProtocol);
 
-		app.use(require('./g-page-speed'));
+		app.use(GPageSpeedMiddleWare);
 		app.use(require('./client')(app));
 
 		app.locals.sitename = this.config.sitename;
 
-		return MultilangModule(app)
-			.then(() => {
-				app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-					if (req.ml && req.ml.lang && req.subdomains.length) {
-						const luri = this.langUrl(req.ml.lang);
+		await MultilangModule(app);
 
-						if (luri.substr(2) !== req.headers.host && (req.headers.host || '').indexOf(this.domainName) > 0)
-							return res.redirect(this.externalProtocol + ':' + luri + req.url);
-					}
+		app.use(flash());
+		app.use(HtmlPageMiddleware);
 
-					next();
-				});
-				app.use(flash());
-				app.use(HtmlPageMiddleware);
-				app.use(session(this));
-				LipthusLogger.init(app);
-				app.use(require('./cmjspanel'));
+		LipthusLogger.init(app);
 
-				if (!this.environment.customSitemap)
-					app.use(sitemap(this));
+		if (this.config.sitemap && !this.environment.customSitemap)
+			app.use((await import('./sitemap')).default(this));
 
-				facebook(app);
-				app.use(auth(this));
+		if (this.config.fb_app_id)
+			(await import('./facebook')).default(app);
 
-				if ('production' === app.get('env') && this.environment.cache)
-					app.use(require('./cache')(this.environment.cache));
+		if (this.config.sessionExpireDays) {
+			app.use((await import('./session')).default(this));
+			app.use((await import('./auth')).default(this));
+		}
 
-				app.use((req: LipthusRequest, res: any, next: NextFunction) => {
-					res.timer.end('cmjs');
-					res.timer.start('page');
-					next();
-				});
-			});
+		app.use((req: LipthusRequest, res: any, next: NextFunction) => {
+			res.timer.end('lipthus');
+			res.timer.start('page');
+
+			if (req.session) {
+				req.session.last = {
+					host: req.hostname,
+					url: req.originalUrl
+				};
+			} else {
+				req.session = {};
+				req.getUser = () => Promise.resolve();
+			}
+
+			next();
+		});
 	}
 
 	logo(width = 340, height = 48) {
@@ -533,44 +539,6 @@ export class Site extends EventEmitter {
 			width: width,
 			height: height
 		};
-	}
-
-	getPages() {
-		if (Object.keys(this.pages).length)
-			return Promise.resolve(this.pages);
-
-		return this.db.page
-			.find({active: true})
-			.then((r: Array<any>) => {
-				r.forEach((obj: any) => this.pages[obj.key] = obj);
-
-				return this.pages;
-			});
-	}
-
-	setRoutes() {
-		require('../routes')(this.app);
-
-		return this.loadLocalRoutes()
-			.then(() => {
-				const router = Router({strict: true});
-
-				if (this.config.startpage && this.pages[this.config.startpage])
-					router.all('/', (req, res, next) => this.pages[this.config.startpage].display(req, res, next));
-
-				Object.values(this.pages).forEach(p =>
-					router.all('/' + (p.url || p.key), p.display.bind(p))
-				);
-
-				this.app.use('/', router);
-			});
-	}
-
-	loadLocalRoutes() {
-		const path_ = this.dir + '/routes';
-
-		return pExists(path_)
-			.then((exists: boolean) => exists && require(path_)(this.app));
 	}
 
 	routeNotFound() {
@@ -613,16 +581,6 @@ export class Site extends EventEmitter {
 	}
 }
 
-export interface SiteOptions {
-	pre?: {
-		checkVersion?: any;
-		setupApp?: any;
-		finish?: any;
-	};
-	post?: {
-		setupApp?: any;
-		plugins?: any;
-		finish?: any;
-	};
+export interface SiteOptions extends Hooks {
 	skipListening?: boolean;
 }

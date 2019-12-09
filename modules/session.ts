@@ -2,33 +2,36 @@ import {Site} from "./site";
 import {NextFunction} from "express";
 import {LipthusRequest, LipthusResponse} from "../index";
 
-const s = require('express-session');
-const MongoStore = require("connect-mongo")(s);
+const session = require('express-session');
+const MongoDBStore = require("connect-mongodb-session")(session);
 
-export const session = (site: Site) => {
-	site.store = new MongoStore({mongooseConnection: site.authDb._conn});
-	
+export default (site: Site) => {
+	const {uri, options} = site.authDb.connectParams();
+	const expires = 1000 * 60 * 60 * 24 * (site.config.sessionExpireDays || 0);
+
 	const params = {
 		secret: site.secret,
 		cookie: {
-			maxAge: 60000 * 60 * 24 * 5 // cinco dias
+			maxAge: expires
 		},
-		store: site.store,
+		store: new MongoDBStore({
+		uri: uri,
+		connectionOptions: options,
+		collection: 'sessions',
+		expires: expires
+		}),
 		name: site.key + ".sid",
 		resave: false,
 		saveUninitialized: false,
 		unset: 'destroy'
 	};
-	
-	const sessionMW = s(params);
-	
+
+	const sessionMW = session(params);
+
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-		if (req.device.type === 'bot') {
-			req.session = {};
-			
+		if (req.device.type === 'bot')
 			return next();
-		}
-		
+
 		sessionMW(req, res, next);
 	};
 };

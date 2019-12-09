@@ -29,7 +29,7 @@ export function getSchema() {
 		}
 	);
 
-	s.pre("save", function(this: any, next: (err?: Error) => void) {
+	s.pre("save", function(this: LipthusCache, next: (err?: Error) => void) {
 		if (!this.expires) {
 			const expires = new Date();
 			this.set('expires', expires.setDate(expires.getDate() + 30));

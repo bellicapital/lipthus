@@ -33,8 +33,8 @@ class SiteMap {
 		const d = new Date();
 		const sm = sitemap({
 			http: site.externalProtocol,
-			sitemap: site.dir + '/public/sitemap.xml',
-			robots: site.dir + '/public/robots.txt',
+			sitemap: site.srcDir + '/public/sitemap.xml',
+			robots: site.srcDir + '/public/robots.txt',
 			url: req.headers.host
 		});
 
@@ -61,11 +61,6 @@ class SiteMap {
 		});
 
 		sm.add(this.routes);
-
-		Object.values(site.pages).forEach(page => {
-			if (page.active && page.sitemap)
-				sm.add('/' + page.url, {});
-		});
 
 		sm.created = d.getTime();
 

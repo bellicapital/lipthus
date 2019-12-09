@@ -1,6 +1,6 @@
 import {IRouterHandler, IRouterMatcher, NextFunction} from "express-serve-static-core";
-import {LipthusRequest, LipthusResponse} from "../index";
-import {Types} from "mongoose";
+import {LipthusApplication, LipthusDb, LipthusRequest, LipthusResponse, Site} from "../index";
+import {Connection, Types} from "mongoose";
 
 export type RequestHandler = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
 export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusResponse, next: NextFunction) => any;
@@ -8,9 +8,18 @@ export type ErrorRequestHandler = (err: any, req: LipthusRequest, res: LipthusRe
 export type RequestHandlerParams = RequestHandler | ErrorRequestHandler | Array<RequestHandler | ErrorRequestHandler>;
 export type ApplicationRequestHandler<T> = IRouterHandler<T> & IRouterMatcher<T> & ((...handlers: RequestHandlerParams[]) => T);
 
+export type Hook = (site: Site) => Promise<any> | any;
 export interface Hooks {
-	pre: any;
-	post: any;
+	pre?: {
+		checkVersion?: Hook;
+		setupApp?: Hook;
+		finish?: Hook;
+	};
+	post?: {
+		setupApp?: Hook;
+		plugins?: Hook;
+		finish?: Hook;
+	};
 }
 
 export interface KeyString {
@@ -32,7 +41,12 @@ export interface DbParams {
 	user?: string;
 	pass?: string;
 	host?: string;
-	options?: any;
+	port?: string;
+	replicaSet?: {
+		name: string;
+		members: Array<string>; // ex: [localhost:27017]
+	};
+	options?: any;	// ex: {authSource: "admin"}
 }
 
 export interface EnvironmentParams {
@@ -45,7 +59,6 @@ export interface EnvironmentParams {
 	port?: number;
 	socket?: string;
 	mail?: any;
-	cache?: any;
 	language?: string;
 	urls?: KeyString;	// base url 4 language code
 	translator?: {
@@ -53,12 +66,14 @@ export interface EnvironmentParams {
 		exclude: Array<string>
 	};
 	origin?: string | false;	// Access-Control-Allow-Origin
+	allowHeaders?: Array<string>;
 	customSitemap?: boolean;
 	VAPID?: {
 		publicKey: string,
 		privateKey: string
 	};
 	authDb?: string;
+	customData?: any;
 }
 
 export interface ColRef {
@@ -66,4 +81,11 @@ export interface ColRef {
 	collection: string;
 	id: Types.ObjectId | string;
 	field: string;
+}
+
+export interface LipthusConnection extends Connection {
+	lipthusDb: LipthusDb;
+	eucaDb?: LipthusDb; // deprecated
+	site: Site;
+	app: LipthusApplication;
 }

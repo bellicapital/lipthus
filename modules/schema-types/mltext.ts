@@ -1,6 +1,7 @@
 import {Schema, SchemaType, Types} from "mongoose";
 import * as debug0 from "debug";
 import {Site} from "../site";
+import {LipthusDb} from "../db";
 
 const debug = debug0('site:mltext');
 const defaultLang = require('../multilang').Multilang.defaultLang;
@@ -49,7 +50,7 @@ export class Multilang extends SchemaType {
 		if (!init || val instanceof MultilangText)
 			return val;
 
-		return new MultilangText(val, scope.collection, this.path, scope._id, scope.db.eucaDb.site);
+		return new MultilangText(val, scope.collection, this.path, scope._id, scope.db.lipthusDb);
 	}
 
 	// noinspection JSUnusedGlobalSymbols
@@ -89,7 +90,12 @@ const handleArray = function (this: any, val: Array<any>) {
 };
 
 export class MultilangText {
-	constructor(public obj: any, public collection: any, public path: string, public _id: Types.ObjectId, public site: Site) {
+
+	public site: Site;
+
+	constructor(public obj: any, public collection: any, public path: string, public _id: Types.ObjectId, db: LipthusDb) {
+		this.site = db.site;
+
 		if (obj) {
 			if (obj.undefined) {	// tmp solution. jj - No sé porqué, pero aparecen
 				debug('lang code not valid: {undefined: ' + obj.undefined + '}');
@@ -97,10 +103,9 @@ export class MultilangText {
 			}
 		}
 
-		if (site)
-			Object.defineProperties(this, {
-				model: {get: () => site.db[collection.name]},
-			});
+		Object.defineProperties(this, {
+			model: {get: () => db[collection.name]}
+		});
 	}
 
 	toJSON() {

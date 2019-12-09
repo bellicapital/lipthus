@@ -1,6 +1,6 @@
 import {BinDataFile} from "../bdf";
 import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
-import {LipthusRequest} from "../../index";
+import {LipthusRequest, User} from "../../index";
 
 const Location = require('../geo').location;
 
@@ -30,10 +30,12 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		let files: Array<any> = [];
 
 		const promises = fileFields.map((field: string) => {
-			if (!this[field])
+			const file = this.get(field);
+
+			if (!file)
 				return;
 
-			return this[field].loadFiles()
+			return file.loadFiles()
 				.then((_files: Array<any>) => files = files.concat(_files));
 		});
 
@@ -41,7 +43,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			.then(() => files);
 	};
 
-	schema.methods.getValues = function (this: any, req: LipthusRequest, virtuals: boolean, forceTranslate = true) {
+	schema.methods.getValues = function (this: any, req: LipthusRequest, virtuals: boolean, forceTranslate: boolean = true) {
 		const ret = new DocValues();
 		const promises: Array<Promise<any>> = [];
 
@@ -94,7 +96,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		return ret;
 	};
 
-	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate = true) {
+	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate: boolean = true) {
 		const val = this.get(k);
 
 		if (val === undefined)
@@ -106,7 +108,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			return Promise.resolve(val);
 
 		const ret: Array<any> = [];
-		const site = this.db.eucaDb.site;
+		const site = this.db.lipthusDb.site;
 		let info: any = null;
 
 		// noinspection FallThroughInSwitchStatementJS
@@ -137,7 +139,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 					return Promise.resolve();
 
 				Object.keys(val).forEach(i => {
-					if (val[i].info) {
+					if (!val[i].hidden && val[i].info) {
 						info = val[i].info(req);
 						info.uri = site.staticHost + info.uri;
 						ret.push(info);
@@ -172,14 +174,14 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 
 			case 'MlSelector':
 			case 'MlCheckboxes':
-				return val ? val.getVal(req, this.db.eucaDb) : Promise.resolve();
+				return val ? val.getVal(req, this.db.lipthusDb) : Promise.resolve();
 
 			case 'location':
 				return Promise.resolve(new Location(val));
 
 			case 'Number':
-				if (opt.origType === 'money')
-					return Promise.resolve(req.ml.money(val, opt.currency));
+				// if (opt.origType === 'money')
+				// 	return Promise.resolve(req.ml.money(val, opt.currency));
 				if (opt.origType === 'selector')
 					return this.getName(k, req);
 			case 'String':
@@ -388,7 +390,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 							return ko(err);
 
 						userFields.forEach(k => {
-							const user = this.get(k);
+							const user: User = this.get(k);
 
 							if (user)
 								ret[k].value = user.htmlLink();
@@ -426,14 +428,14 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 				case 'Fs':
 					v.id = obj._id;
 					v.collection = schema.get('name');
-					v.dbname = this.db.name;
+					v.dbname = this.db.db.databaseName;
 					break;
 				case 'Multilang':
 					if (schema.tree[k].constructor.name === 'Array' && obj[k]) {
 						const MlText = LipthusSchemaTypes.MultilangText;
 
 						obj[k].forEach((o: any, i: number) =>
-							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.eucaDb.site));
+							obj[k][i] = new MlText(o, this.collection, k + '.' + i, obj._id, this.db.lipthusDb.site));
 					}
 					break;
 			}
@@ -447,11 +449,13 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			if (!doc.isSelected(k))
 				return;
 
+			// noinspection FallThroughInSwitchStatementJS
 			switch (path.options.type) {
-				case LipthusSchemaTypes.MlSelector:
 				case LipthusSchemaTypes.MlCheckboxes:
 					ret[k] = ret[k] && ret[k].val;
 					break;
+				case LipthusSchemaTypes.MlSelector:
+					ret[k] = doc.get(k);
 				case LipthusSchemaTypes.BdfList:
 					ret[k] = ret[k] && ret[k].toObject();
 					break;

@@ -1,13 +1,14 @@
 import {LipthusSchema} from "../lib";
-import {LipthusRequest} from "../index";
+import {LipthusRequest, Site} from "../index";
 import {Document, Model} from "mongoose";
+import {GoogleOauth2Data} from "../modules/auth";
 
 const md5 = require('md5');
 const ShoppingCart = require('../modules/shopping/shoppingcart');
 
 export const name = 'user';
 
-export function getSchema() {
+export function getSchema(site: Site) {
 	const s = new LipthusSchema({
 		uname: {type: String, size: 20, maxlength: 25, index: {unique: true}},
 		name: String,
@@ -38,7 +39,7 @@ export function getSchema() {
 		phone: [],
 		nif: String,
 		data: {},
-		cart: {type: ShoppingCart.schema, default: null},
+		cart: ShoppingCart.schema,
 		oauth_user_id: String,
 		oauth_data: {},
 		facebook: {}, // @deprecated
@@ -54,7 +55,8 @@ export function getSchema() {
 	}, {
 		identifier: 'uname',
 		collection: 'user',
-		created: true
+		created: true,
+		versionKey: '--v'	// needed in mongoose 3.5.x when authenticating the user
 	});
 
 	/**
@@ -71,14 +73,13 @@ export function getSchema() {
 	});
 
 	s.methods = {
-		baseInfo: function (this: any, includeEmail = false) {
+		baseInfo: function (this: any, includeEmail: boolean = false) {
 			const ret: any = {
-				id: this.id,
-				uname: this.getName(),
-				name: this.getName(true),
-				isAdmin: this.isAdmin(),
+				id: this.get('_id').toString(),
+				uname: this.uname,
+				name: this.name || '',
 				level: this.level,
-				type: this.type || undefined,
+				type: this.get('type') || undefined,
 				picture: this.getImage('square'),
 				fbid: this.facebook && this.facebook.id
 			};
@@ -88,8 +89,8 @@ export function getSchema() {
 
 			return ret;
 		},
-		getName: function (this: any, usereal?: boolean) {
-			return (usereal ? this.name || this.uname : this.uname || this.name) || '';
+		getName: function (this: any, useReal?: boolean) {
+			return (useReal ? this.name || this.uname : this.uname || this.name) || '';
 		},
 		/**
 		 * @returns {boolean}
@@ -97,7 +98,7 @@ export function getSchema() {
 		isAdmin: function (this: any) {
 			return this.level > 1;
 		},
-		getImage: function (this: any, type = 'normal', height?: number | string) {
+		getImage: function (this: any, type: any = 'normal', height?: number | string) {
 			let q = '?';
 
 			if (height)
@@ -108,11 +109,11 @@ export function getSchema() {
 			if (this.facebook && this.facebook.username)
 				return '//graph.facebook.com/' + this.facebook.id + '/picture' + q;
 
-			if (this.picture)
-				return this.picture;
+			if (this.get('picture'))
+				return this.get('picture');
 
-			if (this.image)
-				return this.image + q;
+			if (this.get('image'))
+				return this.get('image') + q;
 
 			return 'http://www.gravatar.com/avatar/' + md5(this.email) + '?s=90';
 		},
@@ -144,35 +145,21 @@ export function getSchema() {
 		htmlLink: function (this: any) {
 			return '<a href="' + this.getLink() + '">' + this.uname + '</a>';
 		},
-		fromOAuth2: function (this: any, p: any) {
-			const obj = {
-				name: p.displayName || this.uname,
-				given_name: p.name.givenName,
-				family_name: p.name.familyName,
-				picture: p.image.url,
-				oauth_user_id: p.id,
-				language: p.language,
+		fromOAuth2: function (this: any, p: GoogleOauth2Data) {
+			return this.set({
+				name: p.name || p.displayName || this.uname,
+				given_name: p.given_name,
+				family_name: p.family_name,
+				picture: p.picture || p.image && p.image.url,
+				oauth_user_id: p.sub || p.id,
+				language: p.locale || p.language,
 				gender: p.gender,
-				url: p.url,
+				url: p.profile,
 				last_login: new Date(),
 				mailok: true,
-				oauth_data: {}
-			};
-
-			const data = Object.assign({}, p);
-
-			delete data.displayName;
-			delete data.name;
-			delete data.email;
-			delete data.image;
-			delete data.id;
-			delete data.language;
-			delete data.gender;
-			delete data.url;
-
-			obj.oauth_data = data;
-
-			return this.set(obj).save();
+				oauth_data: p
+			})
+				.save();
 		}
 	};
 
@@ -182,7 +169,7 @@ export function getSchema() {
 
 		return this
 			.find(query, fields, options)
-			.then((result: Array<any>) => {
+			.then((result: Array<User>) => {
 				const values: Array<any> = [];
 
 				return Promise.all(result.map(item => item.getValues(req).then((v: any) => values.push(v))))
@@ -190,19 +177,29 @@ export function getSchema() {
 			});
 	};
 
-	s.statics.fromOAuth2 = function (this: any, params: any) {
-		return this.findOne({email: params.email})
+	s.statics.fromOAuth2 = function (this: any, params: GoogleOauth2Data) {
+		const email = params.email || params.emails && params.emails[0].value;
+
+		return this.findOne({email: email})
 			.then((u: User) => {
-				if (!u)
+				if (!u) {
+					if (!site.config.allow_register)
+						return;
+
 					u = new this({
-						email: params.email,
-						uname: params.email,
+						email: email,
+						uname: email,
 						level: 1
 					});
+				}
 
 				return u.fromOAuth2(params);
 			});
 	};
+
+	s.virtual('formatEmailTo').get(function (this: User) {
+		return this.getName(true) + '<' + this.get('email') + '>';
+	});
 
 	return s;
 }
@@ -215,28 +212,40 @@ export interface User extends Document {
 	level: number;
 	cart: any;
 	email: string;
+	language: string;
 	phone: Array<string>;
 	address: any;
 	devices: Array<any>;
 	subscriptions: any;
 	type?: string;
+	email_notifications?: boolean;
+	formatEmailTo?: string;
+	data?: any;
 
 	// noinspection JSUnusedLocalSymbols
 	fromOAuth2(params: any): Promise<any>;
 
 	// noinspection JSUnusedLocalSymbols
-	getImage(width: number, height?: number): string;
+	getImage(typeOrWidth: string | number, height?: number): string;
 
 	// noinspection JSUnusedLocalSymbols
 	subscribe2Item(ref: any): Promise<any>;
 
 	// noinspection JSUnusedLocalSymbols
-	getName(usereal?: boolean): string;
+	getName(useReal?: boolean): string;
 
 	// noinspection JSUnusedLocalSymbols
 	baseInfo(includeEmail?: boolean): any;
 
 	isAdmin(): boolean;
+
+	// noinspection JSUnusedLocalSymbols
+	htmlLink(): string;
+
+	getValues(req: LipthusRequest): Promise<any>;
+
+	// set(key: string, value: any, type: any, options?: any): void;
+	save(): Promise<any>;
 }
 
 export interface UserModel extends Model<User> {
@@ -249,5 +258,4 @@ export interface UserModel extends Model<User> {
 
 	// noinspection JSUnusedLocalSymbols
 	findAndGetValues4Show(params: any): Promise<any>;
-
 }

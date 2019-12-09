@@ -35,7 +35,7 @@ export class MlCheckbox {
 
 		return new Promise((ok, ko) => {
 			if (!req.ml.translateAvailable()) {
-				Object.values(o).forEach((v: KeyAny) => {
+				Object.values(o).forEach((v: any) => {
 					if (!v[req.ml.lang])
 						v[req.ml.lang] = v[req.ml.configLang];
 				});

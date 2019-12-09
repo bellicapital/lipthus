@@ -1,11 +1,11 @@
 import {KeyString} from "../interfaces/global.interface";
+import * as fs from "fs";
+import {promisify} from "util";
 
+const mkdir = promisify(fs.mkdir);
 
 const exec = require("child_process").exec;
 const debug = require('debug')('site:server');
-
-// 		if(process.platform === 'darwin')
-// 			console.warn("  \u001b[33m warn  -\u001b[0m No se ha implementado la subida de videos en OSX");
 
 const commands = [
 	{
@@ -23,14 +23,8 @@ const commands = [
 	// 	install: 'imagemagick'
 	// },
 	// {
-	// 	k: "avconv",
-	// 	uri: 'https://libav.org/',
-	// 	install: 'libav'
-	// }
-	// ,{
-	// 	k: "gd",
-	// 	uri: 'http://www.boutell.com/gd/',
-	// 	install: process.platform === 'darwin' ? 'libgd2-xpm-dev' : 'gd'
+	// 	k: "ffmpeg",
+	// 	install: 'ffmpeg'
 	// }
 ];
 
@@ -60,3 +54,34 @@ commands.forEach((cmd: any) => {
 			debug('status: ok');
 	});
 });
+
+
+// to deprecate
+
+function mkCacheDir(f: string) {
+	fs.access(f, fs.constants.W_OK | fs.constants.R_OK, (err) => {
+		if (!err)
+			return;
+
+		debug('/var/cache/video-versions does not exists');
+
+		Promise.resolve()
+			.then(() => {
+				if (!fs.existsSync('/var/cache'))
+					return mkdir('/var/cache');
+			})
+			.then(() => {
+				if (!fs.existsSync(f))
+					return mkdir(f, {recursive: true});
+
+			})
+			.then(() => fs.chmod(f, 0o666, err2 => {
+				if (err2)
+					throw err2;
+			}))
+			.catch(err3 => console.error('Can\'t create ' + f + ' directory', err3.message));
+	});
+}
+
+mkCacheDir('/var/cache/video-versions');
+

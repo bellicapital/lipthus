@@ -32,7 +32,8 @@ export class FileInfo implements FileInfoParams {
 		Object.assign(this, values);
 	}
 
-	getThumb(width: number, height: number, crop: boolean) {
+	// noinspection JSUnusedLocalSymbols
+	getThumb(width: number, height: number, crop: boolean, enlarge?: boolean) {
 		let uri = '/videos/' + this.db + '.' + this.id + '/poster' + width + 'x' + height;
 
 		if (crop)

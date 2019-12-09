@@ -10,6 +10,7 @@ export class GoogleTranslator {
 		this.gt = api(apiKey);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	availableLangs(cb: any) {
 		this.gt.getSupportedLanguages((err: Error, result: any) => {
 			if (err)
@@ -70,5 +71,4 @@ export class GoogleTranslator {
 interface GoogleApi {
 	translate(strings: Array<string>, sourceLang: string, targetLang: string, done: (err: Error | string, result: Array<any>) => any): any;
 	getSupportedLanguages(target: string | any, done?: (err: Error | string, result: any) => any): any;
-	detectLanguage:  any;
 }

@@ -3,9 +3,9 @@ import {NextFunction} from "express";
 import {HeadManager} from "./htmlheadmanager";
 import {KeyAny} from "../interfaces/global.interface";
 import {MultilangText} from "./schema-types/mltext";
+import * as pug from "pug";
+import {existsSync} from "fs";
 
-const pug = require('pug');
-const fs = require('mz/fs');
 const debug = require('debug')('site:htmlpage');
 const jsLangKeys = [
 	'_YES', '_NO', '_CREATE', '_EDIT', '_DELETE', '_DATE', '_TITLE', '_NAME', '_DESCRIPTION', '_PREFERENCES',
@@ -66,6 +66,10 @@ export class HtmlPage {
 
 		this.initiated = true;
 
+		if (!this.req.ml) {
+			console.log(this.req.originalUrl);
+			// return;
+		}
 		this.lang = this.req.ml.lang;
 
 		return this.checkUserLevel()
@@ -145,14 +149,15 @@ export class HtmlPage {
 			this.layout = 'layout';
 
 		// view
-		if (!this.view && fs.existsSync(req.site.dir + '/views/' + this.key + '.pug'))
+		if (!this.view && existsSync(req.site.srcDir + '/views/' + this.key + '.pug'))
 			this.view = this.key;
 
 		if (this.locals.justContent)
 			return Promise.resolve(this);
 
-		if (this.robots)
+		if (this.robots) {
 			this.head.addMetaName('robots', this.robots);
+		}
 
 		const config = req.site.config;
 
@@ -209,9 +214,9 @@ export class HtmlPage {
 				this.head.addJSLang(vars);
 
 				// page
-				if (fs.existsSync(req.site.dir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
+				if (existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.key + '.js'))
 					this.head.addJS(this.deviceType + '/' + this.key + '.js', {priority: 10});
-				else if (fs.existsSync(req.site.dir + '/public/js/' + this.key + '.js'))
+				else if (existsSync(req.site.srcDir + '/public/js/' + this.key + '.js'))
 					this.head.addJS(this.key + '.js', {priority: 10});
 
 				if (this.key)
@@ -226,17 +231,19 @@ export class HtmlPage {
 			})
 			.then(() => {
 				// load layout module
-				if (this.layout && fs.existsSync(req.site.dir + '/modules/' + this.layout + '.js'))
+				try {
 					return require(req.site.dir + '/modules/' + this.layout).call(this, req, res);
+				} catch (e) {
+				}
 			})
 			.then(() => {
 				// layout
 				// css
 				this.head.addCSS(this.layout, {priority: 20});
 
-				if (this.layout && fs.existsSync(req.site.dir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
+				if (this.layout && existsSync(req.site.srcDir + '/public/js/' + this.deviceType + '/' + this.layout + '.js'))
 					this.addJS(this.deviceType + '/' + this.layout + '.js', {priority: 20});
-				else if (this.layout && fs.existsSync(req.site.dir + '/public/js/' + this.layout + '.js'))
+				else if (this.layout && existsSync(req.site.srcDir + '/public/js/' + this.layout + '.js'))
 					this.addJS(this.layout + '.js', {priority: 20});
 
 				if (req.app.get('env') === 'development') {
@@ -250,7 +257,7 @@ export class HtmlPage {
 			});
 	}
 
-	send(view?: string, locals: any = {}) {
+	async send(view?: string, locals: any = {}): Promise<any> {
 		if (this.sent)
 			return Promise.reject(new Error('HtmlPage already sent'));
 
@@ -264,36 +271,40 @@ export class HtmlPage {
 		else if (view)
 			this.view = view;
 
-		return this.checkUserLevel()
-			.then(this.init.bind(this))
-			.then(this.load.bind(this))
-			.then(() => {
-				locals = Object.assign({
-					page: this.key,
-					metas: this.head.metas,
-					user: this.req.user
-				}, locals);
+		await this.checkUserLevel();
+		await this.init();
+		await this.load();
 
-				Object.assign(this.locals, locals);
+		locals = Object.assign({
+			page: this.key,
+			metas: this.head.metas,
+			user: this.req.user
+		}, locals);
 
-				if (this.req.site.config.auto_hreflang && !this.locals.hreflangs)
-					this.locals.hreflangs = this.head.hreflangs;
+		Object.assign(this.locals, locals);
 
-				if (!this.locals.canonical)
-					this.locals.canonical = this.req.protocol + '://' + this.req.headers.host + this.req.path;
+		if (this.req.site.config.auto_hreflang && !this.locals.hreflangs)
+			this.locals.hreflangs = this.head.hreflangs;
 
-				this.head.addLink({rel: 'canonical', href: this.locals.canonical});
+		if (!this.locals.canonical)
+			this.locals.canonical = this.req.protocol + '://' + this.req.headers.host + this.req.path;
 
-				this.addOpenGraphMetas();
+		this.head.addLink({rel: 'canonical', href: this.locals.canonical});
 
-				if (this.sitelogo)
-					this.locals.logo = this.req.site.logo();
+		this.addOpenGraphMetas();
 
-				if (!this.locals.justContent)
-					return this.finalCSS()
-						.then(this.finalJS.bind(this));
-			})
-			.then(this.render.bind(this));
+		if (this.sitelogo)
+			this.locals.logo = this.req.site.logo();
+
+		if (!this.locals.justContent) {
+			await this.finalCSS();
+			await this.finalJS();
+
+			if (this.robots && !this.res.headersSent)
+				this.res.set({'X-Robots-Tag': this.robots});
+		}
+
+		return this.render();
 	}
 
 	finalCSS() {
@@ -324,12 +335,12 @@ export class HtmlPage {
 
 		const req = this.req;
 
-		this.view = req.site.dir + '/views/' + this.deviceType + '/notfound';
+		this.view = req.site.srcDir + '/views/' + this.deviceType + '/notfound';
 
-		if (!fs.existsSync(this.view + '.pug'))
-			this.view = req.site.dir + '/views/notfound';
+		if (!existsSync(this.view + '.pug'))
+			this.view = req.site.srcDir + '/views/notfound';
 
-		if (!fs.existsSync(this.view + '.pug'))
+		if (!existsSync(this.view + '.pug'))
 			this.view = 'status/404';
 
 		this.head.addCSS('notfound');
@@ -343,14 +354,19 @@ export class HtmlPage {
 				delete this.metaKeywords;
 				delete this.metaDescription;
 
-				if (fs.existsSync(req.site.dir + '/routes/notfound.js'))
-					return require(req.site.dir + '/routes/notfound')(req, this.res);
+				try {
+					const customNotFound = require(req.site.dir + '/routes/notfound');
+					console.log(customNotFound);
+					if (customNotFound)
+						return customNotFound(req, this.res);
+				} catch (err) {
+				}
 			})
 			.then(() => this.send())
 			.catch(this.req.next);
 	}
 
-	render() {
+	render(): any {
 		const res = this.res;
 
 		if (this.html) {
@@ -562,7 +578,7 @@ export class HtmlPage {
 		let view = null;
 
 		vDirs.some(dir => {
-			if (fs.existsSync(dir + '/' + base + '.pug') || fs.existsSync(dir + '/' + base + '/index.pug')) {
+			if (existsSync(dir + '/' + base + '.pug') || existsSync(dir + '/' + base + '/index.pug')) {
 				view = base;
 				return true;
 			}
@@ -603,7 +619,7 @@ export class HtmlPage {
 			return dirOpt.some(opt => {
 				view = dir + '/' + opt;
 
-				return fs.existsSync(view);
+				return existsSync(view);
 			});
 		});
 
@@ -611,18 +627,18 @@ export class HtmlPage {
 	}
 
 	msg(msg: string) {
-		this.view = this.req.site.dir + '/views/' + this.deviceType + '/message';
+		this.view = this.req.site.srcDir + '/views/' + this.deviceType + '/message';
 
-		if (!fs.existsSync(this.view + '.pug')) {
-			this.view = this.req.site.dir + '/views/message';
+		if (!existsSync(this.view + '.pug')) {
+			this.view = this.req.site.srcDir + '/views/message';
 
-			if (!fs.existsSync(this.view + '.pug'))
+			if (!existsSync(this.view + '.pug'))
 				this.view = 'message';
 		}
 
 		this.res.locals.message = msg;
 
-		if (!fs.existsSync(this.req.site.dir + '/routes/message.js'))
+		if (!existsSync(this.req.site.dir + '/routes/message.js'))
 			return this.send();
 
 		require(this.req.site.dir + '/routes/message').call(this, this.req, this.res, () => this.send());
@@ -719,10 +735,10 @@ export class HtmlPage {
 				return this.req.site.db.comment.find4show(item._id)
 					.then((comments: Array<any>) => {
 
-					this.res.locals.item.comments = comments;
+						this.res.locals.item.comments = comments;
 
-					return comments;
-				});
+						return comments;
+					});
 			});
 	}
 

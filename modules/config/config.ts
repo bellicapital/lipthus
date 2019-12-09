@@ -1,8 +1,8 @@
-import {ConfigVarInstance} from "./configvar";
+import {ConfigVar, ConfigVarInstance} from "./configvar";
 import {Site} from "../site";
 import {BinDataImage} from "../bdi";
 import {MultilangText} from "../schema-types/mltext";
-import {ConfigModel, Config as ConfigD} from "../../schemas/config";
+import {ConfigModel, ConfigDoc} from "../../schemas/config";
 import * as Debug from "debug";
 
 const util = require('util');
@@ -12,7 +12,10 @@ const debug = Debug('site:config');
 export class Config {
 	[key: string]: any;
 
+	groups: { [key: string]: { title: string; configs: { [configKey: string]: ConfigVar }; } } = {};
+	configs: { [configKey: string]: ConfigVar } = {};
 	adminmail?: string;
+	allow_register?: boolean;
 	external_protocol = 'https';
 	fb_app_id?: string;
 	googleApiKey?: string;
@@ -24,109 +27,103 @@ export class Config {
 	site_credentials?: boolean;
 	sitelogo?: BinDataImage;
 	sitename?: string;
-	siteversion?: string;
+	siteversion!: string;
 	slogan?: MultilangText;
-	startpage = 'home';
 	static_host?: string;
-	version?: string;
+	version!: string;
 	webmastermail?: string;
 	model: ConfigModel | any = {};
 	lang_subdomains?: boolean;
 	auto_hreflang?: boolean;
+	sessionExpireDays?: number;
+	sitemap: boolean;
 
 	constructor(public site: Site) {
-		this.groups = {};
-		this.configs = {};
 	}
 
-	load() {
+	async load() {
 		this.model = this.site.db.model('config');
 
-		return this.checkDefaults()
-			.then(() => this.model.find())
-			.then((obj: Array<ConfigD> | any) => {
-				const indb: any = {};
-				const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
+		const obj: Array<ConfigDoc> = await this.checkDefaults()
+			.then(() => this.model.find());
 
-				obj.forEach((c: ConfigD) => indb[c.get('name')] = c);
+		const inDb: { [s: string]: ConfigDoc } = {};
+		const keys: Array<string> = ['datatype', 'title', 'value', 'desc', 'formtype', 'options'];
 
-				const configs: any = require(this.site.lipthusDir + '/configs/configs');
+		obj.forEach(c => inDb[c.get('name')] = c);
 
-				configs.general.configs.version[2] = this.site.cmsPackage.version;
+		const configs: any = require(this.site.lipthusDir + '/configs/configs');
 
-				Object.each(configs, (group_name, group) => {
-					this.groups[group_name] = {title: group.title, configs: {}};
+		configs.general.configs.version[2] = this.site.cmsPackage.version;
 
-					Object.each(group.configs, (key: string, c: Array<any>) => {
-						const g: any = {group: group_name, name: key};
+		Object.each(configs, (group_name, group) => {
+			this.groups[group_name] = {title: group.title, configs: {}};
 
-						c.forEach((v: any, idx) =>
-								g[keys[idx]] = v);
+			Object.each(group.configs, (key: string, c: Array<any>) => {
+				const g: any = {group: group_name, name: key};
 
-						if (indb[key]) {
-							g.value = indb[key].get('value');
-							g._id = indb[key]._id;
-						}
+				c.forEach((v: any, idx) =>
+					g[keys[idx]] = v);
 
-						this.configs[key] = ConfigVarInstance(g, this.site);
+				if (inDb[key]) {
+					g.value = inDb[key].getValue();
+					g._id = inDb[key]._id;
+				}
 
-						if (!indb[key]) {
-							indb[key] = new this.model({name: key, value: this.configs[key].value});
-							indb[key].save();
-							this.configs[key]._id = indb[key]._id;
-						}
+				this.configs[key] = ConfigVarInstance(g, this.site);
 
-						this.groups[group_name].configs[key] = this.configs[key];
+				if (!inDb[key]) {
+					inDb[key] = new this.model({name: key, value: this.configs[key].value});
 
-						Object.defineProperty(this, key, {
-							get: () => this.configs[key].getValue(),
-							set: v => this.configs[key].setValue(v)
-						});
-					});
+					inDb[key].save()
+						.catch(console.error.bind(console));
+
+					this.configs[key]._id = inDb[key]._id;
+				}
+
+				this.groups[group_name].configs[key] = this.configs[key];
+
+				Object.defineProperty(this, key, {
+					get: () => this.configs[key].getValue(),
+					set: v => this.configs[key].setValue(v)
 				});
+			});
+		});
 
-				this.model.on('itemChange', (item: any) => {
-					this.configs[item.name].setValue(item.value);
-				});
-			})
-			.then(() => this.check());
+		this.model.on('itemChange', (item: any) => {
+			this.configs[item.name].setValue(item.value);
+		});
+
+		await this.check();
 	}
 
 	// noinspection JSUnusedLocalSymbols
-	get(k: string, update: any, cb = (v: any) => {
-	}) {
-
+	async get(k: string, update = false) {
 		if (update) {
-			this.model.findOne({name: k}, (err: Error, obj: any) => {
-				if (err) return cb(err);
+			const obj = await this.model.findOne({name: k});
 
-				if (!obj) return cb({error: 'Config ' + k + ' not found'});
+			if (!obj) return {error: 'Config ' + k + ' not found'};
 
-				if (!this.configs[k])
-					console.error(new Error('Config ' + k + ' does not exists'));
-				else
-					this.configs[k].setValue(obj.value);
-
-				cb.call(this.configs[k], this.configs[k].value);
-			});
-		} else {
-			cb.call(this.configs[k], this.configs[k].value);
-
-			return this.configs[k].value;
+			if (!this.configs[k])
+				console.error(new Error('Config ' + k + ' does not exists'));
+			else
+				this.configs[k].setValue(obj.value);
 		}
+
+		return this.configs[k].value;
 	}
 
-	set(k: string, v: any, ns?: string | boolean | null, save?: boolean): any {
-		if (ns === true) {
-			ns = null;
+	set(k: string, v: any, ns?: string | true, save?: boolean): any {
+		if (ns === true)
 			save = true;
-		}
 
-		if (!ns) {
+		const _ns: string | undefined = ns === true ? undefined : ns;
+
+		if (!_ns) {
 			this[k] = v;
 			v = this[k];
 		} else
-			this[k][ns] = v;
+			(this[k] as any)[_ns] = v;
 
 		if (!save)
 			return Promise.resolve();
@@ -134,8 +131,8 @@ export class Config {
 		const update: any = {};
 		let key = 'value';
 
-		if (ns)
-			key += '.' + ns;
+		if (_ns)
+			key += '.' + _ns;
 
 		update[key] = v;
 
@@ -158,43 +155,31 @@ export class Config {
 		return ret;
 	}
 
-	metaRobots(cb?: (a: any) => {}) {
-		if (!cb)
-			return this.configs.meta_robots.options[this.configs.meta_robots.value];
-
-		this.get('meta_robots', true, () => cb(this.metaRobots()));
+	metaRobots() {
+		return this.configs.meta_robots.options[this.configs.meta_robots.value];
 	}
 
-	check() {
-		return new Promise(ok => {
-			this.configs.languages.value.forEach((code: string, idx: number) => {
-				if (!code)
-					this.configs.languages.value.splice(idx, 1);
-			});
-
-			return ok();
+	async check() {
+		this.configs.languages.value.forEach((code: string, idx: number) => {
+			if (!code)
+				this.configs.languages.value.splice(idx, 1);
 		});
 	}
 
-	checkDefaults() {
-		return this.model.countDocuments({})
-			.then((c: number) => {
-				if (c)
-					return;
+	async checkDefaults() {
+		const c: number = await this.model.countDocuments({});
 
-				debug('Inserting config collection default values');
+		if (c)
+			return;
 
-				return exec('mongorestore -d ' + this.site.db.name + ' -c config ' + this.site.lipthusDir + '/configs/config.bson')
-					.then((r: { stdout: string, stderr: string }) =>
-						this.model.countDocuments({})
-							.then((c2: number) => {
-								if (c2)
-									return;
+		debug('Inserting config collection default values');
 
-								if (r.stderr)
-									throw new Error(r.stderr);
-							})
-					);
-			});
+		const r: { stdout: string, stderr: string } = await exec('mongorestore --uri="' + this.site.db.connectParams().uri + '" -d ' + this.site.db.name
+			+ ' -c config ' + this.site.lipthusDir + '/configs/config.bson');
+
+		const c2: number = await this.model.countDocuments({});
+
+		if (!c2 && r.stderr)
+			throw new Error(r.stderr);
 	}
 }

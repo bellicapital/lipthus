@@ -1,4 +1,4 @@
-import {Server as WebSocketServer, ServerOptions} from "ws";
+import {Server, ServerOptions} from "ws";
 import {LipthusRequest} from "../index";
 import * as debug0 from "debug";
 import * as WebSocket from "ws";
@@ -6,7 +6,7 @@ import * as WebSocket from "ws";
 const debug = debug0('site:listen');
 
 
-export class LipthusWebSocketServer extends WebSocketServer {
+export class LipthusWebSocketServer extends Server {
 
 	constructor (options?: ServerOptions, callback?: () => void) {
 		super(options, callback);
@@ -30,6 +30,7 @@ export class LipthusWebSocketServer extends WebSocketServer {
 		});
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	broadcast (data: any, path: string) {
 		this.getClients(path).forEach((client: any) =>
 			client.send(JSON.stringify(data), (err: Error) => err && console.error(err))

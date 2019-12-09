@@ -3,7 +3,6 @@ import {LipthusRequest} from "../../index";
 import {Types} from "mongoose";
 import ObjectId = Types.ObjectId;
 
-const merge = require('merge-descriptors');
 const {MultilangText} = require('../schema-types/mltext');
 
 
@@ -20,7 +19,7 @@ export class ConfigVar {
 
 	constructor(options: any, public site: Site) {
 		this._id = options._id;
-		merge(this, options);
+		Object.assign(this, options);
 
 		this.setValue(this.value);
 	}
@@ -130,7 +129,7 @@ class SelectorConfigVar extends ConfigVar {
 export class MultilangConfigVar extends ConfigVar {
 
 	setValue(v?: any) {
-		this.value = v && new MultilangText(v, this.site.db.config.collection, 'value', this._id, this.site);
+		this.value = v && new MultilangText(v, this.site.db.config.collection, 'value', this._id, this.site.db);
 	}
 
 	get4Edit(req: LipthusRequest) {

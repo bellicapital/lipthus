@@ -3,7 +3,6 @@ import {NextFunction} from "express";
 import {Passport} from "passport";
 
 const md5 = require('md5');
-const debug = require('debug')('site:auth');
 const mongoose = require('mongoose');
 
 const registerSiteStrategies = (site: Site, passport: any) => {
@@ -58,7 +57,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 
 		facebook() {
 			if (!config.fb_app_id)
-				return debug('Facebook auth failed. No app id provided.');
+				return;
 
 			const FacebookTokenStrategy = require('passport-facebook-token');
 
@@ -70,7 +69,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 				(accessToken: string, refreshToken: string, profile: any, done: any) => {
 					const data = profile._json;
 
-					data.token = {value: accessToken};
+					data.accessToken = accessToken;
 
 					done(null, data);
 				}
@@ -78,11 +77,8 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 		},
 
 		google() {
-			if (!config.googleApiKey)
-				return debug('Google auth failed. No app id provided.');
-
-			if (!config.googleSecret)
-				return debug('Google auth failed. No secret key provided.');
+			if (!config.googleApiKey || !config.googleSecret)
+				return;
 
 			const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
@@ -95,10 +91,10 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					callbackURL: site.mainUrl() + '/oauth2cb'
 				},
 				(accessToken: string, refreshToken: string, profile: any, done: any) => {
-					const data = profile._json;
+					// console.log(profile);
+					const data: GoogleOauth2Data = profile._json;
 
-					data.token = {value: accessToken};
-					data.email = profile.email;
+					data.accessToken = accessToken;
 
 					site.userCollection.fromOAuth2(data)
 						.then(user => done(null, user))
@@ -116,10 +112,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 					next();
 				},
 				passport.authenticate('google', {
-					scope: [
-						'https://www.googleapis.com/auth/plus.login',
-						'https://www.googleapis.com/auth/plus.profile.emails.read'
-					]
+					scope: ['openid', 'email', 'profile']
 				}));
 
 			// GET /auth/google/callback
@@ -127,36 +120,18 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   request.  If authentication fails, the user will be redirected back to the
 			//   login page.  Otherwise, the primary route function  will be called,
 			//   which, in this example, will redirect the user to the home page.
-			app.get('/oauth2cb', clearCookiesMiddleware as any, (req, res, next) => {
-				passport.authenticate('google', {
-					failureRedirect: '/login',
-					successRedirect: (req as any).session.redirect_to || '/'
-				})(req, res, next);
-			});
+			app.get('/oauth2cb', (req, res, next) =>
+				(req as LipthusRequest).ml.load('ecms-user')
+					.then((LC) => passport.authenticate('google', {
+							failureRedirect: '/login/?msg=' + LC._US_REGISTERNG,
+							successRedirect: (req as any).session.redirect_to || '/'
+						})(req, res, next)
+					)
+			);
 		}
 	};
 
 	Object.keys(methods).forEach(method => methods[method]());
-};
-
-const getUser = (req: LipthusRequest) => {
-	if (!req.user || req.user.constructor.name === 'model')
-		return Promise.resolve(req.user);
-
-	if (mongoose.Types.ObjectId.isValid(req.user))
-		return req.site.userCollection
-			.findById(req.user)
-			.then((user: any) => req.user = user);
-
-	console.warn('Unknown user id format:', req.user);
-
-	return Promise.resolve();
-};
-
-const clearCookiesMiddleware = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-	Object.keys(req.cookies).filter(k => k !== 'clubmanager.sid').forEach((k => res.clearCookie(k)));
-
-	next();
 };
 
 export default (site: Site): any => {
@@ -167,7 +142,7 @@ export default (site: Site): any => {
 	app.use(passport.initialize());
 	app.use(passport.session());
 
-	passport.serializeUser((user: any, done: any) => done(null, user.id));
+	passport.serializeUser((user: any, done: any) => done(null, user._id.toString()));
 
 	passport.deserializeUser((id: any, done: any) => done(null, id));
 
@@ -179,8 +154,34 @@ export default (site: Site): any => {
 	 * @todo: add getUser in req.constructor.prototype
 	 */
 	return (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
-		req.getUser = getUser.bind(null, req);
+		req.getUser = async () => {
+			if (req.user && req.user.constructor.name !== 'model' && mongoose.Types.ObjectId.isValid(req.user))
+				req.user = await req.site.userCollection.findById(req.user);
+
+			return req.user;
+		};
 
 		next();
 	};
 };
+
+export interface GoogleOauth2Data {
+	kind?: string;
+	etag?: string;
+	sub?: string;
+	id?: string;
+	name?: string;
+	displayName?: string;
+	given_name?: string;
+	family_name?: string;
+	profile?: string; // url
+	picture?: string;	// url
+	image?: { url: string, isDefault: boolean };
+	email?: string;
+	emails?: Array<{ value: string; type: string }>;
+	email_verified?: boolean;
+	gender?: string;
+	locale?: string;
+	language?: string;
+	accessToken?: string;
+}

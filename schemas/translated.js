@@ -58,34 +58,12 @@ module.exports = function translated(Schema){
 				cb(null, ret);
 			});
 		},
-		getFullTree: function(lang, cb){
-			this.find({to: lang}, function(err, r){
-				if(err)
-					return cb(err);
-
-				const ret = {};
-
-				r.forEach(function(t){
-					const k = t.dbname + '.' + t.colname;
-
-					if(!ret[k])
-						ret[k] = {};
-
-					if(!ret[k][t.itemid])
-						ret[k][t.itemid] = {};
-
-					ret[k][t.itemid][t.field] = true;
-				});
-
-				cb(null, ret);
-			});
-		},
 		switch: function(query, uid, translated){
 			if(!translated)
 				return this.remove(query).then(r => !!r);
 
 		// Marcar como traducido. Hemos de contar las palabras
-			const site = this.db.eucaDb.site;
+			const site = this.db.lipthusDb.site;
 
 			return new Promise((ok, ko) => {
 
@@ -149,7 +127,7 @@ module.exports = function translated(Schema){
 		},
 		//solucion temporar para actualizar con contadores de palabras
 		setWC: function(){
-			const site = this.db.eucaDb.site;
+			const site = this.db.lipthusDb.site;
 
 			this.find(function(err, r){
 				if(err)

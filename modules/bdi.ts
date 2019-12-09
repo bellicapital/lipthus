@@ -1,24 +1,75 @@
 import {KeyString} from "../interfaces/global.interface";
-
-const Image = require('./image');
-const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 import {BinDataFile, DbfInfo, DbfInfoParams} from './bdf';
 import {promisify} from 'util';
 import {LipthusRequest} from "../index";
 import {IncomingMessage} from "http";
+import Image from "./image";
 
 const path = require('path');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
 const debug = require('debug')('site:bdi');
+const gm = require('gm').subClass({imageMagick: true}); // jj 23-9-15 con imageMagick es más estable
 
 
 export class BinDataImage extends BinDataFile {
 
 	public width: number;
 	public height: number;
-	public alt: KeyString;
-	public title: KeyString;
+	public alt?: KeyString;
+	public title?: KeyString;
+	public hidden?: boolean;
+	public text?: string;
+	public extra?: any;
+	public originalImage?: OriginalImage;
+
+	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
+		return BinDataFile.fromFile(p, opt)
+			.then(bdi => (bdi as BinDataImage).postFromFile());
+	}
+
+	// noinspection JSUnusedGlobalSymbols
+	/**
+	 *
+	 * @param params {{
+	 *      data: string (raw image data),
+	 *      name: string,
+	 *      [lastModified]: Date,
+	 *      [size]: number,
+	 *      [contentType]: string
+	 *      weight?: number
+	 * }}
+	 * @param colRef
+	 * @returns {Promise.<BinDataImage>}
+	 */
+	static fromFrontEnd(params: any, colRef: any): Promise<BinDataImage | undefined> {
+		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
+
+		if (!r)
+			return Promise.reject(new Error('No valid data'));
+
+		const ext = r[1].split('/')[1];
+		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
+		const date = params.lastModified || new Date();
+		const obj = {
+			contentType: r[1],
+			size: buffer.length,
+			md5: md5(buffer),
+			uploadDate: new Date(),
+			mtime: date,
+			name: params.name || 'str-' + date.getTime() + '.' + ext,
+			MongoBinData: new Binary(buffer),
+			weight: params.weight
+		};
+
+		if (params.size && params.size !== obj.size)
+			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
+
+		if (params.contentType && params.contentType !== obj.contentType)
+			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
+
+		return new BinDataImage(obj, colRef).postFromFile();
+	}
 
 	constructor(data: any, colRef?: any) {
 		super(data, colRef);
@@ -27,6 +78,10 @@ export class BinDataImage extends BinDataFile {
 		this.height = data.height;
 		this.alt = data.alt || {};
 		this.title = data.title || {};
+		this.hidden = !!data.hidden;
+		this.text = data.text;
+		this.extra = data.extra;
+		this.originalImage = data.originalImage;
 	}
 
 	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
@@ -58,12 +113,15 @@ export class BinDataImage extends BinDataFile {
 			alt: this.alt ? this.alt[lang] : undefined,
 			title: this.title ? this.title[lang] : undefined,
 			md5: this.md5,
-			key: this.getKey()
+			key: this.getKey(),
+			hidden: this.hidden,
+			text: this.text,
+			extra: this.extra
 		});
 
 		ret.uri = ret.path;
 
-		// los svg no se redimensionan
+		// svg -> don't resize
 		if (this.contentType.indexOf('svg') === -1) {
 			if (width) {
 				if (!height) { //noinspection JSSuspiciousNameCombination
@@ -74,7 +132,7 @@ export class BinDataImage extends BinDataFile {
 					ret.width = width;
 					ret.height = height;
 				} else
-					Object.assign(ret, Image.fitCalc(this.width, this.height, width, height, crop));
+					Object.assign(ret, Image.fitCalc(this.width, this.height, width, height, !!crop));
 			}
 
 			ret.uri += ret.width + 'x' + ret.height;
@@ -105,10 +163,21 @@ export class BinDataImage extends BinDataFile {
 		if (this.title)
 			ret.title = this.title;
 
+		if (this.hidden)
+			ret.hidden = this.hidden;
+
+		if (this.text)
+			ret.text = this.text;
+
+		if (this.originalImage) {
+			ret.originalImage = Object.assign({}, this.originalImage);
+			delete ret.originalImage.MongoBinData;
+		}
+
 		return ret;
 	}
 
-	getDimentions() {
+	getDimensions() {
 		if (!this.width) {
 			if (this.contentType === 'image/png') {
 				this.width = this.MongoBinData.buffer.readUInt32BE(16);
@@ -204,7 +273,7 @@ export class BinDataImage extends BinDataFile {
 
 					return promisify(logo.size.bind(logo))()
 						.then((logoSize: any) => {
-							const wmWidth = (opt.wm.ratio || .5) * opt.width;
+							const wmWidth = (opt.wm.ratio || .5) * (opt.width || this.width);
 
 							// calculate logoHeight with keeping aspect ratio
 							const wmHeight = (logoSize.height * wmWidth) / logoSize.width;
@@ -231,13 +300,19 @@ export class BinDataImage extends BinDataFile {
 	send(req: any, res: any, opt?: any) {
 		if (!opt)
 			return super.send(req, res);
-		else
-			return this.getCached(req.site.db, opt)
+		else {
+			let db = req.site.db;
+
+			if (this.colRef.db && req.site.dbs[this.colRef.db] && req.site.dbs[this.colRef.db].cache)
+				db = req.site.dbs[this.colRef.db];
+
+			return this.getCached(db, opt)
 				.then((cached: BinDataFile) => cached.send(req, res))
 				.catch(req.next);
+		}
 	}
 
-	postFromFile(opt: any = {}): Promise<BinDataImage> {
+	postFromFile(opt: PostParams = {}): Promise<BinDataImage> {
 		const gmi = gm(this.MongoBinData.buffer)
 			.strip();
 
@@ -251,8 +326,8 @@ export class BinDataImage extends BinDataFile {
 
 				gmi.autoOrient();
 
-				if (this.width > opt.maxwidth || this.height > opt.maxheight) {
-					const s = Math.min(opt.maxwidth / this.width, opt.maxheight / this.height);
+				if (this.width > opt.maxwidth! || this.height > opt.maxheight!) {
+					const s = Math.min(opt.maxwidth! / this.width, opt.maxheight! / this.height);
 
 					this.width = Math.round(s * this.width);
 					this.height = Math.round(s * this.height);
@@ -276,54 +351,6 @@ export class BinDataImage extends BinDataFile {
 				throw err;
 			});
 	}
-
-	static fromFile(p: any, opt = {}): Promise<BinDataImage> {
-		return BinDataFile.fromFile(p, opt)
-			.then(bdi => (bdi as BinDataImage).postFromFile());
-	}
-
-	// noinspection JSUnusedGlobalSymbols
-	/**
-	 *
-	 * @param params {{
-	 *      data: string (raw image data),
-	 *      name: string,
-	 *      [lastModified]: Date,
-	 *      [size]: number,
-	 *      [contentType]: string
-	 *      weight?: number
-	 * }}
-	 * @param colRef
-	 * @returns {Promise.<BinDataImage>}
-	 */
-	static fromFrontEnd(params: any, colRef: any): Promise<BinDataImage | undefined> {
-		const r = /data:(\w+\/\w+);([^,]+)(.+)$/.exec(params.data);
-
-		if (!r)
-			return Promise.reject(new Error('No valid data'));
-
-		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], r[2]);
-		const date = params.lastModified || new Date();
-		const obj = {
-			contentType: r[1],
-			size: buffer.length,
-			md5: md5(buffer),
-			uploadDate: new Date(),
-			mtime: date,
-			name: params.name || 'str-' + date.getTime() + '.' + ext,
-			MongoBinData: new Binary(buffer),
-			weight: params.weight
-		};
-
-		if (params.size && params.size !== obj.size)
-			debug('params.size "' + params.size + '" do not match width data "' + obj.size + '"');
-
-		if (params.contentType && params.contentType !== obj.contentType)
-			debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
-
-		return new BinDataImage(obj, colRef).postFromFile();
-	}
 }
 
 export interface DbfImageInfoParams extends DbfInfoParams {
@@ -334,6 +361,9 @@ export interface DbfImageInfoParams extends DbfInfoParams {
 	naturalHeight: number;
 	alt?: string;
 	title?: string;
+	hidden?: boolean;
+	text?: string;
+	extra?: any;
 }
 
 export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
@@ -344,19 +374,15 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	naturalHeight: number;
 	alt?: string;
 	title?: string;
+	hidden?: boolean;
+	text?: string;
+	extra?: any;
 
 	constructor(p: DbfImageInfoParams) {
 		super(p);
-
-		this.width = p.width;
-		this.height = p.height;
-		this.naturalWidth = p.naturalWidth;
-		this.naturalHeight = p.naturalHeight;
-		this.alt = p.alt;
-		this.title = p.title;
 	}
 
-	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg') {
+	getThumb(width: number, height?: number, crop = false, nwm = false, enlarge = false, ext = '.jpg'): DbfThumb {
 		const ret = new DbfThumb({
 			uri: this.path,
 			name: this.uriName(ext),
@@ -365,7 +391,8 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 			alt: this.alt,
 			title: this.title,
 			originalWidth: this.width,
-			originalHeight: this.height
+			originalHeight: this.height,
+			text: this.text
 		});
 
 		if (width) {
@@ -400,10 +427,10 @@ export class DbfImageInfo extends DbfInfo implements DbfImageInfoParams {
 	}
 
 	uriName(ext: string) {
-		const curext = path.extname(this.name);
-		const bn = path.basename(this.name, curext);
+		const curExt = path.extname(this.name);
+		const bn = path.basename(this.name, curExt);
 
-		return encodeURIComponent(bn.replace(/\s/g, '')) + (ext || curext);
+		return encodeURIComponent(bn.replace(/\s/g, '')) + (ext || curExt);
 	}
 }
 
@@ -413,25 +440,30 @@ export class DbfThumb {
 	width: number;
 	height: number;
 	originalUri?: string;
+	// noinspection JSUnusedGlobalSymbols
 	originalWidth: number;
+	// noinspection JSUnusedGlobalSymbols
 	originalHeight: number;
 	alt: KeyString;
 	title: KeyString;
+	text: string;
 
 	constructor(values: any) {
-		this.uri = values.uri;
-		this.name = values.name;
-		this.width = values.width;
-		this.height = values.height;
-		this.originalWidth = values.originalWidth;
-		this.originalHeight = values.originalHeight;
-		this.alt = values.alt;
-		this.title = values.title;
-	}
-
-	toHtml() {
-		return '<a href="' + this.originalUri + '"><img src="' + this.uri + '" alt="' + this.name + '"/></a>';
+		Object.assign(this, values);
 	}
 }
 
+export interface PostParams {
+	noResize?: boolean;
+	maxwidth?: number;
+	maxheight?: number;
+}
+
 export default BinDataImage;
+
+export interface OriginalImage {
+	MongoBinData: any;
+	width: number;
+	height: number;
+	contentType: string;
+}

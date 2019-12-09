@@ -8,14 +8,7 @@ namespace LipthusSettings {
 		name: {type: String, unique: true},
 		type: String,
 		value: {
-			type: LipthusSchema.Types.Mixed, noWatermark: true, get: function (this: any, val: any): any {
-				//noinspection JSUnresolvedVariable
-				if (val && val.MongoBinData) { //noinspection JSUnresolvedFunction,JSUnresolvedVariable,JSPotentiallyInvalidUsageOfThis
-					return BinDataFile.fromMongo(val, {collection: 'settings', id: this._id, field: 'value'});
-				}
-
-				return val;
-			}
+			type: LipthusSchema.Types.Mixed, noWatermark: true
 		}
 	}, {
 		collection: 'settings',
@@ -25,25 +18,26 @@ namespace LipthusSettings {
 	export class SettingMethods {
 
 		getValue(this: any, lang?: string) {
-			//noinspection JSUnresolvedVariable
-			switch (this.type) {
+			let value = this.get('value');
+
+			if (value && value.MongoBinData)
+				value = BinDataFile.fromMongo(value, {collection: 'settings', id: this._id, field: 'value'});
+
+			switch (this.get('type')) {
 				case 'ml':
-					//noinspection JSUnresolvedFunction
 					return new MultilangText(
-						this.value,
+						value,
 						this.collection,
 						'value', this._id,
-						this.db.eucaDb.site
+						this.db.lipthusDb
 					)
 						.getLangOrTranslate(lang);
 				case 'bdi':
-					const value = this.get('value');
-					//noinspection JSUnresolvedVariable
 					return Promise.resolve(value && value.info());
 				case 'string':
 				case 'boolean':
 				default:
-					return Promise.resolve(this.value);
+					return Promise.resolve(value);
 			}
 		}
 	}
@@ -54,7 +48,7 @@ namespace LipthusSettings {
 
 			return this.find(query)
 				.then((settings: Array<any>) => Promise.all(
-					settings.map(st => ret[st.name] = st.getValue(lang).then((v: any) => ret[st.name] = v))
+					settings.map(st => ret[st.get('name')] = st.getValue(lang).then((v: any) => ret[st.get('name')] = v))
 				))
 				.then(() => ret);
 		}

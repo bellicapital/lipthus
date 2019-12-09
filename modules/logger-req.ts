@@ -6,7 +6,7 @@ import {KeyAny} from "../interfaces/global.interface";
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	const timers: KeyAny = {
 		all: {start: res.now},
-		cmjs: {start: res.now}
+		lipthus: {start: res.now}
 	};
 
 	res.timer = {
@@ -28,6 +28,26 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		},
 		toString: () => JSON.stringify(res.timer.json())
 	};
+
+	const logReqClients = req.app.wss.getClients('/log-req');
+
+	if (logReqClients.length) {
+		const logReq: any = {
+			url: req.protocol + '://' + req.get('host') + req.originalUrl,
+			agent: req.get('user-agent')
+		};
+
+		if (req.method !== 'GET') {
+			logReq.url += ' ' + req.method;
+
+			if (req.method !== 'POST') {
+				logReq.keys = Object.keys(req.body);
+				logReq.referer = req.get('referer');
+			}
+		}
+
+		req.app.wss.broadcast(logReq, '/log-req');
+	}
 
 	if (process.env.NODE_ENV !== 'development') {
 		next();

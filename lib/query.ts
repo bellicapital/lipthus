@@ -10,17 +10,16 @@ import {Query} from "mongoose";
  *     .values()
  *
  * @param {object} req
- * @param {array} [ret]
  * @returns {Promise.<Array>} DocValues array in the given language
  */
-(Query as any).prototype.values = function (req: any, ret: any) {
+(Query as any).prototype.values = function (this: any, req: any): any {
 	if (!req)
 		throw new Error('req param required');
 	
 	if (/^find(ById|One)/.test(this.op))
 		return this.exec().then((doc: any) => doc && doc.getValues(req));
 	
-	ret = ret || [];
+	const ret: any[] = [];
 	
 	/**
 	 * mongoose.QueryCursor

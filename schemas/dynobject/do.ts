@@ -43,7 +43,6 @@ class DoSchema extends LipthusSchema {
 			});
 		};
 
-		this.post('save', postSave);
 		this.pre('remove', preRemove);
 		this.virtual('dbRef').get(function (this: any) {
 			return {
@@ -55,6 +54,8 @@ class DoSchema extends LipthusSchema {
 	}
 
 	static fromModel(obj: any) {
+		obj = obj.toObject();
+
 		const def: any = {
 			rating: {type: Number, index: 1},
 			ratingCount: Number,
@@ -132,7 +133,7 @@ class DoSchema extends LipthusSchema {
 					break;
 				case 'image':
 					p.type = LipthusSchemaTypes.BdfList;
-					p.multi = dv.multi;
+					p.multi = dv.multi || 0;
 					// noinspection PointlessBooleanExpressionJS
 					p.noWatermark = !!dv.noWatermark;
 					break;
@@ -166,9 +167,10 @@ class DoSchema extends LipthusSchema {
 				case 'video':
 				case 'file':
 					p.type = LipthusSchemaTypes.Fs;
-					p.multi = dv.multi;
+					p.multi = dv.multi || 0;
 					break;
-				case 'refid':
+				case 'refid':	// @deprecated -> use ref
+				case 'ref':
 					p.ref = dv.schema || dv.colname;
 					p.index = 1;
 
@@ -194,7 +196,7 @@ class DoSchema extends LipthusSchema {
 			def[k] = p;
 		});
 
-		const schema = new DoSchema(def, {
+		return new DoSchema(def, {
 			identifier: obj.identifier || 'title',
 			descIdentifier: obj.descIdentifier || 'description',
 			name: obj.name || obj.colname,
@@ -210,64 +212,12 @@ class DoSchema extends LipthusSchema {
 			subscriptions: !!obj.subscriptions,
 			showTranslate: !!obj.showTranslate,
 			logUpdates: obj.logUpdates,
-			list_order: obj.list_order
+			list_order: obj.list_order,
+			versionKey: '__v'
 		});
-
-		schema.index({'parents.$ref': 1});
-		schema.index({'parents.$id': 1});
-
-		return schema;
 	}
 }
 
-
-// Check hierarchy
-const postSave = function (this: any, doc: any) {
-	// puede ser un subdocumento
-	if (!this.db)
-		return;
-
-	if (!doc.parents)
-		return;
-
-	doc.parents.forEach((dbref: any) => {
-		if (!dbref.db)
-			dbref.db = this.db.name;
-
-		const parentModel = this.db.models[dbref.namespace.replace('dynobjects.', '')];
-
-		if (!parentModel)
-			return;
-
-		this.db.eucaDb.deReference(dbref)
-			.then((parent: any) => {
-				if (!parent)
-					return;
-
-				parent = parentModel(parent);
-
-				let found = false;
-
-				parent.children.forEach((child: any) => {
-					if (child.oid + '' === doc._id + '') {
-						found = true;
-
-						return false;
-					}
-				});
-
-				if (!found) {
-					parent.children.push(doc.getDBRef());
-
-					Promise.resolve(parent.update({children: parent.children})).catch(err => {
-						throw err;
-					});
-				}
-			});
-	});
-
-	// TODO: check children
-};
 
 module.exports = DoSchema;
 

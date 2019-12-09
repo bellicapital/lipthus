@@ -1,8 +1,10 @@
 
 
 const ensureCreated = (doc: any) => {
-	if (!doc.created && doc._id && doc._id.getTimestamp && doc.isSelected('created'))
-		doc.created = doc._id.getTimestamp();
+	if (doc.created || !doc._id || !doc.isSelected('created'))
+		return;
+
+	doc.set('created', doc.get('_id').getTimestamp());
 };
 
 export function createdPlugin(schema: any, options: any) {
@@ -32,6 +34,6 @@ export function createdPlugin(schema: any, options: any) {
 		_transform(doc, ret, options2);
 
 		if (!ret.created && doc._id && doc.isSelected('created'))
-			ret.created = doc._id.getTimestamp();
+			ret.created = doc.get('_id').getTimestamp();
 	};
 }

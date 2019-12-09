@@ -3,7 +3,9 @@ import {GridFSFile} from "../lib";
 import {Types} from "mongoose";
 import {LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
-import {GridFSVideo} from "../lib/gridfs/gridfs-video";
+import {GridFSVideo} from "../lib/gridfs";
+import {LipthusFile} from "../lib/file-stream";
+import videoPoster from "./video-poster";
 
 export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	let id = req.params.id;
@@ -22,16 +24,33 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		}
 	}
 
-	const m = id.match(/(^[^.]+)\.(.+)$/);
-	const dbname = m && m[1] || req.site.db.name;
+	const m = id.split('.');
+	const dbName = m[1] && m[0] || req.site.db.name;
 
-	if (m)
-		id = m[2];
+	if (m[1])
+		id = m[1];
 
-	if (!req.site.dbs[dbname] || !Types.ObjectId.isValid(id))
+	if (!req.site.dbs[dbName] || !Types.ObjectId.isValid(id))
 		return next();
 
-	req.site.dbs[dbname].fs.get(id).load()
+	// to deprecate. New route: /video-poster/:db?/:id(-w(xh)?)?.jpg
+	if (ext.indexOf('poster') === 0) {
+		req.params = {
+			db: dbName,
+			fn: id
+		};
+
+		const r = /^poster(\d+x?\d*)/.exec(ext);
+
+		if (r)
+			req.params.fn += '-' + r[1];
+
+		req.params.fn += '.jpg';
+
+		return videoPoster(req, res, next);
+	}
+
+	req.site.dbs[dbName].fs.getVideo(id).load()
 		.then((file: GridFSVideo) => {
 			if (!file)
 				return next();
@@ -40,36 +59,24 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 				throw file.error.status || file.error;
 
 			if (!ext)
-				return res.redirect('/videos/' + (dbname !== req.site.db.name ? dbname + '.' : '') + id + '/' + file.filename);
+				return res.redirect('/videos/' + (dbName !== req.site.db.name ? dbName + '.' : '') + id + '/' + file.filename);
 
-			let opt;
+			if (ext === 'tag') {
+				const basename = encodeURIComponent(file.basename().toLocaleLowerCase());
+				const basePath = req.protocol + '://' + req.headers.host + '/videos/' + dbName + '.' + file._id + '/';
+				const mTime = file.thumb && file.thumb.mtime ? file.thumb.mtime.getTime() : 0;
 
-			if (ext.indexOf('poster') === 0) {
-				opt = {
-					width: file.metadata.width,
-					height: file.metadata.height,
-					crop: true
-				};
-
-				const r = /^poster(\d+)x?(\d*)/.exec(ext);
-
-				if (r) {
-					opt.width = parseInt(r[1], 10);
-					opt.height = parseInt(r[2], 10) || (file.metadata.height * opt.width / file.width);
-				}
-
-				return file.sendThumb(req, res, opt);
-			} else if (ext === 'tag') {
 				res.locals = {
-					poster: 'http://' + req.headers.host + '/videos/' + file._id + '/poster.jpg',
-					mp4: 'http://' + req.headers.host + file.versions!.mp4,
-					webm: 'http://' + req.headers.host + file.versions!.webm
+					poster: req.protocol + '://' + req.headers.host + '/video-poster/' + dbName + '/' + file._id + '_' + mTime + '.jpg',
+					mp4: basePath + basename + '.mp4',
+					webm: basePath + basename + '.webm'
 				};
 
-				return res.render(req.site.lipthusDir + '/views/videotag');
+				return res.render(req.site.lipthusDir + '/views/video-tag');
 			} else if (/^f_\d+_/.test(ext)) { // frames
 				const parsed = /^f_(\d+)_(\d*)x?(\d*)(k?)/.exec(ext);
 				const frame = parseInt(parsed![1], 10);
+				let opt;
 
 				if (parsed![2])
 					opt = {
@@ -92,7 +99,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 				return file.send(req, res);
 
 			return file.getVideoVersion(ext, req.query.force)
-				.then((version: GridFSFile) => version.send(req, res))
+				.then((version: LipthusFile) => version.send(req, res))
 				.catch((err: any) => {
 					if (err.code === 1) // version processing
 						res.set("Retry-After", "120").status(503);

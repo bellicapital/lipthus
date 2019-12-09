@@ -23,7 +23,7 @@ const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction)
 	const parts: Array<string> = req.params.combined.split('+');
 	const files: Array<string> = [];
 	const dirs: any = {
-		d: req.site.dir,
+		d: req.site.srcDir,
 		g: req.site.lipthusDir
 	};
 	const devicesDir: any = {
@@ -62,7 +62,7 @@ const combined = (req: LipthusRequest, res: LipthusResponse, next: NextFunction)
 const single = (req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 	const deviceRoute = req.params.device !== 'g' ? req.params.device + '/' : '';
 	const locations: any = {
-		d: req.site.dir,
+		d: req.site.srcDir,
 		g: req.site.lipthusDir
 	};
 	let key = req.params.key;
