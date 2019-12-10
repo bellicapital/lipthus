@@ -259,7 +259,7 @@ export class HtmlPage {
 
 	async send(view?: string, locals: any = {}): Promise<any> {
 		if (this.sent)
-			return Promise.reject(new Error('HtmlPage already sent'));
+			return Promise.reject(new Error('HtmlPage already sent ' + this.req.originalUrl));
 
 		if (this.noCache)
 			this.setNoCache();
@@ -335,15 +335,13 @@ export class HtmlPage {
 
 		const req = this.req;
 
-		this.view = req.site.srcDir + '/views/' + this.deviceType + '/notfound';
+		this.view = req.site.srcDir + '/views/' + this.deviceType + '/not-found';
 
 		if (!existsSync(this.view + '.pug'))
-			this.view = req.site.srcDir + '/views/notfound';
+			this.view = req.site.srcDir + '/views/not-found';
 
 		if (!existsSync(this.view + '.pug'))
 			this.view = 'status/404';
-
-		this.head.addCSS('notfound');
 
 		this.head.removeLink({rel: 'canonical', href: req.url});
 
@@ -355,8 +353,8 @@ export class HtmlPage {
 				delete this.metaDescription;
 
 				try {
-					const customNotFound = require(req.site.dir + '/routes/notfound');
-					console.log(customNotFound);
+					const customNotFound = require(req.site.dir + '/routes/not-found');
+
 					if (customNotFound)
 						return customNotFound(req, this.res);
 				} catch (err) {
