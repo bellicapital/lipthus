@@ -3,18 +3,18 @@ import {existsSync} from "fs";
 import {LipthusDb} from "./db";
 import {User} from "../schemas/user";
 
-const debug = Debug('site:subscriptor');
+const debug = Debug('site:subscriber');
 
-export class Subscriptor {
+export class Subscriber {
 
 	public models: any = {};
 
 	static init(app: any) {
-		return new Subscriptor(app);
+		return new Subscriber(app);
 	}
 
 	constructor(public app: any) {
-		Object.defineProperty(app, 'subscriptor', {value: this});
+		Object.defineProperty(app, 'subscriber', {value: this});
 
 		const unsubscribe = (existsSync(app.get('dir') + '/routes/unsubscribe.js') ? app.get('dir') : '..') + '/routes/unsubscribe';
 
@@ -63,7 +63,7 @@ export class Subscriptor {
 	 * @param {String} [dbName=this.app.site.db]
 	 * @returns {Promise}
 	 */
-	subscriptorsCount(model: any, value = 'newItem', type = 'events', dbName?: string) {
+	subscribersCount(model: any, value = 'newItem', type = 'events', dbName?: string) {
 		const query: any = {};
 		const db = this.app.site.db;
 
@@ -77,7 +77,7 @@ export class Subscriptor {
 			.then((count: number) => db.user.countDocuments(query).then((count2: number) => count + count2));
 	}
 
-	getSubscriptors(dbName: string, model: any, type: string, value: any, onlyUsers?: boolean) {
+	getSubscribers(dbName: string, model: any, type: string, value: any, onlyUsers?: boolean) {
 		let query: any = {};
 		const db = this.app.site.db;
 		const byEmail: any = {};
@@ -183,7 +183,7 @@ export class Subscriptor {
 	async _onItemCreated(item: any, name: string, db: LipthusDb) {
 		if (!item.active) return;
 
-		const subscribed: Array<any> = await this.getSubscriptors(db.name, name, 'events', 'newItem', false);
+		const subscribed: Array<any> = await this.getSubscribers(db.name, name, 'events', 'newItem', false);
 
 		if (subscribed.length)
 			await this.app.site.notifier.itemCreated(item, subscribed);
@@ -192,7 +192,7 @@ export class Subscriptor {
 	async _onItemActivated(item: any, name: string, db: LipthusDb) {
 		if (!item.active) return;
 
-		const subscribed = await this.getSubscriptors(db.name, name, 'items', item._id, false);
+		const subscribed = await this.getSubscribers(db.name, name, 'items', item._id, false);
 
 		if (subscribed.length)
 			await this.app.site.notifier.itemActivated(item, subscribed);

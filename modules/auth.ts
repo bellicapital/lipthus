@@ -121,7 +121,7 @@ const registerSiteStrategies = (site: Site, passport: any) => {
 			//   login page.  Otherwise, the primary route function  will be called,
 			//   which, in this example, will redirect the user to the home page.
 			app.get('/oauth2cb', (req, res, next) =>
-				(req as LipthusRequest).ml.load('ecms-user')
+				(req as any).ml.load('ecms-user')
 					.then((LC) => passport.authenticate('google', {
 							failureRedirect: '/login/?msg=' + LC._US_REGISTERNG,
 							successRedirect: (req as any).session.redirect_to || '/'

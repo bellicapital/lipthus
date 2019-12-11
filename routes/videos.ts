@@ -98,7 +98,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 			)
 				return file.send(req, res);
 
-			return file.getVideoVersion(ext, req.query.force)
+			return file.getVideoVersion(ext, !!req.query.force)
 				.then((version: LipthusFile) => version.send(req, res))
 				.catch((err: any) => {
 					if (err.code === 1) // version processing

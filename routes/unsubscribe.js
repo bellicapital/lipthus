@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (req, res, next) => {
-	req.app.subscriptor
+	req.app.subscriber
 		.unsubscribe(req.query.email)
 		//.then(found => {// se comunica el mismo mensaje de que ya no está suscrito})
 		.then(req.ml.load.bind(req.ml, 'ecms-subscription'))

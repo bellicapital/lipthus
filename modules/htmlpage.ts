@@ -334,14 +334,7 @@ export class HtmlPage {
 			return this.res.headersSent || this.res.render(this.req.site.lipthusDir + '/views/status/' + st);
 
 		const req = this.req;
-
-		this.view = req.site.srcDir + '/views/' + this.deviceType + '/not-found';
-
-		if (!existsSync(this.view + '.pug'))
-			this.view = req.site.srcDir + '/views/not-found';
-
-		if (!existsSync(this.view + '.pug'))
-			this.view = 'status/404';
+		this.view = 'status/404';
 
 		this.head.removeLink({rel: 'canonical', href: req.url});
 
@@ -353,7 +346,7 @@ export class HtmlPage {
 				delete this.metaDescription;
 
 				try {
-					const customNotFound = require(req.site.dir + '/routes/not-found');
+					const customNotFound = require(req.site.dir + '/routes/notfound');
 
 					if (customNotFound)
 						return customNotFound(req, this.res);

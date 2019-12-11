@@ -24,7 +24,7 @@ import {existsSync} from "fs";
 import listen from "./listen";
 import {Notifier} from "./notifier";
 import multipart from './multipart';
-import {Subscriptor} from './subscriptor';
+import {Subscriber} from './subscriber';
 import {Mailer} from "./mailer";
 import Ng from './ng2';
 import {GPageSpeedMiddleWare} from "./g-page-speed";
@@ -207,7 +207,7 @@ export class Site extends EventEmitter {
 		await this.loadPlugins();
 		await this.hooks('post', 'plugins');
 
-		Subscriptor.init(this.app);
+		Subscriber.init(this.app);
 
 		debug(this.key + ' ready');
 

@@ -5,7 +5,7 @@ const util = require('util');
 
 module.exports = function(req, res, next){
 	const toRetreave = [];
-	const subscriptor = req.app.subscriptor;
+	const subscriber = req.app.subscriber;
 
 	const retreave = cb => {
 		let count = 0;
@@ -31,7 +31,7 @@ module.exports = function(req, res, next){
 				if(++count === toRetreave.length)
 					cb(subscriptions);
 			} else {
-				col.find({_id: {$in: items}})
+				col.find({_id: {$in: tr.items}})
 					.select('title')
 					.then(r => {
 						r.forEach(i => subscriptions.push(i.title));
@@ -111,7 +111,7 @@ module.exports = function(req, res, next){
 
 			req.ml.load(['ecms-subscription', 'subscription'])
 				.then(() => retreave(subscriptions => {
-					subscriptor.log('request', req.body.email, req.body.to);
+					subscriber.log('request', req.body.email, req.body.to);
 
 					const params = {
 						email: req.body.email,
@@ -149,7 +149,7 @@ module.exports = function(req, res, next){
 			break;
 
 		case 'confirm':
-			subscriptor
+			subscriber
 				.userConfirm(req.query.id)
 				.then(req.ml.load.bind(req.ml, 'ecms-subscription'))
 				.then(() => res.htmlPage.msg(req.ml.all._SUBS_thanks))

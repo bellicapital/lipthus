@@ -7,34 +7,34 @@ html
 			table td {vertical-align: top}
 	body
 		form(onchange="this.submit()")
-			label Esquema: 
+			label Esquema:
 				select(name="s")
 					each subscriptions,i in items
 						option(disabled=!subscriptions,selected=i==q.s)=i
-			|  &nbsp; 
-			label Item: 
+			|  &nbsp;
+			label Item:
 				input(name="id",value=q.id,size=26,placeholder="vacío -> último registro")
-			|  &nbsp; 
-			label Evento: 
+			|  &nbsp;
+			label Evento:
 				select(name="type")
 					each tpl in tpls
 						option(selected=tpl===q.type)=tpl
-			|  &nbsp; 
-			label Idioma: 
+			|  &nbsp;
+			label Idioma:
 				select(name="lang")
 					each name,code in availableLangs
 						option(value=code,selected=code===lang)=name
-			|  &nbsp; 
-			label Width: 
+			|  &nbsp;
+			label Width:
 				input(name="w",value=q.w,size=6)
-			|  &nbsp; 
-			label Height: 
+			|  &nbsp;
+			label Height:
 				input(name="h",value=q.h,size=6)
-			|  &nbsp; 
+			|  &nbsp;
 			input(type="submit",value=params?"Actualizar":"Visualizar")
 
 		if params
-			p: a(href="/notify-subscriptors?s=" + q.s + "&id=" + q.id + "&type=" + q.type + "&referer=" + q.referer) Notify subscriptors
+			p: a(href="/notify-subscribers?s=" + q.s + "&id=" + q.id + "&type=" + q.type + "&referer=" + q.referer) Notify subscribers
 			div="De: "+from
 			div="A: "+to
 			div="Asunto: "+subject

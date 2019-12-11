@@ -148,7 +148,7 @@ export class GridFSFile {
 					duration: this.metadata && this.metadata.duration
 				};
 
-				return expressMongoStream(params, this.db._conn.db, req, res);
+				return expressMongoStream(params, this.db._conn.db, <any>req, res);
 			})
 			.catch((err: LipthusError) => {
 				if (err.message === 'File does not exist')

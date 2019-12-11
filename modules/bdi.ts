@@ -89,12 +89,13 @@ export class BinDataImage extends BinDataFile {
 		let width: number | undefined;
 
 		if (mixed instanceof IncomingMessage) {
-			width = mixed.maxImgWidth;
-			height = mixed.maxImgHeight;
-			crop = mixed.imgCrop;
-			enlarge = mixed.imgEnlarge;
-			nwm = mixed.imgnwm;
-			lang = mixed.ml.lang;
+			const m = <LipthusRequest>mixed;
+			width = m.maxImgWidth;
+			height = m.maxImgHeight;
+			crop = m.imgCrop;
+			enlarge = m.imgEnlarge;
+			nwm = m.imgnwm;
+			lang = m.ml.lang;
 		} else {
 			width = mixed as number;
 		}
@@ -343,7 +344,7 @@ export class BinDataImage extends BinDataFile {
 						this.size = buffer.length;
 					});
 			})
-			.then(() => this)
+			.then(() => <BinDataImage>this)
 			.catch((err: any) => {
 				if (err.code === 'ENOENT')
 					err.message += '\nis graphicsmagick installed?\nhttps://github.com/aheckmann/gm';

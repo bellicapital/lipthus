@@ -1,5 +1,4 @@
 import {Site} from "./site";
-
 import {Message, Sender} from "node-gcm";
 import {User} from "../schemas/user";	// deprecated
 
@@ -17,6 +16,7 @@ export class Notifier {
 		this.serverFrom = site + " <server@" + site.domainName + ">";
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Sends a Google Cloud Message
 	 *
@@ -221,17 +221,17 @@ export class Notifier {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	async toSubscriptors(dbName: string, model: any, type: string, value: any, onlyUsers: boolean, params: any) {
+	async toSubscribers(dbName: string, model: any, type: string, value: any, onlyUsers: boolean, params: any) {
 
 		// si no se facilita asunto, no se envía email a los no usuarios
 		if (!onlyUsers && !params.subject)
 			onlyUsers = true;
 
-		const subscriptors: Array<any> = await this.site.app.subscriptor
-			.getSubscriptors(dbName, model, type, value, onlyUsers);
+		const subscribers: Array<any> = await this.site.app.subscriber
+			.getSubscribers(dbName, model, type, value, onlyUsers);
 
-		for (const s of subscriptors) {
-			// el suscriptor es usuario
+		for (const s of subscribers) {
+			// subscriber is user
 			if (s.user) {
 				// si el usuario es el mismo que envía la notificación, no lo incluimos
 				if (!s.user._id.equals(params.from))
@@ -294,13 +294,13 @@ export class Notifier {
 
 		const site = this.site;
 		const siteName = options.sitename || options.content && options.content.X_SITENAME || site.config.sitename;
-		const subscriptors: Array<string> = subscribed.map((s: any) => s.email);
+		const subscribers: Array<string> = subscribed.map((s: any) => s.email);
 
 		if (!options.testmode) {
 			site.db.notilog.create({
 				item: item._id,
 				opt: options,
-				subscriptors: subscriptors
+				subscribers: subscribers
 			});
 		}
 
@@ -316,8 +316,8 @@ export class Notifier {
 		const globalK = '_NOT_ITEM_' + options.key;
 		const content: any = {};
 
-		for (const subscriptor of subscribed) {
-			const lang = subscriptor.lang || site.config.language;
+		for (const subscriber of subscribed) {
+			const lang = subscriber.lang || site.config.language;
 			const itemType = title[lang] || title.es || title;
 			let subject = options.subject && options.subject[lang];
 			let unsubscribeUrl = options.unsubscribeUrl || site.externalProtocol + ':' + site.langUrl(lang) + '/unsubscribe';
@@ -338,15 +338,15 @@ export class Notifier {
 				.replace(/{X_ITEMTYPE}/g, itemType);
 
 			content.X_ITEM_TITLE = item.title[lang] || item.title['es'] || item.title;
-			content.X_UNAME = subscriptor.email;
-			content.X_UNSUBSCRIBE_URL = unsubscribeUrl + '?email=' + subscriptor.email;
+			content.X_UNAME = subscriber.email;
+			content.X_UNSUBSCRIBE_URL = unsubscribeUrl + '?email=' + subscriber.email;
 
 			this._processAndPreviewCommon(content, subject, options, item, itemType, lang, baseUrl);
 
 			// no esperamos la respuesta de los toEmail porque tarda demasiado y produce timeouts
 			this.toEmail({
 				from: options.from || this.serverFrom,
-				to: subscriptor.email,
+				to: subscriber.email,
 				subject: subject,
 				html: await this.parseContent(lang, content, options.template)
 			});

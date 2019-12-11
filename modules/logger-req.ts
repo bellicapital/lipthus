@@ -55,6 +55,7 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		morgan.token('timers', () => timers.render ? res.timer : ' ');
 		// morgan.token('device', () => req.device.type);
 
+		// @ts-ignore
 		morgan(':method :req[Host]:url :status :response-time ms :res[content-length] :timers')(req, res, function () {
 			/*
 		morgan(':method :req[Host]:url :status :response-time ms :res[content-length] :device :timers')(req, res, function(){

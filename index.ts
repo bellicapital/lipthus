@@ -2,15 +2,14 @@ import * as Debug from 'debug';
 import './lib/vanilla.extensions';
 import {LipthusDb, Site, SiteOptions} from "./modules";
 import {User} from "./schemas/user";
-import * as express from "express";
-import {ApplicationRequestHandler, CssResponse, KeyString} from "./interfaces/global.interface";
+import {ApplicationRequestHandler, CssResponse, KeyAny, KeyString} from "./interfaces/global.interface";
 import {LipthusError} from "./classes/lipthus-error";
 import {LipthusLogger} from "./modules/logger";
 import {Multilang} from "./modules/multilang";
 import {HtmlPage} from "./modules/htmlpage";
 import {LipthusWebSocketServer} from "./classes/web-socket-server";
-import {Server as SServer} from "https";
 import {Server as Server} from "https";
+import * as express from "express";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -47,6 +46,19 @@ export * from './lib';
 export {Types} from 'mongoose';
 export {Router, NextFunction} from 'express';
 export interface LipthusRequest extends express.Request {
+    subdomains: string[];
+    cookies: KeyString;
+    xhr: boolean;
+    query: KeyAny;
+    body: KeyAny;
+    method: string;
+    headers: KeyString;
+    originalUrl: string;
+    protocol: string;
+    hostname: any;
+    path: any;
+    url: string;
+	params: KeyString;
 	res: LipthusResponse;
 	domainName: string;
 	staticHost: string;
@@ -78,11 +90,14 @@ export interface LipthusRequest extends express.Request {
 	lessSourceMap: string;
 	cssResponse: CssResponse;
 	sessionID: string;
+	ip: string;
 	/**
 	 * @deprecated
 	 */
 	cmsDir: string;
 	csrfToken(): string;
+	get(arg0: string): any;
+	next(next: any);
 }
 
 export interface LipthusResponse extends express.Response {
@@ -96,8 +111,8 @@ export interface LipthusApplication extends express.Application {
 	db: LipthusDb;
 	site: Site;
 	wss: LipthusWebSocketServer;
-	server: SServer | Server;
-	subscriptor: any;
+	server: Server;
+	subscriber: any;
 
 	getModule: (name: string) => any;
 	nodeModule: (name: string) => any;
