@@ -50,7 +50,7 @@ export interface LipthusRequest extends express.Request {
     cookies: KeyString;
     xhr: boolean;
     query: KeyAny;
-    body: KeyAny;
+    body: any;
     method: string;
     headers: KeyString;
     originalUrl: string;
