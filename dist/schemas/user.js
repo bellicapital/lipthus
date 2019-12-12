@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../lib");
 const md5 = require('md5');
-const ShoppingCart = require('../modules/shopping/shoppingcart');
 exports.name = 'user';
 function getSchema(site) {
     const s = new lib_1.LipthusSchema({
@@ -35,7 +34,6 @@ function getSchema(site) {
         phone: [],
         nif: String,
         data: {},
-        cart: ShoppingCart.schema,
         oauth_user_id: String,
         oauth_data: {},
         facebook: {},

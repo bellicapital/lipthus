@@ -4,7 +4,6 @@ import {Document, Model} from "mongoose";
 import {GoogleOauth2Data} from "../modules/auth";
 
 const md5 = require('md5');
-const ShoppingCart = require('../modules/shopping/shoppingcart');
 
 export const name = 'user';
 
@@ -39,7 +38,6 @@ export function getSchema(site: Site) {
 		phone: [],
 		nif: String,
 		data: {},
-		cart: ShoppingCart.schema,
 		oauth_user_id: String,
 		oauth_data: {},
 		facebook: {}, // @deprecated
