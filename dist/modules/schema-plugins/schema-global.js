@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bdf_1 = require("../bdf");
 const lib_1 = require("../../lib");
-const Location = require('../geo').location;
+const location_1 = require("../geo/location");
 class DocValues {
     constructor(values) {
         if (!values)
@@ -125,7 +125,7 @@ function schemaGlobalMethods(schema) {
             case 'MlCheckboxes':
                 return val ? val.getVal(req, this.db.lipthusDb) : Promise.resolve();
             case 'location':
-                return Promise.resolve(new Location(val));
+                return Promise.resolve(new location_1.LipthusLocation(val));
             case 'Number':
                 // if (opt.origType === 'money')
                 // 	return Promise.resolve(req.ml.money(val, opt.currency));

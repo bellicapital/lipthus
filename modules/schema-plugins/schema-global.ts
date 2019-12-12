@@ -1,8 +1,7 @@
 import {BinDataFile} from "../bdf";
 import {DBRef, LipthusSchema, LipthusSchemaTypes} from "../../lib";
 import {LipthusRequest, User} from "../../index";
-
-const Location = require('../geo').location;
+import {LipthusLocation} from "../geo/location";
 
 
 class DocValues {
@@ -177,7 +176,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 				return val ? val.getVal(req, this.db.lipthusDb) : Promise.resolve();
 
 			case 'location':
-				return Promise.resolve(new Location(val));
+				return Promise.resolve(new LipthusLocation(val));
 
 			case 'Number':
 				// if (opt.origType === 'money')
