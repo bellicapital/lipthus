@@ -31,8 +31,6 @@ const routes_1 = require("../routes");
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({ cookie: true });
-// no se puede con import
-const flash = require('connect-flash');
 const favicon = require("connect-favicons");
 class Site extends events_1.EventEmitter {
     constructor(dir, options = {}) {
@@ -350,7 +348,6 @@ class Site extends events_1.EventEmitter {
         app.use(require('./client')(app));
         app.locals.sitename = this.config.sitename;
         await multilang_1.MultilangModule(app);
-        app.use(flash());
         app.use(htmlpage_1.HtmlPageMiddleware);
         logger_1.LipthusLogger.init(app);
         if (this.config.sitemap && !this.environment.customSitemap)

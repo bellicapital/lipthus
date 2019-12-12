@@ -1,4 +1,4 @@
-import {IRouterHandler, IRouterMatcher, NextFunction} from "express-serve-static-core";
+import {IRouterHandler, IRouterMatcher, NextFunction} from "express";
 import {LipthusApplication, LipthusDb, LipthusRequest, LipthusResponse, Site} from "../index";
 import {Connection, Types} from "mongoose";
 

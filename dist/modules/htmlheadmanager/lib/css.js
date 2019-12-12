@@ -7,7 +7,7 @@ class CssManager {
     constructor(req, res) {
         this.req = req;
         this.scripts = {};
-        this.inited = false;
+        this.initiated = false;
         this.publicDir = req.site.srcDir + '/public';
         this.dir = this.publicDir + '/css/';
         this.lipthusDir = req.site.lipthusDir + '/public/css/';
@@ -20,10 +20,30 @@ class CssManager {
             { path: this.lipthusDir, url: '/g/g/', isCMS: true }
         ];
     }
+    static extPath(dir, fn) {
+        const p = path.parse(fn);
+        const fExt = p.ext.substr(1);
+        let ret = undefined;
+        if (fExt && extensions.indexOf(fExt) !== -1) {
+            ret = path.join(dir, fn);
+            return exists(ret) && { path: ret, basename: p.name, fn: fn, ext: fExt };
+        }
+        extensions.some(ext => {
+            const fn2 = fn + '.' + ext;
+            const tmp = path.join(dir, fn2);
+            if (exists(tmp)) {
+                ret = { path: tmp, basename: fn, fn: fn2, ext: ext };
+                return true;
+            }
+            else
+                return false;
+        });
+        return ret;
+    }
     init() {
-        if (this.inited)
+        if (this.initiated)
             return this;
-        this.inited = true;
+        this.initiated = true;
     }
     add(src, opt) {
         if (typeof opt === 'number')
@@ -122,26 +142,6 @@ class CssManager {
                 ret.isCMS = route.isCMS;
                 ret.isDevice = route.isDevice;
                 ret.url = '/css' + route.url + ep.basename + '.css';
-                return true;
-            }
-            else
-                return false;
-        });
-        return ret;
-    }
-    static extPath(dir, fn) {
-        const p = path.parse(fn);
-        const fExt = p.ext.substr(1);
-        let ret;
-        if (fExt && extensions.indexOf(fExt) !== -1) {
-            ret = path.join(dir, fn);
-            return exists(ret) && { path: ret, basename: p.name, fn: fn, ext: fExt };
-        }
-        extensions.some(ext => {
-            const fn2 = fn + '.' + ext;
-            const tmp = path.join(dir, fn2);
-            if (exists(tmp)) {
-                ret = { path: tmp, basename: fn, fn: fn2, ext: ext };
                 return true;
             }
             else

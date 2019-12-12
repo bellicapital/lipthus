@@ -33,8 +33,6 @@ import route from "../routes";
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({cookie: true});
-// no se puede con import
-const flash = require('connect-flash');
 const favicon = require("connect-favicons");
 
 export class Site extends EventEmitter {
@@ -496,7 +494,6 @@ export class Site extends EventEmitter {
 
 		await MultilangModule(app);
 
-		app.use(flash());
 		app.use(HtmlPageMiddleware);
 
 		LipthusLogger.init(app);

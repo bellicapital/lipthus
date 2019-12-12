@@ -14,7 +14,33 @@ export class CssManager {
 	public staticHost: string;
 	public deviceType: string;
 	public routes: Array<CssRoute>;
-	public inited = false;
+	public initiated = false;
+
+	static extPath(dir: string, fn: string) {
+		const p = path.parse(fn);
+		const fExt = p.ext.substr(1);
+		let ret = undefined;
+
+		if (fExt && extensions.indexOf(fExt) !== -1) {
+			ret = path.join(dir, fn);
+
+			return exists(ret) && {path: ret, basename: p.name, fn: fn, ext: fExt};
+		}
+
+		extensions.some(ext => {
+			const fn2 = fn + '.' + ext;
+			const tmp = path.join(dir, fn2);
+
+			if (exists(tmp)) {
+				ret = {path: tmp, basename: fn, fn: fn2, ext: ext};
+
+				return true;
+			} else
+				return false;
+		});
+
+		return ret;
+	}
 
 	constructor(public req: LipthusRequest, res: LipthusResponse) {
 		this.publicDir = req.site.srcDir + '/public';
@@ -31,9 +57,9 @@ export class CssManager {
 	}
 
 	init() {
-		if (this.inited) return this;
+		if (this.initiated) return this;
 
-		this.inited = true;
+		this.initiated = true;
 	}
 
 	add(src: string, opt?: any | number) {
@@ -161,32 +187,6 @@ export class CssManager {
 				ret.isCMS = route.isCMS;
 				ret.isDevice = route.isDevice;
 				ret.url = '/css' + route.url + ep.basename + '.css';
-
-				return true;
-			} else
-				return false;
-		});
-
-		return ret;
-	}
-
-	static extPath(dir: string, fn: string) {
-		const p = path.parse(fn);
-		const fExt = p.ext.substr(1);
-		let ret;
-
-		if (fExt && extensions.indexOf(fExt) !== -1) {
-			ret = path.join(dir, fn);
-
-			return exists(ret) && {path: ret, basename: p.name, fn: fn, ext: fExt};
-		}
-
-		extensions.some(ext => {
-			const fn2 = fn + '.' + ext;
-			const tmp = path.join(dir, fn2);
-
-			if (exists(tmp)) {
-				ret = {path: tmp, basename: fn, fn: fn2, ext: ext};
 
 				return true;
 			} else

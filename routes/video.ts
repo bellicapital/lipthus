@@ -1,5 +1,5 @@
 import {GridFSFile, LipthusRequest, LipthusResponse} from "../index";
-import {NextFunction} from "connect";
+import {NextFunction} from "express";
 
 const mongoose = require('mongoose');
 
