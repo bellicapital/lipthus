@@ -10,6 +10,7 @@ import {HtmlPage} from "./modules/htmlpage";
 import {LipthusWebSocketServer} from "./classes/web-socket-server";
 import {Server as Server} from "https";
 import * as express from "express";
+import {IpLocation} from "./modules/geo/ip-location";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -81,7 +82,7 @@ export interface LipthusRequest extends express.Request {
 	imgCrop?: boolean;
 	imgEnlarge?: boolean;
 	imgnwm?: boolean;
-	ipLocation: any;
+	ipLocation: IpLocation;
 	nationalities: KeyString;
 	getUser: () => Promise<User | void>;
 	files: Array<any>;	// Array<UploadedFile>;

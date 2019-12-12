@@ -1,14 +1,13 @@
-const geo = require('../geo');
-const ipLocation = geo.ipLocation;
+import {IpLocation} from "./geo/ip-location";
 
-module.exports = function () {
+export = function () {
 	return (req, res, next) => {
 		Object.defineProperty(req, 'ipLocation', {
 			get: () => {
 				if (req.ipLocation_)
 					return req.ipLocation_;
 
-				const ipl = ipLocation(req);
+				const ipl = new IpLocation(req);
 
 				req.ipLocation_ = ipl;
 

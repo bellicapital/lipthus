@@ -73,7 +73,14 @@ async function default_1(app) {
     router.get('/notifications', require('./notifications'));
     router.get('/item-comments/:schema/:itemid', item_comments_1.default);
     router.get('/logout', logout_1.default);
-    // require('./login')(app);
+    router.get('/ipLocation', (req, res) => {
+        res.send({
+            ipLocation: req.ipLocation,
+            reqIp: req.ip,
+            reqIps: req.ips,
+            'X-Forwarded-For': req.get('X-Forwarded-For'),
+        });
+    });
     require('./rss')(app);
     // local routes
     const path_ = app.get('dir') + '/routes';

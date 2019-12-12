@@ -345,7 +345,7 @@ class Site extends events_1.EventEmitter {
         app.set('protocol', this.protocol);
         app.set('externalProtocol', this.externalProtocol);
         app.use(g_page_speed_1.GPageSpeedMiddleWare);
-        app.use(require('./client')(app));
+        app.use(require('./client')());
         app.locals.sitename = this.config.sitename;
         await multilang_1.MultilangModule(app);
         app.use(htmlpage_1.HtmlPageMiddleware);
