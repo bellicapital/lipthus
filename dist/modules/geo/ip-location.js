@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const geoip = require('geoip-lite');
+const geoip = require("geoip-lite");
 class IpLocation {
     constructor(a) {
         if (!a)

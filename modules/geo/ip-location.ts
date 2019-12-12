@@ -1,4 +1,4 @@
-const geoip = require('geoip-lite');
+import geoip = require('geoip-lite');
 
 
 export class IpLocation {
