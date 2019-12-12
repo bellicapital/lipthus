@@ -81,8 +81,6 @@ export default async function (app: LipthusApplication) {
 	router.get('/optimg/*', optimg as any);
 	router.get('/c/:id.:ext*', cache as any);
 	router.post('/paypalresponse', paypalresponse);
-	router.all('/dsresponse', require('./dsresponse'));
-	router.get('/dsresponsetest', require('./dsresponsetest'));
 	router.get('/notifications', require('./notifications'));
 	router.get('/item-comments/:schema/:itemid', item_comments as any);
 	router.get('/logout', logout as any);

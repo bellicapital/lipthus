@@ -70,8 +70,6 @@ async function default_1(app) {
     router.get('/optimg/*', optimg_1.default);
     router.get('/c/:id.:ext*', cache_1.default);
     router.post('/paypalresponse', paypalresponse_1.default);
-    router.all('/dsresponse', require('./dsresponse'));
-    router.get('/dsresponsetest', require('./dsresponsetest'));
     router.get('/notifications', require('./notifications'));
     router.get('/item-comments/:schema/:itemid', item_comments_1.default);
     router.get('/logout', logout_1.default);
