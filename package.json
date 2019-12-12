@@ -5,7 +5,8 @@
 	"scripts": {
 		"build": "tsc",
 		"postinstall": "node dist/lib/server",
-		"lint": "tslint **/*.ts"
+		"lint": "tslint -p tsconfig.json **/*.ts",
+		"tslint-fix": "tslint --fix -p tsconfig.json"
 	},
 	"repository": {
 		"type": "git",
