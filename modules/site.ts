@@ -488,7 +488,7 @@ export class Site extends EventEmitter {
 		app.set('externalProtocol', this.externalProtocol);
 
 		app.use(GPageSpeedMiddleWare);
-		app.use(require('./client')(app));
+		app.use(require('./client')());
 
 		app.locals.sitename = this.config.sitename;
 
