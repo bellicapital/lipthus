@@ -276,6 +276,8 @@ class HtmlPage {
             return Promise.reject(new Error('no view'));
         try {
             res.render(vPath, (err, html) => {
+                if (err)
+                    err.message += ' at ' + this.req.url;
                 res.emit('render', err, html);
                 if (err)
                     this.req.next(err);

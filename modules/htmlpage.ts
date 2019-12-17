@@ -377,6 +377,8 @@ export class HtmlPage {
 
 		try {
 			res.render(vPath, (err: Error, html: string) => {
+				if (err)
+					err.message += ' at ' + this.req.url;
 
 				res.emit('render', err, html);
 
