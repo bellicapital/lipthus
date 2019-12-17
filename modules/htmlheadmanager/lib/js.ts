@@ -16,7 +16,6 @@ export class JsManager {
 	public lipthusDir: string;
 	public jQuery = false;
 	public jQueryVersion: string;
-	public datepicker = false;
 	public staticHost: string;
 	public scripts: { [s: string]: JsFile } = {};
 	public vars: KeyAny = {js: <Array<any>>[], _lang: <KeyAny>{}, mobileAjaxEnabled: false};
@@ -180,7 +179,6 @@ export class JsManager {
 						ret[t] = ret[t].concat(r);
 
 					if (++count === 3) {
-						delete this.vars.namespace;
 						ret.bodyInline += 'window.euca = ' + JSON.stringify(this.vars) + ';';
 						ok(ret);
 					}

@@ -12,7 +12,6 @@ class JsManager {
     constructor(req, res) {
         this.req = req;
         this.jQuery = false;
-        this.datepicker = false;
         this.scripts = {};
         this.vars = { js: [], _lang: {}, mobileAjaxEnabled: false };
         this.headInline = '';
@@ -140,7 +139,6 @@ class JsManager {
                     else if (r)
                         ret[t] = ret[t].concat(r);
                     if (++count === 3) {
-                        delete this.vars.namespace;
                         ret.bodyInline += 'window.euca = ' + JSON.stringify(this.vars) + ';';
                         ok(ret);
                     }

@@ -112,7 +112,6 @@ class HtmlPage {
             v: req.app.get('version'),
             path: req.headers.host,
             sitename: config.sitename,
-            namespace: req.site.environment.db,
             deflang: config.language,
             staticUrl: this.locals.staticHost,
             anonpost: config.com_anonpost ? 1 : 0,
