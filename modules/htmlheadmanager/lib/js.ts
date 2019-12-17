@@ -180,6 +180,7 @@ export class JsManager {
 						ret[t] = ret[t].concat(r);
 
 					if (++count === 3) {
+						delete this.vars.namespace;
 						ret.bodyInline += 'window.euca = ' + JSON.stringify(this.vars) + ';';
 						ok(ret);
 					}
