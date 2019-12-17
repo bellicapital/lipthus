@@ -14,7 +14,7 @@ const getView = (status, req) => {
     });
     return 'status/' + (ret || 'error');
 };
-function errorHandler(err_, req, res, next) {
+async function errorHandler(err_, req, res, next) {
     let err;
     if (!(err_ instanceof Error)) {
         err = new Error();
@@ -43,15 +43,17 @@ function errorHandler(err_, req, res, next) {
     if (!err.status)
         err.status = 500;
     res.status(err.status);
-    (req.logger || new logger_1.LipthusLogger(req)).logError(err).then(() => {
-        err.message = "Exception at " + req.originalUrl + "\n" + err.message;
-        console.error(err);
-    });
+    await (req.logger || new logger_1.LipthusLogger(req)).logError(err);
+    err.message = "Exception at " + req.originalUrl + "\n" + err.message;
+    console.error(err);
     if (!res.headersSent) {
-        req.getUser().then(() => res.render(getView(err.status.toString(), req), {
+        // it could be previous to assign getUser
+        if (req.getUser)
+            await req.getUser();
+        res.render(getView(err.status.toString(), req), {
             message: err.message,
             error: err
-        }));
+        });
     }
 }
 exports.errorHandler = errorHandler;

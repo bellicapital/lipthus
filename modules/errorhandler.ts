@@ -21,7 +21,7 @@ const getView = (status: string, req: LipthusRequest) => {
 	return 'status/' + (ret || 'error');
 };
 
-export function errorHandler(err_: Error | string, req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
+export async function errorHandler(err_: Error | string, req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
 	let err: StatusError;
 
 	if (!(err_ instanceof Error)) {
@@ -59,18 +59,20 @@ export function errorHandler(err_: Error | string, req: LipthusRequest, res: Lip
 
 	res.status(err.status);
 
-	(req.logger || new LipthusLogger(req)).logError(err).then(() => {
-		err.message = "Exception at " + req.originalUrl + "\n" + err.message;
-		console.error(err);
-	});
+	await (req.logger || new LipthusLogger(req)).logError(err);
+
+	err.message = "Exception at " + req.originalUrl + "\n" + err.message;
+	console.error(err);
 
 	if (!res.headersSent) {
-		req.getUser().then(() =>
-			res.render(getView(err.status.toString(), req), {
-				message: err.message, // @deprecated
-				error: err
-			})
-		);
+		// it could be previous to assign getUser
+		if (req.getUser)
+			await req.getUser();
+
+		res.render(getView(err.status.toString(), req), {
+			message: err.message, // @deprecated
+			error: err
+		});
 	}
 }
 
