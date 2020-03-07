@@ -54,6 +54,7 @@ class DoSchema extends lib_1.LipthusSchema {
             submitter: { type: lib_1.LipthusSchemaTypes.ObjectId, ref: 'user' },
             parent: { type: lib_1.LipthusSchemaTypes.ObjectId, ref: 'fsfiles' }
         };
+        const definitionKeys = ['caption', 'required', 'list', 'formtype', 'options', 'min', 'max', 'enum', 'match', 'minlength', 'maxlength'];
         if (!obj.name)
             obj.name = obj.colname;
         if (!obj.colname)
@@ -61,7 +62,7 @@ class DoSchema extends lib_1.LipthusSchema {
         Object.keys(obj.dynvars).forEach(k => {
             const dv = obj.dynvars[k];
             const p = { origType: dv.type };
-            ['caption', 'required', 'list', 'formtype', 'options'].forEach(key => {
+            definitionKeys.forEach(key => {
                 if (dv[key])
                     p[key] = dv[key];
             });
