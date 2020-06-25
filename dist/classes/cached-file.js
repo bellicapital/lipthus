@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CachedFile = void 0;
 const fs_1 = require("fs");
 class CachedFile {
     constructor(file, params = { maxAge: '30d' }) {

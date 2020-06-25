@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MultilangModule = exports.Multilang = void 0;
 class Multilang {
     constructor(req) {
         this.req = req;
@@ -131,6 +132,7 @@ class Multilang {
             const req = this.req;
             const fields = { _id: false, _k: true };
             fields[req.ml.configLang] = true;
+            // @ts-ignore
             req.site.db.lang.find({ _k: { $in: toTranslate } }, fields)
                 .then((r) => {
                 // Textos fuente en el idioma principal

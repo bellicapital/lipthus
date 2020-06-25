@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MultilangType = exports.MultilangText = exports.Multilang = void 0;
 const mongoose_1 = require("mongoose");
 const debug0 = require("debug");
 const debug = debug0('site:mltext');

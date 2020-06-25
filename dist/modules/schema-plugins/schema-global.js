@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.schemaGlobalMethods = void 0;
 const bdf_1 = require("../bdf");
 const lib_1 = require("../../lib");
 const location_1 = require("../geo/location");
@@ -238,8 +239,8 @@ function schemaGlobalMethods(schema) {
         const keysToGet = Object.keys(toGet);
         if (!keysToGet.length)
             return Promise.resolve(ret);
-        return req.db.lang
-            .find({ _k: { $in: keysToGet } }, '_k ' + req.ml.lang)
+        // @ts-ignore
+        return req.db.lang.find({ _k: { $in: keysToGet } }, '_k ' + req.ml.lang)
             .then((r) => {
             r.forEach(t => ret[toGet[t._k]] = t.get(req.ml.lang));
             return ret;

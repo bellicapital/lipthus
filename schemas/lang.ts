@@ -1,6 +1,5 @@
 import {LipthusSchema} from "../lib";
 import {Document, Model} from "mongoose";
-import {MultilangText} from "../modules/schema-types/mltext";
 import {promisify} from "util";
 
 const exec = promisify(require('child_process').exec);
@@ -58,6 +57,7 @@ export class LipthusLanguageMethods {
 
 export class LipthusLanguageStatics {
 	get(this: LipthusLanguageModel, n: string) {
+		// @ts-ignore
 		return this.findOne({_k: n});
 	}
 
@@ -71,6 +71,7 @@ export class LipthusLanguageStatics {
 
 		fields[code] = true;
 
+		// @ts-ignore
 		return this.find({_tag: tag}, fields);
 	}
 
@@ -90,6 +91,7 @@ export class LipthusLanguageStatics {
 	}
 
 	async getMlTag_(this: LipthusLanguageModel, tag: string) {
+		// @ts-ignore
 		const r: any = await this.find({_tag: tag}, exclude);
 
 		const ret: any = {};
@@ -118,9 +120,9 @@ export class LipthusLanguageStatics {
 }
 
 export interface LipthusLanguage extends Document, LipthusLanguageMethods {
-	code: string;
-	title: { [s: string]: MultilangText };
-	getLangList: (lang: string) => { [code: string]: string };
+	_tag: string;
+	_k: string;
+	// [code: string]: string;
 }
 
 export interface LipthusLanguageModel extends Model<LipthusLanguage>, LipthusLanguageStatics {

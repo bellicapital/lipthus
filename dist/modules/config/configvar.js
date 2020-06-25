@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConfigVarInstance = exports.MultilangConfigVar = exports.ConfigVar = void 0;
 const { MultilangText } = require('../schema-types/mltext');
 class ConfigVar {
     constructor(options, site) {

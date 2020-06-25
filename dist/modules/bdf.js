@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DbfInfo = exports.BinDataFile = void 0;
 const util_1 = require("util");
 const path = require("path");
 const fs = require('fs');

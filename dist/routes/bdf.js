@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.handleBdiRequest = void 0;
 const mongoose_1 = require("mongoose");
 const cached_file_1 = require("../classes/cached-file");
 const fs_1 = require("fs");

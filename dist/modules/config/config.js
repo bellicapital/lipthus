@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Config = void 0;
 const configvar_1 = require("./configvar");
 const Debug = require("debug");
 const util = require('util');

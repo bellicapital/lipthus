@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CssManager = void 0;
 const fs = require("fs");
 const path = require("path");
 const extensions = ['less', 'css'];

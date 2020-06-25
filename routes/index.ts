@@ -84,7 +84,7 @@ export default async function (app: LipthusApplication) {
 	router.get('/notifications', require('./notifications'));
 	router.get('/item-comments/:schema/:itemid', item_comments as any);
 	router.get('/logout', logout as any);
-	router.get('/ipLocation', (req: LipthusRequest, res) => {
+	router.get('/ipLocation', (req: LipthusRequest, res: any) => {
 		res.send({
 			ipLocation: req.ipLocation,
 			reqIp: req.ip,

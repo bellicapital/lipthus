@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getSchema = exports.name = void 0;
 const lib_1 = require("../lib");
 const md5 = require('md5');
 exports.name = 'user';

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AjaxGlobalMethods = void 0;
 class AjaxGlobalMethods {
     constructor(req) {
         this.req = req;

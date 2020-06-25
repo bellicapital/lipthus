@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DbfThumb = exports.DbfImageInfo = exports.BinDataImage = void 0;
 const bdf_1 = require("./bdf");
 const util_1 = require("util");
 const http_1 = require("http");

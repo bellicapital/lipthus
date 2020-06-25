@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LipthusLanguageStatics = exports.LipthusLanguageMethods = exports.getSchema = exports.name = void 0;
 const lib_1 = require("../lib");
 const util_1 = require("util");
 const exec = util_1.promisify(require('child_process').exec);
@@ -47,6 +48,7 @@ class LipthusLanguageMethods {
 exports.LipthusLanguageMethods = LipthusLanguageMethods;
 class LipthusLanguageStatics {
     get(n) {
+        // @ts-ignore
         return this.findOne({ _k: n });
     }
     getValues(n) {
@@ -56,6 +58,7 @@ class LipthusLanguageStatics {
     load(tag, code) {
         const fields = { _id: false, _k: true };
         fields[code] = true;
+        // @ts-ignore
         return this.find({ _tag: tag }, fields);
     }
     async getMlTag(tag) {
@@ -69,6 +72,7 @@ class LipthusLanguageStatics {
         return ret;
     }
     async getMlTag_(tag) {
+        // @ts-ignore
         const r = await this.find({ _tag: tag }, exclude);
         const ret = {};
         for (const obj of r) {

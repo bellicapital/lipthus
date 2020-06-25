@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getSchema = exports.name = void 0;
 const debug0 = require("debug");
 const lib_1 = require("../lib");
 const debug = debug0('site:mailsent');

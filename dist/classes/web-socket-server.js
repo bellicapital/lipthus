@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LipthusWebSocketServer = void 0;
 const ws_1 = require("ws");
 const debug0 = require("debug");
 const debug = debug0('site:listen');

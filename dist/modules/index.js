@@ -1,17 +1,24 @@
 "use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var ajax_global_methods_1 = require("./ajax-global-methods");
-exports.AjaxGlobalMethods = ajax_global_methods_1.AjaxGlobalMethods;
+Object.defineProperty(exports, "AjaxGlobalMethods", { enumerable: true, get: function () { return ajax_global_methods_1.AjaxGlobalMethods; } });
 var bdf_1 = require("./bdf");
-exports.BinDataFile = bdf_1.BinDataFile;
-__export(require("./bdi"));
+Object.defineProperty(exports, "BinDataFile", { enumerable: true, get: function () { return bdf_1.BinDataFile; } });
+__exportStar(require("./bdi"), exports);
 var site_1 = require("./site");
-exports.Site = site_1.Site;
+Object.defineProperty(exports, "Site", { enumerable: true, get: function () { return site_1.Site; } });
 var db_1 = require("./db");
-exports.LipthusDb = db_1.LipthusDb;
+Object.defineProperty(exports, "LipthusDb", { enumerable: true, get: function () { return db_1.LipthusDb; } });
 var util_1 = require("./util");
-exports.util = util_1.util;
-__export(require("./schema-types"));
+Object.defineProperty(exports, "util", { enumerable: true, get: function () { return util_1.util; } });
+__exportStar(require("./schema-types"), exports);

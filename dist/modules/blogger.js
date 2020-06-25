@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Blog = exports.Blogger = void 0;
 class Blogger {
     constructor(req) {
         this.req = req;

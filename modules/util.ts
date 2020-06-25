@@ -5,7 +5,7 @@ import {IncomingMessage} from "http";
 
 export namespace util {
 
-	export function urlContent(url: string | any, encoding?: string) {
+	export function urlContent(url: string | any, encoding?: BufferEncoding) {
 		return new Promise((resolve, reject) => {
 			if (typeof url === 'string')
 				url = Url.parse(url);

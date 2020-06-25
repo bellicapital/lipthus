@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AjaxMiddleware = exports.AjaxError = void 0;
 const modules_1 = require("../modules");
 class AjaxProcess extends modules_1.AjaxGlobalMethods {
     constructor(req) {

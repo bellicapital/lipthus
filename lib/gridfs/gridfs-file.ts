@@ -477,6 +477,7 @@ export class GridFSFile {
 			source: this._id
 		};
 
+		// @ts-ignore
 		const cached: LipthusCache = await Cache.findOne(opt);
 
 		if (cached) {

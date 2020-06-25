@@ -1,8 +1,16 @@
 "use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.nodeModule = exports.lipthusSite = void 0;
 const Debug = require("debug");
 require("./lib/vanilla.extensions");
 const modules_1 = require("./modules");
@@ -29,17 +37,17 @@ function lipthusSite(dir, options) {
     });
 }
 exports.lipthusSite = lipthusSite;
-__export(require("./modules"));
-__export(require("./lib"));
+__exportStar(require("./modules"), exports);
+__exportStar(require("./lib"), exports);
 var mongoose_1 = require("mongoose");
-exports.Types = mongoose_1.Types;
+Object.defineProperty(exports, "Types", { enumerable: true, get: function () { return mongoose_1.Types; } });
 var express_1 = require("express");
-exports.Router = express_1.Router;
+Object.defineProperty(exports, "Router", { enumerable: true, get: function () { return express_1.Router; } });
 var cached_file_1 = require("./classes/cached-file");
-exports.CachedFile = cached_file_1.CachedFile;
+Object.defineProperty(exports, "CachedFile", { enumerable: true, get: function () { return cached_file_1.CachedFile; } });
 var lipthus_error_1 = require("./classes/lipthus-error");
-exports.LipthusError = lipthus_error_1.LipthusError;
+Object.defineProperty(exports, "LipthusError", { enumerable: true, get: function () { return lipthus_error_1.LipthusError; } });
 var web_socket_server_1 = require("./classes/web-socket-server");
-exports.LipthusWebSocketServer = web_socket_server_1.LipthusWebSocketServer;
+Object.defineProperty(exports, "LipthusWebSocketServer", { enumerable: true, get: function () { return web_socket_server_1.LipthusWebSocketServer; } });
 // noinspection JSUnusedGlobalSymbols
 exports.nodeModule = (key) => require(key);

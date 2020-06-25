@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MlCheckboxesType = exports.MlCheckboxes = exports.MlCheckbox = void 0;
 const mongoose_1 = require("mongoose");
 class MlCheckbox {
     constructor(val, path, options, schema) {

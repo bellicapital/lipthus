@@ -92,6 +92,7 @@ export interface LipthusRequest extends express.Request {
 	cssResponse: CssResponse;
 	sessionID: string;
 	ip: string;
+	ips: string[];
 	/**
 	 * @deprecated
 	 */

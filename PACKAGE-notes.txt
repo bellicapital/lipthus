@@ -1,0 +1,2 @@
+- imagemin-gifsicle 7.0.0 fails to install on linux
+https://github.com/imagemin/imagemin-gifsicle/issues/40

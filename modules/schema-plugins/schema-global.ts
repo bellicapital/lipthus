@@ -315,8 +315,8 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		if (!keysToGet.length)
 			return Promise.resolve(ret);
 
-		return req.db.lang
-			.find({_k: {$in: keysToGet}}, '_k ' + req.ml.lang)
+		// @ts-ignore
+		return req.db.lang.find({_k: {$in: keysToGet}}, '_k ' + req.ml.lang)
 			.then((r: Array<any>) => {
 				r.forEach(t => ret[toGet[t._k]] = t.get(req.ml.lang));
 

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BdfType = exports.Bdf = void 0;
 const mongoose_1 = require("mongoose");
 const bdf_1 = require("../bdf");
 class Bdf extends mongoose_1.SchemaType {

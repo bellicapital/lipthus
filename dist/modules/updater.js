@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkVersions = void 0;
 const Debug = require("debug");
 const updates_1 = require("../updates");
 const fs_1 = require("fs");

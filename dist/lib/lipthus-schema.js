@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LipthusSchemaTypes = exports.SchemaTypes = exports.LipthusSchema = void 0;
 const mongoose = require("mongoose");
 const mongoose_1 = require("mongoose");
 require("./query");

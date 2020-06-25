@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LipthusLogger = void 0;
 const mongoose_1 = require("mongoose");
 const botRe = /^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|responsive|bot)/;
 class LipthusLogger {

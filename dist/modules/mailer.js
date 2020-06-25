@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Mailer = void 0;
 const nodeMailer = require('nodemailer');
 const sesTransport = require('nodemailer-ses-transport');
 const path = require('path');

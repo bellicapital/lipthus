@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Site = void 0;
 const events_1 = require("events");
 const Debug = require("debug");
 const db_1 = require("./db");

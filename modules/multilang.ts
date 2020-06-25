@@ -219,6 +219,7 @@ export class Multilang {
 
 			fields[req.ml.configLang] = true;
 
+			// @ts-ignore
 			req.site.db.lang.find({_k: {$in: toTranslate}}, fields)
 				.then((r: Array<any>) => {
 					// Textos fuente en el idioma principal

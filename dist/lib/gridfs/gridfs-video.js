@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GridFSVideo = void 0;
 const gridfs_file_1 = require("./gridfs-file");
 class GridFSVideo extends gridfs_file_1.GridFSFile {
     info() {

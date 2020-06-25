@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HeadManager = void 0;
 const css_1 = require("./css");
 const js_1 = require("./js");
 const fs = require('fs');

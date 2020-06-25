@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.errorHandler = void 0;
 const logger_1 = require("./logger");
 const fs = require('fs');
 const getView = (status, req) => {

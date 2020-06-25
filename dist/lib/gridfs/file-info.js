@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileThumb = exports.FileInfo = void 0;
 class FileInfo {
     constructor(values) {
         this.id = values.id;
