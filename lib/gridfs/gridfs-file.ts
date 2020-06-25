@@ -519,6 +519,7 @@ export class GridFSFile {
 			source: this._id
 		});
 
+		// @ts-ignore
 		await Cache.create(bdi);
 
 		return bdi;

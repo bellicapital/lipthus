@@ -63,15 +63,17 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 											return ko(err);
 
 										const date = new Date();
-
-										req.db.cache.create({
+										const doc = {
 											contentType: 'image/png',
 											size: buffer.length,
 											uploadDate: date,
 											mtime: date,
 											name: name,
 											MongoBinData: buffer
-										})
+										};
+
+										// @ts-ignore
+										req.db.cache.create(doc)
 											.then((c: any) => BinDataFile.fromMongo(c))
 											.then(ok)
 											.catch(ko);

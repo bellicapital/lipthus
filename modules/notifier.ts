@@ -157,6 +157,7 @@ export class Notifier {
 			extra: opt.extra
 		};
 
+		// @ts-ignore
 		await this.site.db.notification.create(notification);
 
 		if (user.email_notifications !== false && opt.subscribed.email) {
