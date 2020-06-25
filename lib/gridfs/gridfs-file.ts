@@ -11,9 +11,9 @@ import {optimage} from "../optimage";
 import {Collection, GridFSBucket} from "mongodb";
 import {existsSync, createWriteStream, promises as fsPromises} from "fs";
 import {promisify} from "util";
-import {expressMongoStream, MongoFileParams} from 'express-mongo-stream';
 import {Response} from "express";
 import {LipthusFile} from "../file-stream";
+import {expressMongoStream, MongoFileParams} from "../../modules/express-mongo-stream";
 
 const multimedia = require('multimedia-helper');
 const debug = debug0('site:gridfs-file');
