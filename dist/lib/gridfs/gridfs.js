@@ -7,9 +7,9 @@ const mongodb_1 = require("mongodb");
 const gridfs_file_1 = require("./gridfs-file");
 const debug0 = require("debug");
 const gridfs_video_1 = require("./gridfs-video");
+const node_fetch_1 = require("node-fetch");
 const debug = debug0('site:gridfs');
 const path = require('path');
-const request = require('request');
 const Mime = require('mime');
 const multimedia = require('multimedia-helper');
 class GridFS {
@@ -128,17 +128,13 @@ class GridFS {
         return this.getBucket().delete(id);
     }
     // noinspection JSUnusedGlobalSymbols
-    fromUrl(url, fileOptions = {}) {
+    async fromUrl(url, fileOptions = {}) {
         const fn = path.basename(url);
         const tmp = '/tmp/' + fn;
         debug('Fetching ' + url);
-        return new Promise((ok, ko) => {
-            request
-                .get(url)
-                .on('end', () => this.fromFile(tmp, fileOptions).then(ok, ko))
-                .on('error', ko)
-                .pipe(fs.createWriteStream(tmp));
-        });
+        const { body } = await node_fetch_1.default(url);
+        await body.pipe(fs.createWriteStream(tmp));
+        return this.fromFile(tmp, fileOptions);
     }
 }
 exports.GridFS = GridFS;

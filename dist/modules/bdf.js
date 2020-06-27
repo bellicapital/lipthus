@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DbfInfo = exports.BinDataFile = void 0;
 const util_1 = require("util");
 const path = require("path");
+const node_fetch_1 = require("node-fetch");
 const fs = require('fs');
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
-const request = require('request');
 class BinDataFile {
     constructor(data, colRef) {
         this.name = data.name;
@@ -83,18 +83,13 @@ class BinDataFile {
         }, opt));
     }
     // noinspection JSUnusedGlobalSymbols
-    static fromUrl(url) {
-        return new Promise((ok, ko) => {
-            request({ url: url, encoding: null }, (err, res, body) => {
-                if (err)
-                    return ko(err);
-                ok(BinDataFile.fromBuffer({
-                    originalname: path.basename(url),
-                    mimetype: res.headers['content-type'],
-                    mtime: new Date(),
-                    buffer: body
-                }));
-            });
+    static async fromUrl(url) {
+        const res = await node_fetch_1.default(url);
+        return BinDataFile.fromBuffer({
+            originalname: path.basename(url),
+            mimetype: res.headers['content-type'],
+            mtime: new Date(),
+            buffer: res.body // res.buffer() ??
         });
     }
     static fromBuffer(p, opt) {

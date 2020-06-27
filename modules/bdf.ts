@@ -3,13 +3,12 @@ import {promisify} from 'util';
 import * as path from "path";
 import {ColRef} from "../interfaces/global.interface";
 import {LipthusRequest} from "../index";
+import fetch from "node-fetch";
 
 const fs = require('fs');
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
-const request = require('request');
-
 
 export class BinDataFile {
 	public name: string;
@@ -42,7 +41,7 @@ export class BinDataFile {
 			return;
 
 		const ext = r[1].split('/')[1];
-		const buffer = Buffer.from(r[3], <BufferEncoding> r[2]);
+		const buffer = Buffer.from(r[3], <BufferEncoding>r[2]);
 		const obj = {
 			contentType: r[1],
 			size: buffer.length,
@@ -97,19 +96,13 @@ export class BinDataFile {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	static fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
-		return new Promise((ok, ko) => {
-			request({url: url, encoding: null}, (err: Error, res: any, body: any) => {
-				if (err)
-					return ko(err);
-
-				ok(BinDataFile.fromBuffer({
-					originalname: path.basename(url),
-					mimetype: res.headers['content-type'],
-					mtime: new Date(),
-					buffer: body
-				}));
-			});
+	static async fromUrl(url: string): Promise<BinDataFile | BinDataImage> {
+		const res = await fetch(url);
+		return BinDataFile.fromBuffer({
+			originalname: path.basename(url),
+			mimetype: res.headers['content-type'],
+			mtime: new Date(),
+			buffer: res.body // res.buffer() ??
 		});
 	}
 

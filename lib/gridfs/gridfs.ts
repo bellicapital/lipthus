@@ -4,10 +4,10 @@ import {Db, GridFSBucket} from "mongodb";
 import {GridFSFile} from "./gridfs-file";
 import * as debug0 from "debug";
 import {GridFSVideo} from "./gridfs-video";
+import fetch from "node-fetch";
 
 const debug = debug0('site:gridfs');
 const path = require('path');
-const request = require('request');
 const Mime = require('mime');
 const multimedia = require('multimedia-helper');
 
@@ -163,18 +163,15 @@ export class GridFS {
 	}
 
 	// noinspection JSUnusedGlobalSymbols
-	fromUrl(url: string, fileOptions: any = {}) {
+	async fromUrl(url: string, fileOptions: any = {}) {
 		const fn = path.basename(url);
 		const tmp = '/tmp/' + fn;
 
 		debug('Fetching ' + url);
 
-		return new Promise((ok, ko) => {
-			request
-				.get(url)
-				.on('end', () => this.fromFile(tmp, fileOptions).then(ok, ko))
-				.on('error', ko)
-				.pipe(fs.createWriteStream(tmp));
-		});
+		const {body} = await fetch(url);
+		await body.pipe(fs.createWriteStream(tmp));
+
+		return this.fromFile(tmp, fileOptions);
 	}
 }
