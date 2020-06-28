@@ -1,5 +1,4 @@
 import {LipthusRequest, LipthusResponse} from "../index";
-import {LipthusError} from "../classes/lipthus-error";
 
 
 class Security {
@@ -32,12 +31,15 @@ export namespace security {
 			// bloquear
 			// bi.push(req.ip);
 
-			const err = new LipthusError('Security alert! Detected: "' + msg + '"');
+			// const err = new LipthusError('Security alert! Detected: "' + msg + '" · ' + req.path);
+			// err.status = 400;
+			// err.type = 'security';
 
-			err.status = 400;
-			err.type = 'security';
+			// return next(err);
 
-			return next(err);
+			console.warn('Security alert! Detected: "' + msg + '" · ' + req.path);
+
+			return res.writeHead(400, msg).end(msg);
 		};
 
 		if (bi && bi.indexOf(req.ip) > -1)

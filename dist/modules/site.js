@@ -305,6 +305,7 @@ class Site extends events_1.EventEmitter {
         app.getModule = (name) => lipthus[name] || require('./' + name);
         // noinspection JSDeprecatedSymbols
         app.nodeModule = (name) => require(name);
+        app.engine('pug', require('pug').__express);
         app.set('views', [this.srcDir + '/views', this.lipthusDir + '/views']);
         app.set('view engine', 'pug');
         // Para usar paths absolutos en pug extends

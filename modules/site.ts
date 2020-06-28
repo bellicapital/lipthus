@@ -434,6 +434,7 @@ export class Site extends EventEmitter {
 		// noinspection JSDeprecatedSymbols
 		app.nodeModule = (name: string) => require(name);
 
+		app.engine('pug', require('pug').__express);
 		app.set('views', [this.srcDir + '/views', this.lipthusDir + '/views']);
 		app.set('view engine', 'pug');
 

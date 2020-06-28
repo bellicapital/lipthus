@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.security = void 0;
-const lipthus_error_1 = require("../classes/lipthus-error");
 class Security {
     constructor(req) {
         this.req = req;
@@ -27,10 +26,12 @@ var security;
             }
             // bloquear
             // bi.push(req.ip);
-            const err = new lipthus_error_1.LipthusError('Security alert! Detected: "' + msg + '"');
-            err.status = 400;
-            err.type = 'security';
-            return next(err);
+            // const err = new LipthusError('Security alert! Detected: "' + msg + '" · ' + req.path);
+            // err.status = 400;
+            // err.type = 'security';
+            // return next(err);
+            console.warn('Security alert! Detected: "' + msg + '" · ' + req.path);
+            return res.writeHead(400, msg).end(msg);
         };
         if (bi && bi.indexOf(req.ip) > -1)
             return next(new Error('blocked ip ' + req.ip));

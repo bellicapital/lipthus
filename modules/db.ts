@@ -70,7 +70,7 @@ export class LipthusDb extends EventEmitter {
 			app: this.app
 		});
 
-		this._conn.setMaxListeners(20);
+		this._conn.setMaxListeners(15);
 
 		this._conn.once('connected', this.onConnOpen.bind(this));
 		this._conn.on('error', this.onConnError.bind(this));
