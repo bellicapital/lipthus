@@ -84,7 +84,7 @@ export class BinDataImage extends BinDataFile {
 		this.originalImage = data.originalImage;
 	}
 
-	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean) {
+	info(mixed?: number | LipthusRequest, height?: number, crop?: boolean, enlarge?: boolean, nwm?: boolean): DbfImageInfo {
 		let lang = 'es';
 		let width: number | undefined;
 

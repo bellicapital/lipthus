@@ -13,13 +13,11 @@ import {errorHandler} from "./errorhandler";
 import * as csurf from "csurf";
 import {LipthusRequest, LipthusResponse, LipthusApplication, UserModel} from "../index";
 import * as lipthus from '../index';
-import {security} from "./security";
 import {Config} from "./config";
 import {LipthusLogger} from "./logger";
 import notFoundMin from "../routes/notfoundmin";
 import {MultilangModule} from "./multilang";
 import {HtmlPageMiddleware} from "./htmlpage";
-import logger_req from "./logger-req";
 import {existsSync} from "fs";
 import listen from "./listen";
 import {Notifier} from "./notifier";
@@ -34,6 +32,16 @@ const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({cookie: true});
 const favicon = require("connect-favicons");
+
+export interface SiteOptions extends Hooks {
+	skipListening?: boolean;
+	security?: boolean;
+}
+
+const defaultSiteOptions: SiteOptions = {
+	skipListening: false,
+	security: false,
+};
 
 export class Site extends EventEmitter {
 
@@ -65,6 +73,7 @@ export class Site extends EventEmitter {
 	public availableLangs: KeyAny = {};
 	public availableTranslatorLangs: KeyAny = {};
 	public sitemap?: any;
+	public options: SiteOptions;
 	private _notifier: any;
 	private _userCol?: UserModel;
 	private _authDb: any;
@@ -75,9 +84,10 @@ export class Site extends EventEmitter {
 	 */
 	public cmsDir: string;
 
-	constructor(public dir: string, public options: SiteOptions = {}) {
+	constructor(public dir: string, options: SiteOptions = {}) {
 		super();
 
+		this.options = Object.assign({}, defaultSiteOptions, options);
 		this.srcDir = path.basename(dir) === 'dist' ? path.dirname(dir) : dir;
 
 		if (this.options.pre)
@@ -179,7 +189,7 @@ export class Site extends EventEmitter {
 	}
 
 	async init() {
-		this.createApp();
+		await this.createApp();
 
 		this.mailer = new Mailer(this.environment.mail, this);
 
@@ -202,7 +212,6 @@ export class Site extends EventEmitter {
 		await this.setupApp();
 		await this.hooks( 'post', 'setupApp');
 		await Ng(this.app);
-		await this.loadPlugins();
 		await this.hooks('post', 'plugins');
 
 		Subscriber.init(this.app);
@@ -254,19 +263,6 @@ export class Site extends EventEmitter {
 		debug('site hook ' + hook + ' ' + method + ' ' + fn.name);
 
 		return fn(this);
-	}
-
-	async loadPlugins() {
-		const plugins = this.package.config.plugins;
-
-		if (!plugins)
-			return;
-
-		for (const k of Object.keys(plugins)) {
-			this.plugins[k] = await require(this.srcDir + '/node_modules/cmjs-' + k)(this.app);
-
-			Object.defineProperty(this, k, {value: this.plugins[k]});
-		}
 	}
 
 	toString() {
@@ -335,7 +331,7 @@ export class Site extends EventEmitter {
 		return email;
 	}
 
-	createApp() {
+	async createApp() {
 		const app = this.app;
 
 		Object.defineProperty(this, 'app', {value: app});
@@ -358,7 +354,7 @@ export class Site extends EventEmitter {
 				return res.send('Connection: ' + this.db.connected);
 
 			if (!this.db.connected)
-				throw new Error('No db connection');
+				return next(new Error('No db connection'));
 
 			res.now = Date.now();
 
@@ -441,10 +437,10 @@ export class Site extends EventEmitter {
 		// Para usar paths absolutos en pug extends
 		app.locals.basedir = '/';
 
-		app.use(logger_req);
 		app.use(favicon(this.srcDir + '/public/img/icons'));
 
 		if (process.env.NODE_ENV === 'development') {
+			app.use(await import("./logger-req"));
 			app.locals.development = true;
 		}
 
@@ -472,7 +468,10 @@ export class Site extends EventEmitter {
 		app.use(multipart);
 		app.use(cookieParser());
 
-		app.use(security.main);
+		if (this.options.security) {
+			const {security} = await import("./security");
+			app.use(security.main);
+		}
 	}
 
 	async setupApp() {
@@ -521,7 +520,7 @@ export class Site extends EventEmitter {
 				};
 			} else {
 				req.session = {};
-				req.getUser = () => Promise.resolve();
+				req.getUser = async () => {};
 			}
 
 			next();
@@ -557,11 +556,8 @@ export class Site extends EventEmitter {
 		});
 	}
 
-	listen() {
-		return listen(this.app)
-			.then((r: any) => {
-				this.emit('listen', r);
-			});
+	async listen() {
+		this.emit('listen', await listen(this.app));
 	}
 
 	langUrl(langcode?: string) {
@@ -577,8 +573,4 @@ export class Site extends EventEmitter {
 	translate(src: string, from: string, to: string, cb: (err: Error, r: any) => void, srclog: string) {
 		this.translator.translate(src, from, to, cb, srclog);
 	}
-}
-
-export interface SiteOptions extends Hooks {
-	skipListening?: boolean;
 }

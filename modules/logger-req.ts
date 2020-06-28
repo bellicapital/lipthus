@@ -3,7 +3,8 @@ import {LipthusRequest, LipthusResponse} from "../index";
 import {NextFunction} from "express";
 import {KeyAny} from "../interfaces/global.interface";
 
-export default function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
+export = function (req: LipthusRequest, res: LipthusResponse, next: NextFunction) {
+
 	const timers: KeyAny = {
 		all: {start: res.now},
 		lipthus: {start: res.now}
@@ -29,50 +30,8 @@ export default function (req: LipthusRequest, res: LipthusResponse, next: NextFu
 		toString: () => JSON.stringify(res.timer.json())
 	};
 
-	const logReqClients = req.app.wss.getClients('/log-req');
+	morgan.token('timers', () => timers.render ? res.timer : ' ');
 
-	if (logReqClients.length) {
-		const logReq: any = {
-			url: req.protocol + '://' + req.get('host') + req.originalUrl,
-			agent: req.get('user-agent')
-		};
-
-		if (req.method !== 'GET') {
-			logReq.url += ' ' + req.method;
-
-			if (req.method !== 'POST') {
-				logReq.keys = Object.keys(req.body);
-				logReq.referer = req.get('referer');
-			}
-		}
-
-		req.app.wss.broadcast(logReq, '/log-req');
-	}
-
-	if (process.env.NODE_ENV !== 'development') {
-		next();
-	} else {
-		morgan.token('timers', () => timers.render ? res.timer : ' ');
-		// morgan.token('device', () => req.device.type);
-
-		// @ts-ignore
-		morgan(':method :req[Host]:url :status :response-time ms :res[content-length] :timers')(req, res, function () {
-			/*
-		morgan(':method :req[Host]:url :status :response-time ms :res[content-length] :device :timers')(req, res, function(){
-			res.logreq = {
-				host: req.get('host'),
-				url: req.originalUrl,
-				method: req.method,
-				created: new Date,
-				agent: req.get('user-agent'),
-				referer: req.get('referer'),
-				initmem: process.memoryUsage()
-			};
-
-			req.app.wss.broadcast(res.logreq, '/logreq');
-			*/
-
-			next();
-		});
-	}
-}
+	// @ts-ignore
+	morgan(':method :req[Host]:url :status :response-time ms :res[content-length] :timers')(req, res, next);
+};

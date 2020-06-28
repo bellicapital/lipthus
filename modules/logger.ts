@@ -4,7 +4,6 @@ import {Collection} from "mongodb";
 import {LipthusError} from "../classes/lipthus-error";
 import {NextFunction} from "express";
 
-const botRe = /^\/(videos|bdf|resimg|optimg|ajax\/|c\/|cache|admin|form-log|responsive|bot)/;
 
 export class LipthusLogger {
 
@@ -14,9 +13,6 @@ export class LipthusLogger {
 			.catch(console.warn.bind(console));
 
 		app.use(LipthusLogger.middleware);
-
-		if (app.site.config.botLog)
-			app.use(LipthusLogger.botMiddleware);
 	}
 
 	static middleware(req: LipthusRequest, res: LipthusResponse, next: NextFunction): void {
@@ -26,19 +22,6 @@ export class LipthusLogger {
 
 		next();
 	}
-
-	static botMiddleware(req: LipthusRequest, res: LipthusResponse, next: NextFunction): void {
-		// req.device.type = 'bot';
-		// req.headers['user-agent'] = "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)";
-		if (req.device.type !== 'bot' || botRe.test(req.path))
-			return next();
-
-		req.db.botlog
-			.log(req)
-			.then(() => next())
-			.catch(next);
-	}
-
 
 	constructor(public req: LipthusRequest) {
 		Object.defineProperty(req, 'logger', {value: this});

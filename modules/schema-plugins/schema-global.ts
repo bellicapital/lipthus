@@ -95,16 +95,16 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		return ret;
 	};
 
-	schema.methods.getVar = function (this: any, k: string, req: LipthusRequest, forceTranslate: boolean = true) {
+	schema.methods.getVar = async function (this: any, k: string, req: LipthusRequest, forceTranslate: boolean = true) {
 		const val = this.get(k);
 
 		if (val === undefined)
-			return Promise.resolve();
+			return;
 
 		const opt = schema.tree[k];
 
 		if (!opt)
-			return Promise.resolve(val);
+			return val;
 
 		const ret: Array<any> = [];
 		const site = this.db.lipthusDb.site;
@@ -114,28 +114,28 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 		switch (schema.getTypename(k)) {
 			case 'Multilang':
 				if (!val)
-					return Promise.resolve(val);
+					return val;
 
 				const fn = forceTranslate ? 'getLangOrTranslate' : 'getLang';
 
 				if (!Array.isArray(val))
-					return Promise.resolve(val[fn](req.ml.lang));
+					return val[fn](req.ml.lang);
 
 				return Promise.all((val as Array<any>).map(v => v[fn](req.ml.lang)));
 
 			case 'Bdf':
 				if (!val)
-					return Promise.resolve();
+					return;
 
 				info = val.info(req); // .maxImgWidth, req.maxImgHeight, req.imgCrop, req.imgnwm);
 
 				info.uri = site.staticHost + info.uri;
 
-				return Promise.resolve(info);
+				return info;
 
 			case 'BdfList':
 				if (!val || !Object.keys(val).length)
-					return Promise.resolve();
+					return;
 
 				Object.keys(val).forEach(i => {
 					if (!val[i].hidden && val[i].info) {
@@ -145,11 +145,11 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 					}
 				});
 
-				return Promise.resolve(ret);
+				return ret;
 
 			case 'Fs':
 				if (!val || !Object.keys(val).length)
-					return Promise.resolve();
+					return;
 
 				Object.keys(val).forEach(i => {
 					if (val[i].info) {
@@ -169,14 +169,14 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 					}
 				});
 
-				return Promise.resolve(ret.length ? ret : null);
+				return ret.length ? ret : null;
 
 			case 'MlSelector':
 			case 'MlCheckboxes':
-				return val ? val.getVal(req, this.db.lipthusDb) : Promise.resolve();
+				return val ? val.getVal(req, this.db.lipthusDb) : null;
 
 			case 'location':
-				return Promise.resolve(new LipthusLocation(val));
+				return new LipthusLocation(val);
 
 			case 'Number':
 				// if (opt.origType === 'money')
@@ -189,7 +189,7 @@ export function schemaGlobalMethods(schema: LipthusSchema): void {
 			case 'Date':
 			case 'ObjectId':
 			default:
-				return Promise.resolve(val);
+				return val;
 		}
 	};
 
