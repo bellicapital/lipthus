@@ -31,6 +31,7 @@ import route from "../routes";
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({cookie: true});
+const GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || (800 * 1024 * 1024);
 
 export interface SiteOptions extends Hooks {
 	skipListening?: boolean;
@@ -355,7 +356,7 @@ export class Site extends EventEmitter {
 
 			res.now = Date.now();
 
-			if (global.gc && process.memoryUsage().rss > (process.env.GC_EXPOSE_MEM_LIMIT || 0))
+			if (global.gc && process.memoryUsage().rss > GC_EXPOSE_MEM_LIMIT)
 				global.gc();
 
 			// evita doble slash al principio de la ruta
