@@ -41,7 +41,7 @@ class AjaxProcess extends AjaxGlobalMethods {
 	process() {
 		this.init();
 
-		return this.security()
+		return this.req.getUser()
 			.then(this.route.bind(this));
 	}
 
@@ -60,13 +60,6 @@ class AjaxProcess extends AjaxGlobalMethods {
 		q.db = q.db || this.req.db.toString();
 
 		this.processArguments();
-	}
-
-	security() {
-		return this.req.getUser()
-			.then(() => {
-				// todo
-			});
 	}
 
 	processArguments() {

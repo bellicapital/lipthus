@@ -30,10 +30,8 @@ const routes_1 = require("../routes");
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({ cookie: true });
-const favicon = require("connect-favicons");
 const defaultSiteOptions = {
-    skipListening: false,
-    security: false,
+    skipListening: false
 };
 class Site extends events_1.EventEmitter {
     constructor(dir, options = {}) {
@@ -255,7 +253,6 @@ class Site extends events_1.EventEmitter {
             req.cmsDir = this.lipthusDir;
             req.domainName = (req.hostname || req.get('host') || '').replace(/^.+\.([^.]+\.[^.]+)$/, '$1');
             req.fullUri = req.protocol + '://' + req.headers.host + req.originalUrl;
-            res.set('X-Powered-By', 'Lipthus');
             req.notifyError = err => {
                 err.url = req.fullUri;
                 err.referer = req.get('referer');
@@ -302,7 +299,6 @@ class Site extends events_1.EventEmitter {
         app.set('view engine', 'pug');
         // Para usar paths absolutos en pug extends
         app.locals.basedir = '/';
-        app.use(favicon(this.srcDir + '/public/img/icons'));
         if (process.env.NODE_ENV === 'development') {
             app.use(await Promise.resolve().then(() => require("./logger-req")));
             app.locals.development = true;
@@ -327,10 +323,6 @@ class Site extends events_1.EventEmitter {
         app.use(express.json({ limit: '1gb' }));
         app.use(multipart_1.default);
         app.use(cookieParser());
-        if (this.options.security) {
-            const { security } = await Promise.resolve().then(() => require("./security"));
-            app.use(security.main);
-        }
     }
     async setupApp() {
         const app = this.app;

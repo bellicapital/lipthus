@@ -346,16 +346,6 @@
 				"bool",
 				"Sitemap",
 				true
-			],
-			"rss": [
-				"bool",
-				"RSS",
-				true
-			],
-			"rssVideo": [
-				"bool",
-				"RSS Video",
-				true
 			]
 		}
 	},
@@ -366,14 +356,6 @@
 				"bool",
 				"_PAY_TESTMODE",
 				true
-			],
-			"paypal_primary_email": [
-				"string",
-				"_PAY_PAL_PRIMARY_EMAIL"
-			],
-			"paypal_primary_email_sandbox": [
-				"string",
-				"_PAY_PAL_PRIMARY_EMAIL_SANDBOX"
 			],
 			"url_tpvv": [
 				"string",
@@ -551,11 +533,6 @@
 				"Detect Page Speed Insights",
 				false,
 				"Detect Google Page Speed Insights origin"
-			],
-			"logReqUserLevel": [
-				"int",
-				"User level to access /log-req",
-				2
 			],
 			"sessionExpireDays": [
 				"int",

@@ -1,5 +1,4 @@
 import {Site} from "../site";
-import {AzureTranslator} from "./azureTranslator";
 import {GoogleTranslator} from "./googleTranslator";
 import {TmpModel} from "../../schemas/tmp";
 
@@ -8,7 +7,7 @@ const langname = require('local-lang-names');
 export class Translator {
 
 	public service: any;
-	public client: AzureTranslator | GoogleTranslator | undefined;
+	public client: GoogleTranslator | undefined;
 	private tmp: TmpModel;
 	private _availableLangs?: any;
 	private cache: any;
@@ -23,11 +22,6 @@ export class Translator {
 		this.service = config.translate_service;
 
 		switch (this.service) {
-			case 'azure':
-
-				this.client = new AzureTranslator(config.azure_client_id, config.azure_client_secret);
-
-				break;
 			case 'google':
 				if (config.googleApiKey)
 					this.client = new GoogleTranslator(config.googleApiKey);

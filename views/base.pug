@@ -7,7 +7,6 @@ html(lang=lang)
 		unless justContent
 			meta(name="viewport", content="width=device-width, initial-scale=1")
 			meta(charset="UTF-8")
-			link(rel="shortcut icon", href="/favicon.ico")
 
 			if metas
 				each attr in metas
@@ -35,7 +34,7 @@ html(lang=lang)
 			if js && js.headInline
 				script!=js.headInline
 
-	body(id=page ? "euca_page-" + page : null)
+	body
 		block body
 
 		if(js && js.body)

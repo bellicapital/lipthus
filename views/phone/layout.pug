@@ -6,7 +6,6 @@ html
 
 		meta(name="viewport", content="width=device-width, initial-scale=1")
 		meta(charset="UTF-8")
-		link(rel="shortcut icon", href="/favicon.ico")
 
 		unless justContent
 			if cssHead
@@ -24,7 +23,7 @@ html
 
 	body(id="euca_page-" + page)
 		block content
-		
+
 		if(js && js.body)
 			each s in js.body
 				script(src=s.src + (s.m ? '?_' + s.m : ''))

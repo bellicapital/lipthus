@@ -33,7 +33,7 @@ class AjaxProcess extends modules_1.AjaxGlobalMethods {
     }
     process() {
         this.init();
-        return this.security()
+        return this.req.getUser()
             .then(this.route.bind(this));
     }
     init() {
@@ -47,12 +47,6 @@ class AjaxProcess extends modules_1.AjaxGlobalMethods {
         q.p = q.p || q.plugin;
         q.db = q.db || this.req.db.toString();
         this.processArguments();
-    }
-    security() {
-        return this.req.getUser()
-            .then(() => {
-            // todo
-        });
     }
     processArguments() {
         const q = this.query;

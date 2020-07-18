@@ -1,5 +1,4 @@
 import {LipthusSchema, LipthusSchemaTypes} from '../../lib';
-import * as _ from "underscore";
 import {KeyAny} from "../../interfaces/global.interface";
 
 const DoSchema = require('./do');
@@ -68,23 +67,6 @@ module.exports = function dynobject() {
 
 			return ret;
 		},
-		getItemsArray: async function (req: any) {
-			const ret: any = {};
-
-			const obj: Array<any> = await this.find();
-
-			ret.handlers = obj.map(o => o.getDynValues(req));
-			const m: Array<any> = await req.site.db.dynobjectsmenu.find();
-
-			ret.menus = m.map(menu => {
-				const json = menu.jsonInfo();
-				delete json.__v;
-
-				return json;
-			});
-
-			return ret;
-		},
 		checkAll: function (req: any, cb: any) {
 			const ret = {dynobjects: <KeyAny>{}};
 
@@ -114,55 +96,6 @@ module.exports = function dynobject() {
 			ret.vars = req.db[ret.colname].getDefinitions();
 
 			return ret;
-		},
-		getNodeTree: function (req: any, filter: Array<string> | string, levels: number = 1, incOrphans: boolean = true) {
-			if (!filter)
-				filter = [];
-			else if (typeof filter === 'string')
-				filter = filter.split(',');
-
-			let models: Array<string>;
-
-			if (incOrphans && this.accept.length) {
-				models = this.accept.slice(0); // clone
-
-				if (models.indexOf(this.colname) === -1)
-					models.unshift(this.colname);
-			} else
-				models = [this.colname];
-
-			if (filter.length)
-				models = _.difference(models, filter);
-
-			const query = {
-				parents: {
-					$not: {
-						$elemMatch: {
-							$ref: 'dynobjects.' + this.colname
-						}
-					}
-				}
-			};
-
-			return Promise.all(
-				models.map(colname => {
-					const opt = {sort: <any> {}};
-
-					if (!req.db.schemas[colname].tree.title.multilang)
-						opt.sort.title = 1;
-					else
-						opt.sort['title.' + req.ml.lang] = 1;
-
-					const ret: Array<any> = [];
-
-					return req.db[colname].find(query, '', opt)
-						.then((r: Array<any>) => Promise.all(
-							r.map(obj => obj.getNodeData(req, levels, filter)
-								.then((nData: any) => ret.push(nData))))
-						)
-						.then(() => ret);
-				})
-			);
 		}
 	};
 

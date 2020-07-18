@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../../lib");
-const _ = require("underscore");
 const DoSchema = require('./do');
 module.exports = function dynobject() {
     const s = new lib_1.LipthusSchema({
@@ -60,18 +59,6 @@ module.exports = function dynobject() {
             });
             return ret;
         },
-        getItemsArray: async function (req) {
-            const ret = {};
-            const obj = await this.find();
-            ret.handlers = obj.map(o => o.getDynValues(req));
-            const m = await req.site.db.dynobjectsmenu.find();
-            ret.menus = m.map(menu => {
-                const json = menu.jsonInfo();
-                delete json.__v;
-                return json;
-            });
-            return ret;
-        },
         checkAll: function (req, cb) {
             const ret = { dynobjects: {} };
             this.find((err, dy) => {
@@ -94,43 +81,6 @@ module.exports = function dynobject() {
             delete ret.dynvars;
             ret.vars = req.db[ret.colname].getDefinitions();
             return ret;
-        },
-        getNodeTree: function (req, filter, levels = 1, incOrphans = true) {
-            if (!filter)
-                filter = [];
-            else if (typeof filter === 'string')
-                filter = filter.split(',');
-            let models;
-            if (incOrphans && this.accept.length) {
-                models = this.accept.slice(0); // clone
-                if (models.indexOf(this.colname) === -1)
-                    models.unshift(this.colname);
-            }
-            else
-                models = [this.colname];
-            if (filter.length)
-                models = _.difference(models, filter);
-            const query = {
-                parents: {
-                    $not: {
-                        $elemMatch: {
-                            $ref: 'dynobjects.' + this.colname
-                        }
-                    }
-                }
-            };
-            return Promise.all(models.map(colname => {
-                const opt = { sort: {} };
-                if (!req.db.schemas[colname].tree.title.multilang)
-                    opt.sort.title = 1;
-                else
-                    opt.sort['title.' + req.ml.lang] = 1;
-                const ret = [];
-                return req.db[colname].find(query, '', opt)
-                    .then((r) => Promise.all(r.map(obj => obj.getNodeData(req, levels, filter)
-                    .then((nData) => ret.push(nData)))))
-                    .then(() => ret);
-            }));
         }
     };
     return s;

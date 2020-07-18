@@ -86,7 +86,6 @@ export interface LipthusRequest extends express.Request {
 	nationalities: KeyString;
 	getUser: () => Promise<User | void>;
 	files: Array<any>;	// Array<UploadedFile>;
-	security: any;
 	logError: (err: LipthusError) => Promise<void | Error>;
 	lessSourceMap: string;
 	cssResponse: CssResponse;

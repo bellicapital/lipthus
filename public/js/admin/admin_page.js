@@ -48,7 +48,7 @@ $.fn.adminPage = function(p,li){
 	if(p.key !== 'admin'){
 		var cache = /^A(\d+)$/.exec(p.expires);
 		cache = cache ? parseInt(cache[1] / 60, 10) : 0;
-		
+
 		$.extend(vars, {
 			title: {
 				formtype: 'text',
@@ -85,12 +85,6 @@ $.fn.adminPage = function(p,li){
 				datatype: 'boolean',
 				caption: 'Incluir en el sitemap',
 				value: p.sitemap ? 1 : 0
-			},
-			rss: {
-				formtype: 'yesno',
-				datatype: 'boolean',
-				caption: 'Incluir en el RSS',
-				value: p.rss ? 1 : 0
 			},
 			debugImgRef: {
 				formtype: 'bdi',

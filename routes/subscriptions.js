@@ -44,22 +44,19 @@ module.exports = function(req, res, next){
 		});
 	};
 
-	function _next(err, notify){
+	function _next(err){
 		if(typeof err === 'string')
 			err = new Error(err);
 
 		if(!res.headersSent)
 			res.send({error: err.message});
-
-		if(notify)
-			req.notifyError(err);
 	}
 
 	// noinspection FallThroughInSwitchStatementJS
 	switch(req.params.action){
 		case 'addItem':
 			if(!req.body.id)
-				return _next('no item id to add', true);
+				return _next('no item id to add');
 
 			const db = req.body.db || req.site.db.name;
 
@@ -90,7 +87,7 @@ module.exports = function(req, res, next){
 
 					todbcol.items.forEach((s, i) => {
 						if(!s)
-							return _next('Empty parameter in items.\nPost: ' + util.inspect(req.body) + '\n' + req.originalUrl, true);
+							return _next('Empty parameter in items.\nPost: ' + util.inspect(req.body) + '\n' + req.originalUrl);
 
 						if(typeof s === 'string')
 							todbcol.items[i] = mongoose.Types.ObjectId(s);

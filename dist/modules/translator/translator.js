@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translator = void 0;
-const azureTranslator_1 = require("./azureTranslator");
 const googleTranslator_1 = require("./googleTranslator");
 const langname = require('local-lang-names');
 class Translator {
@@ -13,9 +12,6 @@ class Translator {
         this.logger = site.db.loggerTranslator;
         this.service = config.translate_service;
         switch (this.service) {
-            case 'azure':
-                this.client = new azureTranslator_1.AzureTranslator(config.azure_client_id, config.azure_client_secret);
-                break;
             case 'google':
                 if (config.googleApiKey)
                     this.client = new googleTranslator_1.GoogleTranslator(config.googleApiKey);
