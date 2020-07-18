@@ -31,7 +31,6 @@ import route from "../routes";
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({cookie: true});
-const GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || (800 * 1024 * 1024);
 
 export interface SiteOptions extends Hooks {
 	skipListening?: boolean;
@@ -347,6 +346,8 @@ export class Site extends EventEmitter {
 			.set('environment', this.environment)
 			.set('tmpDir', this.tmpDir);
 
+		(await import('./log-route'))(app);
+
 		app.use((req: LipthusRequest, res: LipthusResponse, next: NextFunction) => {
 			if (req.url === '/__test__')
 				return res.send('Connection: ' + this.db.connected);
@@ -355,9 +356,6 @@ export class Site extends EventEmitter {
 				return next(new Error('No db connection'));
 
 			res.now = Date.now();
-
-			if (global.gc && process.memoryUsage().rss > GC_EXPOSE_MEM_LIMIT)
-				global.gc();
 
 			// evita doble slash al principio de la ruta
 			if (req.path.match(/^\/\//))

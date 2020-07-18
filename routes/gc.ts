@@ -12,22 +12,19 @@ export function gc (req: LipthusRequest, res: LipthusResponse) {
 		_gc = vm.runInNewContext('gc');
 	}
 
-	ret += htmlUsage() + '<br>';
+	ret += htmlUsage() + '<br><a href="?_=' + Date.now() + '">Refresh</a><br>';
 
 	if (req.query.now) {
 		// @ts-ignore
 		_gc(req.query.now === "2");
-		ret += '<h3>After:</h3>' + htmlUsage() + '<br><a href="?_=' + Date.now() + '">Ok</a><br>';
+		ret += '<h3>After:</h3>' + htmlUsage() + '<br>';
 	} else
 		ret += '<a href="?now=1&_=' + Date.now() + '">GC Now!</a><br><a href="?now=2&_=' + Date.now() + '">GC Full Now!</a><br>';
 
 	res.send(ret);
 }
 
-function hm(n: number) {
-	const ret = n / 1024 / 1024;
-	return (Math.round(ret * 100) / 100) + 'MB';
-}
+const hm = (n: number) => (Math.round(n / 1024 / 1024 * 100) / 100) + 'MB';
 
 function htmlUsage() {
 	let ret = '<table>';

@@ -538,6 +538,11 @@
 				"int",
 				"Session cookie: Number of days to expire.",
 				1
+			],
+			"logRoute": [
+				"bool",
+				"Log route",
+				false
 			]
 		}
 	},

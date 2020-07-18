@@ -37,6 +37,7 @@ export class Config {
 	auto_hreflang?: boolean;
 	sessionExpireDays?: number;
 	sitemap: boolean;
+	logRoute: boolean;
 
 	constructor(public site: Site) {
 	}

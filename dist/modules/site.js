@@ -30,7 +30,6 @@ const routes_1 = require("../routes");
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({ cookie: true });
-const GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || (800 * 1024 * 1024);
 const defaultSiteOptions = {
     skipListening: false
 };
@@ -235,14 +234,13 @@ class Site extends events_1.EventEmitter {
             .set('csrf', csrf)
             .set('environment', this.environment)
             .set('tmpDir', this.tmpDir);
+        (await Promise.resolve().then(() => require('./log-route')))(app);
         app.use((req, res, next) => {
             if (req.url === '/__test__')
                 return res.send('Connection: ' + this.db.connected);
             if (!this.db.connected)
                 return next(new Error('No db connection'));
             res.now = Date.now();
-            if (global.gc && process.memoryUsage().rss > GC_EXPOSE_MEM_LIMIT)
-                global.gc();
             // evita doble slash al principio de la ruta
             if (req.path.match(/^\/\//))
                 return res.redirect(req.path.substr(1));

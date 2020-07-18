@@ -158,6 +158,9 @@ class LipthusDb extends events_1.EventEmitter {
     get comment() {
         return this.model('comment');
     }
+    get logRoute() {
+        return this.model('logRoute');
+    }
     model(name, schema) {
         if (this.models[name])
             return this.models[name];

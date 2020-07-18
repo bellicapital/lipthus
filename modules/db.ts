@@ -231,6 +231,10 @@ export class LipthusDb extends EventEmitter {
 		return this.model('comment');
 	}
 
+	get logRoute() {
+		return this.model('logRoute');
+	}
+
 	model(name: string, schema?: LipthusSchema) { // if (name === 'newsletter') console.trace(name)
 		if (this.models[name])
 			return this.models[name];
