@@ -348,8 +348,10 @@ class Site extends events_1.EventEmitter {
             app.use((await Promise.resolve().then(() => require('./auth'))).default(this));
         }
         app.use((req, res, next) => {
-            res.timer.end('lipthus');
-            res.timer.start('page');
+            if (res.timer) {
+                res.timer.end('lipthus');
+                res.timer.start('page');
+            }
             if (req.session) {
                 req.session.last = {
                     host: req.hostname,

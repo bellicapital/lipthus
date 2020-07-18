@@ -498,8 +498,10 @@ export class Site extends EventEmitter {
 		}
 
 		app.use((req: LipthusRequest, res: any, next: NextFunction) => {
-			res.timer.end('lipthus');
-			res.timer.start('page');
+			if (res.timer) {
+				res.timer.end('lipthus');
+				res.timer.start('page');
+			}
 
 			if (req.session) {
 				req.session.last = {

@@ -370,7 +370,7 @@ export class HtmlPage {
 
 		const vPath = this.viewPath();
 
-		res.timer.start('render');
+		if (res.timer) res.timer.start('render');
 
 		if (!vPath)
 			return Promise.reject(new Error('no view'));
