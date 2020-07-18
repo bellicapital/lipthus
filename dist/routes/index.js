@@ -19,6 +19,7 @@ const videos_1 = require("./videos");
 const video_poster_1 = require("./video-poster");
 const lmns_1 = require("./lmns");
 const resimg_1 = require("./resimg");
+const gc_1 = require("./gc");
 const embed = require('./embed');
 const upload = require('./upload');
 const multipart = multer({ dest: os_1.tmpdir() }).any();
@@ -56,6 +57,7 @@ async function default_1(app) {
     router.get('/c/:id.:ext*', cache_1.default);
     router.get('/notifications', require('./notifications'));
     router.get('/logout', logout_1.default);
+    router.get('/_gc', gc_1.gc);
     router.get('/ipLocation', (req, res) => {
         res.send({
             ipLocation: req.ipLocation,

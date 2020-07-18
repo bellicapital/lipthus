@@ -18,6 +18,7 @@ import videos from "./videos";
 import videoPoster from "./video-poster";
 import lmns from "./lmns";
 import resimg from "./resimg";
+import {gc} from "./gc";
 
 const embed = require('./embed');
 const upload = require('./upload');
@@ -62,6 +63,7 @@ export default async function (app: LipthusApplication) {
 	router.get('/c/:id.:ext*', cache as any);
 	router.get('/notifications', require('./notifications'));
 	router.get('/logout', logout as any);
+	router.get('/_gc', gc as any);
 	router.get('/ipLocation', (req: LipthusRequest, res: any) => {
 		res.send({
 			ipLocation: req.ipLocation,
