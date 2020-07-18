@@ -30,6 +30,7 @@ const routes_1 = require("../routes");
 const debug = Debug('site:site');
 const device = require('express-device');
 const csrf = csurf({ cookie: true });
+const GC_EXPOSE_MEM_LIMIT = process.env.GC_EXPOSE_MEM_LIMIT || (800 * 1024 * 1024);
 const defaultSiteOptions = {
     skipListening: false
 };
@@ -240,7 +241,7 @@ class Site extends events_1.EventEmitter {
             if (!this.db.connected)
                 return next(new Error('No db connection'));
             res.now = Date.now();
-            if (global.gc && process.memoryUsage().rss > (process.env.GC_EXPOSE_MEM_LIMIT || 0))
+            if (global.gc && process.memoryUsage().rss > GC_EXPOSE_MEM_LIMIT)
                 global.gc();
             // evita doble slash al principio de la ruta
             if (req.path.match(/^\/\//))

@@ -15,10 +15,10 @@ function gc(req, res) {
     if (req.query.now) {
         // @ts-ignore
         _gc(req.query.now === "2");
-        ret += '<h3>After:</h3>' + htmlUsage() + '<br><a href="?">Ok</a><br>';
+        ret += '<h3>After:</h3>' + htmlUsage() + '<br><a href="?_=' + Date.now() + '">Ok</a><br>';
     }
     else
-        ret += '<a href="?now=1">GC Now!</a><br><a href="?now=2">GC Full Now!</a><br>';
+        ret += '<a href="?now=1&_=' + Date.now() + '">GC Now!</a><br><a href="?now=2&_=' + Date.now() + '">GC Full Now!</a><br>';
     res.send(ret);
 }
 exports.gc = gc;
