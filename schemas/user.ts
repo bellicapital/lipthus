@@ -203,18 +203,18 @@ export function getSchema(site: Site) {
 }
 
 export interface User extends Document {
-	key: string;
+	key?: string;
 	uname: string;
 	name: string;
-	pass: string;
+	pass?: string;
 	level: number;
-	cart: any;
+	cart?: any;
 	email: string;
-	language: string;
-	phone: Array<string>;
-	address: any;
-	devices: Array<any>;
-	subscriptions: any;
+	language?: string;
+	phone?: Array<string>;
+	address?: any;
+	devices?: Array<any>;
+	subscriptions?: any;
 	type?: string;
 	email_notifications?: boolean;
 	formatEmailTo?: string;
