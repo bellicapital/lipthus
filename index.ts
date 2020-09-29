@@ -11,6 +11,7 @@ import {LipthusWebSocketServer} from "./classes/web-socket-server";
 import {Server as Server} from "https";
 import * as express from "express";
 import {IpLocation} from "./modules/geo/ip-location";
+import {Response} from "express";
 
 const debug = Debug('site:lipthus');
 debug('Loading modules. Please wait...');
@@ -102,7 +103,7 @@ export interface LipthusRequest extends express.Request {
 	next(next: any);
 }
 
-export interface LipthusResponse extends express.Response {
+export interface LipthusResponse extends Response {
 	now: number;
 	htmlPage: HtmlPage;
 	timer: any;
