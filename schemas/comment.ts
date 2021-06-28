@@ -99,6 +99,7 @@ export class Comment {
 	public rating?: number;
 	public created?: Date;
 	public lastMod?: Date;
+	// noinspection JSUnusedGlobalSymbols
 	public userLocation?: string;
 
 	static find4show(this: LipthusCommentModel, query: any, limit?: number) {
@@ -272,6 +273,7 @@ export class Comment {
 		return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getItem(fields?: any) {
 		if (!this.ref || !this.ref.namespace)
 			return Promise.resolve();

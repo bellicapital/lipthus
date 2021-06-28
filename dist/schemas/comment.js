@@ -185,6 +185,7 @@ class Comment {
     getHash() {
         return md5(this.ref.oid.toString() + this.ref.namespace + this.text);
     }
+    // noinspection JSUnusedGlobalSymbols
     getItem(fields) {
         if (!this.ref || !this.ref.namespace)
             return Promise.resolve();
