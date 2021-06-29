@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Translator = void 0;
 const azureTranslator_1 = require("./azureTranslator");
 const googleTranslator_1 = require("./googleTranslator");
 const langname = require('local-lang-names');

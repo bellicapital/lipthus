@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GoogleTranslator = void 0;
 const api = require('google-translate');
 class GoogleTranslator {
     constructor(apiKey) {

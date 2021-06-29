@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.schemaGlobalMethods = void 0;
 const bdf_1 = require("../bdf");
 const lib_1 = require("../../lib");
 const location_1 = require("../geo/location");

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSchema = exports.name = void 0;
 const lib_1 = require("../lib");
 exports.name = "cacheResponse";
 // noinspection JSUnusedGlobalSymbols
@@ -30,7 +29,7 @@ function getSchema() {
     s.statics = {
         clear: function () {
             return new Promise((ok, ko) => {
-                // noinspection TypeScriptValidateJSTypes
+                // @ts-ignore (throws errors in client instances)
                 this.db.collection(this.schema.options.collection).drop((err) => {
                     err && err.message !== 'ns not found' ? ko(err) : ok();
                 });

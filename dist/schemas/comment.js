@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Comment = exports.getSchema = exports.name = void 0;
 const lib_1 = require("../lib");
 const mongoose_1 = require("mongoose");
 const md5 = require('md5');

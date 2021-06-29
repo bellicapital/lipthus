@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.lastModifiedPlugin = void 0;
 function lastModifiedPlugin(schema) {
     schema.add({ modified: Date });
     schema.pre('save', function (next) {

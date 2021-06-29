@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.modifierPlugin = void 0;
 const mongoose_1 = require("mongoose");
 function modifierPlugin(schema) {
     // No funciona en mongoose 5.0.14!!!!!

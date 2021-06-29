@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MultilangModule = exports.Multilang = void 0;
 class Multilang {
     constructor(req) {
         this.req = req;
@@ -233,7 +232,6 @@ class Multilang {
         this.req.site.translate(src, this.configLang, this.lang, cb, srcLog);
     }
 }
-exports.Multilang = Multilang;
 Multilang.defaultLang = 'es';
 Multilang.defaultLocale = 'es_ES';
 Multilang.availableLangs = {
@@ -262,6 +260,7 @@ Multilang.availableLangs = {
     ja: '日本語',
     ko: '한국어'
 };
+exports.Multilang = Multilang;
 async function MultilangModule(app) {
     const site = app.site;
     await site.db.lang.check();

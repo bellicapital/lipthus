@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LipthusSchemaTypes = exports.SchemaTypes = exports.LipthusSchema = void 0;
 const mongoose = require("mongoose");
 const mongoose_1 = require("mongoose");
 require("./query");
@@ -125,8 +124,8 @@ class LipthusSchema extends mongoose_1.Schema {
         }));
     }
 }
-exports.LipthusSchema = LipthusSchema;
 LipthusSchema.Types = mongoose_1.Schema.Types;
+exports.LipthusSchema = LipthusSchema;
 mongoose.LipthusSchema = LipthusSchema;
 var LipthusSchemaTypes;
 (function (LipthusSchemaTypes) {

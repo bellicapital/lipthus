@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FsType = exports.Fs = exports.FsList = void 0;
 const mongoose = require("mongoose");
 const mongoose_1 = require("mongoose");
 const lib_1 = require("../../lib");

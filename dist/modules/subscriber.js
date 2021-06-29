@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Subscriber = void 0;
 const Debug = require("debug");
 const fs_1 = require("fs");
 const debug = Debug('site:subscriber');

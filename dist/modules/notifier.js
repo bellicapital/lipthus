@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Notifier = void 0;
 const node_gcm_1 = require("node-gcm");
 const FCM = require('fcm-push');
 const fs = require('fs');

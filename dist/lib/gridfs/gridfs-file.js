@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GridFSFile = void 0;
 const file_info_1 = require("./file-info");
 const mongoose_1 = require("mongoose");
 const path = require("path");

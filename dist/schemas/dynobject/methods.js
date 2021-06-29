@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.globalLink = exports.changeVar = exports.getName = exports.getLink = exports.vote = exports.rate = exports.commentsCount = exports.getNodeData = exports.addParent = exports.removeParent = exports._getChildren = exports.getChildren = exports.hasChildren = exports.getSocialDescription = exports.getSocialTitle = exports.getSocialImage = exports.getImage = exports.getThumb = void 0;
 const lib_1 = require("../../lib");
 const Types = lib_1.LipthusSchema.Types;
 // para el video, es necesario haber ejecutado antes .loadFiles()

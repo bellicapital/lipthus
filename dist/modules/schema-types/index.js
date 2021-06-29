@@ -1,9 +1,8 @@
 "use strict";
 var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MlCheckboxesType = exports.MlSelector = exports.MlSelectorType = exports.MultilangText = exports.MultilangType = exports.FsType = exports.BdfType = void 0;
 var bdf_list_1 = require("./bdf-list");
-Object.defineProperty(exports, "BinDataFileList", { enumerable: true, get: function () { return bdf_list_1.BinDataFileList; } });
+exports.BinDataFileList = bdf_list_1.BinDataFileList;
 exports.BdfType = require('./bdf').BdfType;
 exports.FsType = require('./fs').FsType;
 _a = require('./mltext'), exports.MultilangType = _a.MultilangType, exports.MultilangText = _a.MultilangText;

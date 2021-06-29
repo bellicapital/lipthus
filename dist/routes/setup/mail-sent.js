@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPendingMails = exports.sendMail = exports.mailSentList = void 0;
 const pendingQuery = {
     result: { $exists: false },
     error: { $exists: false }

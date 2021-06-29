@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LipthusDb = void 0;
 const mongoose = require("mongoose");
 const lib_1 = require("../lib");
 const schema_global_1 = require("./schema-plugins/schema-global");

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AzureTranslator = void 0;
 const MsTranslator = require('mstranslator');
 class AzureTranslator {
     constructor(client_id, client_secret) {

@@ -35,8 +35,8 @@ export function getSchema() {
 	s.statics = {
 		clear: function () {
 			return new Promise((ok, ko) => {
-				// noinspection TypeScriptValidateJSTypes
-				(this.db.collection(this.schema.options.collection) as any).drop((err: Error) => {
+				// @ts-ignore (throws errors in client instances)
+				this.db.collection(this.schema.options.collection).drop((err: Error) => {
 					err && err.message !== 'ns not found' ? ko(err) : ok();
 				});
 			});

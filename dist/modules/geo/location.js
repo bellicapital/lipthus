@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LipthusLocation = void 0;
 class LipthusLocation {
     constructor(opt) {
         if (!opt)

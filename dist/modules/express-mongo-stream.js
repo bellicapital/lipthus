@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.expressMongoStream = void 0;
 const mongodb_1 = require("mongodb");
 // noinspection JSUnusedGlobalSymbols
 function expressMongoStream(params, db, req, res) {

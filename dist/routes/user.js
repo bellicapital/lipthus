@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userPage = void 0;
 const mongoose_1 = require("mongoose");
 const ObjectId = mongoose_1.Types.ObjectId;
 function userPage(req, res, next) {

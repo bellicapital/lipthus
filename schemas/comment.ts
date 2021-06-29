@@ -301,6 +301,7 @@ export class Comment {
 
 }
 
+// @ts-ignore (temp solution)
 export interface LipthusComment extends Comment, Document {
 
 }

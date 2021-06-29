@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSchema = exports.name = void 0;
 const lib_1 = require("../lib");
 exports.name = 'search';
 function getSchema() {

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createdPlugin = void 0;
 const ensureCreated = (doc) => {
     if (doc.created || !doc._id || !doc.isSelected('created'))
         return;

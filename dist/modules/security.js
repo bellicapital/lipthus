@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.security = void 0;
 const lipthus_error_1 = require("../classes/lipthus-error");
 class Security {
     constructor(req) {

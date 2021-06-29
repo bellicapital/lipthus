@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BdfList = exports.BinDataFileList = void 0;
 const bdf_1 = require("../bdf");
 const mongoose_1 = require("mongoose");
 const bdi_1 = require("../bdi");

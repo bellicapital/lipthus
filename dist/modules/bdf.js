@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DbfInfo = exports.BinDataFile = void 0;
 const util_1 = require("util");
 const path = require("path");
 const node_fetch_1 = require("node-fetch");
@@ -9,19 +8,6 @@ const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
 class BinDataFile {
-    constructor(data, colRef) {
-        this.name = data.name;
-        this.uploadDate = ensureDate(data.uploadDate);
-        this.mtime = ensureDate(data.mtime);
-        this.contentType = data.contentType;
-        this.size = data.size;
-        this.MongoBinData = data.MongoBinData;
-        this.key = data.key;
-        this.md5 = data.md5;
-        this.weight = data.weight || 0;
-        if (colRef)
-            this.setColRef(colRef);
-    }
     static fromMongo(mongo, colRef) {
         if (!mongo)
             throw new Error('empty mongo object');
@@ -138,6 +124,19 @@ class BinDataFile {
     //noinspection JSUnusedGlobalSymbols
     static isBdf(o) {
         return !!o.MongoBinData;
+    }
+    constructor(data, colRef) {
+        this.name = data.name;
+        this.uploadDate = ensureDate(data.uploadDate);
+        this.mtime = ensureDate(data.mtime);
+        this.contentType = data.contentType;
+        this.size = data.size;
+        this.MongoBinData = data.MongoBinData;
+        this.key = data.key;
+        this.md5 = data.md5;
+        this.weight = data.weight || 0;
+        if (colRef)
+            this.setColRef(colRef);
     }
     setColRef(colRef) {
         if (colRef)

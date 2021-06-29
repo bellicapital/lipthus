@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fsRoute = void 0;
 function fsRoute(req, res, next) {
     const p = req.params.id.split('.');
     let db;

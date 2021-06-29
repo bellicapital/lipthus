@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DbfThumb = exports.DbfImageInfo = exports.BinDataImage = void 0;
 const bdf_1 = require("./bdf");
 const util_1 = require("util");
 const http_1 = require("http");
@@ -11,17 +10,6 @@ const Binary = require('mongoose').Types.Buffer.Binary;
 const debug = require('debug')('site:bdi');
 const gm = require('gm').subClass({ imageMagick: true }); // jj 23-9-15 con imageMagick es más estable
 class BinDataImage extends bdf_1.BinDataFile {
-    constructor(data, colRef) {
-        super(data, colRef);
-        this.width = data.width;
-        this.height = data.height;
-        this.alt = data.alt || {};
-        this.title = data.title || {};
-        this.hidden = !!data.hidden;
-        this.text = data.text;
-        this.extra = data.extra;
-        this.originalImage = data.originalImage;
-    }
     static fromFile(p, opt = {}) {
         return bdf_1.BinDataFile.fromFile(p, opt)
             .then(bdi => bdi.postFromFile());
@@ -62,6 +50,17 @@ class BinDataImage extends bdf_1.BinDataFile {
         if (params.contentType && params.contentType !== obj.contentType)
             debug('params.contentType "' + params.contentType + '" do not match width data "' + obj.contentType + '"');
         return new BinDataImage(obj, colRef).postFromFile();
+    }
+    constructor(data, colRef) {
+        super(data, colRef);
+        this.width = data.width;
+        this.height = data.height;
+        this.alt = data.alt || {};
+        this.title = data.title || {};
+        this.hidden = !!data.hidden;
+        this.text = data.text;
+        this.extra = data.extra;
+        this.originalImage = data.originalImage;
     }
     info(mixed, height, crop, enlarge, nwm) {
         let lang = 'es';

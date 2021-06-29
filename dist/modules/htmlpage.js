@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HtmlPageMiddleware = exports.HtmlPage = void 0;
 const htmlheadmanager_1 = require("./htmlheadmanager");
 const mltext_1 = require("./schema-types/mltext");
 const pug = require("pug");

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSchema = exports.name = void 0;
 const debug0 = require("debug");
 const fs_1 = require("fs");
 const lib_1 = require("../lib");
