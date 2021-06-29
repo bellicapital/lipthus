@@ -1,6 +1,6 @@
 {
 	"name": "lipthus",
-	"version": "2.6.11",
+	"version": "2.6.20",
 	"private": true,
 	"scripts": {
 		"build": "tsc",
