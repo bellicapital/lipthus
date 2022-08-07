@@ -21,15 +21,15 @@ export function getSchema() {
 			.then(() => {
 				if (process.env.NODE_ENV !== 'production') {
 					return {
-						message: 'No se ha enviado el email ' + this._id + ' a '	+ this.email.to	+ ' por estar en modo desarrollo'
+						message: 'No se ha enviado el email ' + this._id + ' a '	+ (this as any).email.to	+ ' por estar en modo desarrollo'
 					};
 				}
 
-				return this.db.lipthusDb.site.mailer.send(this.email);
+				return (this.db as any).lipthusDb.site.mailer.send((this as any).email);
 			})
 			.then((result: any) => this.set('result', result))
 			.catch((err: Error) => this.set('error', err))
-			.then(() => debug(this.result || this.error))
+			.then(() => debug((this as any).result || (this as any).error))
 			.then(() => this.save());
 	};
 

@@ -35,6 +35,7 @@ class DoSchema extends lib_1.LipthusSchema {
                 }
             });
         };
+        // @ts-ignore
         this.pre('remove', preRemove);
         this.virtual('dbRef').get(function () {
             return {

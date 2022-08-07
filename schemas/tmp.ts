@@ -12,16 +12,16 @@ export function getSchema() {
 		collection: 'tmp',
 		modified: true
 	});
-	
+
 	s.methods = {
 		expired: function () {
-			return this.expire && this.expire.getTime() < Date.now();
+			return (this as any).expire && (this as any).expire.getTime() < Date.now();
 		},
 		getValue: function () {
-			return JSON.parse(this.value);
+			return JSON.parse((this as any).value);
 		},
 	};
-	
+
 	//noinspection JSUnusedGlobalSymbols
 	s.statics = {
 		get: function (this: any, key: string) {
@@ -32,25 +32,25 @@ export function getSchema() {
 				value: value,
 				modified: new Date()
 			};
-			
+
 			if (expire)
 				update.expire = expire;
-			
+
 			return this.findOneAndUpdate({key: key}, update, {upsert: true})
 				.then((r?: any) => r || this(update));
 		},
 		getSet: function (key: string, getter: any) {
-			return this.get(key)
+			return (this as any).get(key)
 				.then((doc?: any) => {
 					if (doc && doc.expire.getTime() > Date.now())
 						return doc;
-					
+
 					return getter()
-						.then((obj: any) => this.set(key, obj.value, obj.expire));
+						.then((obj: any) => (this as any).set(key, obj.value, obj.expire));
 				});
 		}
 	};
-	
+
 	return s;
 }
 
@@ -61,14 +61,14 @@ export interface Tmp extends Document {
 }
 
 export interface TmpModel extends Model<Tmp> {
-	
+
 	// noinspection JSUnusedLocalSymbols
 	get(key: string): Promise<any>;
-	
+
 	// noinspection JSUnusedLocalSymbols
 	set(key: string, value: any, expire?: Date): Promise<any>;
-	
+
 	// noinspection JSUnusedLocalSymbols
 	getSet(key: string, getter: any): Promise<any>;
-	
+
 }

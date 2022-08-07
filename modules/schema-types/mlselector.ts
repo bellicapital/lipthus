@@ -4,9 +4,9 @@ import {LipthusDb} from "../db";
 
 
 export class MlSelector extends SchemaType {
-	
+
 	public val: any;
-	
+
 	/**
 	 *
 	 * @param {String} path
@@ -15,7 +15,7 @@ export class MlSelector extends SchemaType {
 	constructor(public path: string, public options: any) {
 		super(path, options, 'MlSelector');
 	}
-	
+
 	// noinspection JSMethodCanBeStatic
 	get $conditionalHandlers() {
 		return {
@@ -31,7 +31,7 @@ export class MlSelector extends SchemaType {
 			, '$exists': handleExists
 		};
 	}
-	
+
 	//noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
 	/**
 	 * Implement checkRequired method.
@@ -39,32 +39,30 @@ export class MlSelector extends SchemaType {
 	 * @param {*} val
 	 * @return {Boolean}
 	 */
-	
+
 	checkRequired(val: any) {
 		return null !== val;
 	}
-	
-	//noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
-	/**
-	 * Implement casting.
-	 *
-	 * @param {*} val
-	 * @param {Object} [scope]
-	 * @param {Boolean} [init]
-	 * @return {any}
-	 */
-	
-	cast(val: any, scope: any, init: any) {
-		if (null === val || val instanceof MlSelector) return val;
-		
-		const ret = new MlSelector(this.path, this.options);
-		
-		ret.val = val;
-		
-		return ret;
-	}
-	
-	
+
+	// /**
+	//  * Implement casting.
+	//  *
+	//  * @param {*} val
+	//  * @param {Object} [scope]
+	//  * @param {Boolean} [init]
+	//  * @return {any}
+	//  */
+	// cast(val: any, scope: any, init: any) {
+	// 	if (null === val || val instanceof MlSelector) return val;
+	//
+	// 	const ret = new MlSelector(this.path, this.options);
+	//
+	// 	ret.val = val;
+	//
+	// 	return ret;
+	// }
+
+
 	//noinspection JSUnusedGlobalSymbols
 	/**
 	 * Implement query casting, for mongoose 3.0
@@ -72,14 +70,14 @@ export class MlSelector extends SchemaType {
 	 * @param {String} $conditional
 	 * @param {*} [value]
 	 */
-	
+
 	castForQuery($conditional: any, value: any) {
 		if (2 === arguments.length) {
 			const handler = (this.$conditionalHandlers as any)[$conditional];
-			
+
 			if (!handler)
 				throw new Error("Can't use " + $conditional + " with MlSelector.");
-			
+
 			return handler.call(this, value);
 		} else {
 			if ('string' === typeof $conditional)
@@ -88,10 +86,11 @@ export class MlSelector extends SchemaType {
 				return $conditional.val;
 		}
 	}
-	
+
+	// noinspection JSUnusedGlobalSymbols
 	getVal(req: LipthusRequest, db: LipthusDb) {
 		db = db || req.db;
-		
+
 		if (this.options.origType === 'nationality') {
 			return db.nationalities.getList(req)
 				.then((n: any) => n[this.val]);
@@ -104,7 +103,7 @@ export class MlSelector extends SchemaType {
 			return Promise.resolve(o[req.ml.lang] || o[req.ml.configLang] || this.val);
 		}
 	}
-	
+
 	toString() {
 		return this.val;
 	}

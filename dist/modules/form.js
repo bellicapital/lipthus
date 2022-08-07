@@ -165,6 +165,7 @@ class EucaForm {
                 .then((r) => {
                 const result = r.result || r;
                 debug(result);
+                // noinspection JSIgnoredPromiseFromCall
                 this.logUpdate(name, value);
                 ok(!!(result.nModified || result.upserted));
             })
@@ -189,6 +190,7 @@ class EucaForm {
         update.$unset[key] = true;
         if (this.schema.tree[fields[0]].type !== index_1.LipthusSchemaTypes.Fs) {
             return this.model.findOneAndUpdate(this.query, update).then(r => {
+                // noinspection JSIgnoredPromiseFromCall
                 this.logUpdate(name);
                 return !!r;
             });
@@ -203,6 +205,7 @@ class EucaForm {
                     field = field[fields[1]];
                 this.model.findOneAndUpdate(this.query, update)
                     .then((r2) => {
+                    // noinspection JSIgnoredPromiseFromCall
                     this.logUpdate(name);
                     if (!field || !field.unlink) {
                         if (process.env.NODE_ENV === 'development')
@@ -217,50 +220,50 @@ class EucaForm {
         });
     }
     submit() {
-        return new Promise((ok, ko) => {
-            this.db.tmp.findOne(this.query).then(tmp => {
-                if (!tmp)
-                    return ko(new Error('Tmp form not found'));
-                const model = this.db[this.schemaName];
-                if (!model)
-                    return ko(new Error('Schema ' + this.schemaName + ' not found'));
-                const extra = this.req.body.extra;
-                if (extra)
-                    Object.keys(extra).forEach(i => tmp.value[i] = extra[i]);
-                const doc = new model().setCasted(tmp.value);
-                if (this.schema.options.modifier && this.req.user)
-                    doc.submitter = this.req.user._id;
-                // solución temporal para los mlCheckbox y mlSelector
-                const update = {};
-                doc.schema.eachPath((k, path) => {
-                    switch (path.options.type) {
-                        case index_1.LipthusSchemaTypes.MlSelector:
-                        case index_1.LipthusSchemaTypes.MlCheckboxes:
-                            if (doc[k]) {
-                                update[k] = doc[k].val;
-                                doc[k] = null;
-                            }
-                            break;
-                    }
-                });
-                // end solución temporal para los mlCheckbox y mlSelector
-                // No hace falta añadir el hijo al posible padre.
-                // El schema dynobject se encarga post save
-                doc.save()
-                    .then((doc2) => tmp.remove(err => {
-                    if (err)
-                        console.warn(err);
-                    if (!Object.keys(update).length)
-                        return doc2.jsonInfoIncFiles().then(ok, ko);
-                    // solución temporal para los mlCheckbox y mlSelector
-                    model.collection.updateOne({ _id: doc2._id }, { $set: update }, () => {
-                        // end solución temporal para los mlCheckbox y mlSelector
-                        doc2.set(update);
-                        doc2.jsonInfoIncFiles().then(ok, ko);
-                    });
-                }))
-                    .catch(ko);
+        return new Promise(async (ok, ko) => {
+            const tmp = await this.db.tmp.findOne(this.query);
+            if (!tmp)
+                return ko(new Error('Tmp form not found'));
+            const model = this.db[this.schemaName];
+            if (!model)
+                return ko(new Error('Schema ' + this.schemaName + ' not found'));
+            const extra = this.req.body.extra;
+            if (extra)
+                Object.keys(extra).forEach(i => tmp.value[i] = extra[i]);
+            const doc = new model().setCasted(tmp.value);
+            if (this.schema.options.modifier && this.req.user)
+                doc.submitter = this.req.user._id;
+            // solución temporal para los mlCheckbox y mlSelector
+            const update = {};
+            doc.schema.eachPath((k, path) => {
+                switch (path.options.type) {
+                    case index_1.LipthusSchemaTypes.MlSelector:
+                    case index_1.LipthusSchemaTypes.MlCheckboxes:
+                        if (doc[k]) {
+                            update[k] = doc[k].val;
+                            doc[k] = null;
+                        }
+                        break;
+                }
             });
+            // end solución temporal para los mlCheckbox y mlSelector
+            // No hace falta añadir el hijo al posible padre.
+            // El schema dynobject se encarga post save
+            const doc2 = await doc.save();
+            try {
+                await tmp.remove();
+            }
+            catch (err) {
+                console.warn(err);
+                if (!Object.keys(update).length)
+                    return doc2.jsonInfoIncFiles().then(ok, ko);
+                // solución temporal para los mlCheckbox y mlSelector
+                model.collection.updateOne({ _id: doc2._id }, { $set: update }, () => {
+                    // end solución temporal para los mlCheckbox y mlSelector
+                    doc2.set(update);
+                    doc2.jsonInfoIncFiles().then(ok, ko);
+                });
+            }
         });
     }
     sortField(name, keys) {

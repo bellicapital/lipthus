@@ -36,7 +36,7 @@ export function getSchema() {
 		clear: function () {
 			return new Promise((ok, ko) => {
 				// noinspection TypeScriptValidateJSTypes
-				(this.db.collection(this.schema.options.collection) as any).drop((err: Error) => {
+				(this.db.collection((this.schema as any).options.collection)).drop((err: Error) => {
 					err && err.message !== 'ns not found' ? ko(err) : ok();
 				});
 			});

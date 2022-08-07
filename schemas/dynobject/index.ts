@@ -32,24 +32,26 @@ module.exports = function dynobject() {
 
 	s.statics = {
 		addSchemas: function () {
-			return this.getSchemas()
-				.then((schemas: any) => Object.each(schemas, (name, schema) => this.db.lipthusDb.schema(name, schema)));
+			return (this as any).getSchemas()
+				.then((schemas: any) => Object.each(schemas, (name, schema) => (this.db as any).lipthusDb.schema(name, schema)));
 		},
 		getSchemas: async function () {
-			if (this.schema.options.schemas)
-				return this.schema.options.schemas;
+			const options = (this.schema as any).options;
 
-			this.schema.options.schemas = {};
+			if (options.schemas)
+				return options.schemas;
+
+			options.schemas = {};
 
 			const arr: Array<any> = await this.find();
 
 			arr.forEach(o => {
 				const schema = DoSchema.fromModel(o);
 
-				this.schema.options.schemas[schema.options.name] = schema;
+				options.schemas[schema.options.name] = schema;
 			});
 
-			return this.schema.options.schemas;
+			return options.schemas;
 		},
 		getKeys: function () {
 			return Object.keys(s.get('schemas'));
@@ -105,7 +107,7 @@ module.exports = function dynobject() {
 
 	s.methods = {
 		getDynValues: function (req: any) {
-			const ret = this.toObject();
+			const ret: any = this.toObject();
 
 			ret.id = ret._id;
 			delete ret._id;
@@ -123,13 +125,13 @@ module.exports = function dynobject() {
 
 			let models: Array<string>;
 
-			if (incOrphans && this.accept.length) {
-				models = this.accept.slice(0); // clone
+			if (incOrphans && (this as any).accept.length) {
+				models = (this as any).accept.slice(0); // clone
 
-				if (models.indexOf(this.colname) === -1)
-					models.unshift(this.colname);
+				if (models.indexOf((this as any).colname) === -1)
+					models.unshift((this as any).colname);
 			} else
-				models = [this.colname];
+				models = [(this as any).colname];
 
 			if (filter.length)
 				models = _.difference(models, filter);
@@ -138,7 +140,7 @@ module.exports = function dynobject() {
 				parents: {
 					$not: {
 						$elemMatch: {
-							$ref: 'dynobjects.' + this.colname
+							$ref: 'dynobjects.' + (this as any).colname
 						}
 					}
 				}

@@ -35,15 +35,16 @@ module.exports = function dynobject() {
                 .then((schemas) => Object.each(schemas, (name, schema) => this.db.lipthusDb.schema(name, schema)));
         },
         getSchemas: async function () {
-            if (this.schema.options.schemas)
-                return this.schema.options.schemas;
-            this.schema.options.schemas = {};
+            const options = this.schema.options;
+            if (options.schemas)
+                return options.schemas;
+            options.schemas = {};
             const arr = await this.find();
             arr.forEach(o => {
                 const schema = DoSchema.fromModel(o);
-                this.schema.options.schemas[schema.options.name] = schema;
+                options.schemas[schema.options.name] = schema;
             });
-            return this.schema.options.schemas;
+            return options.schemas;
         },
         getKeys: function () {
             return Object.keys(s.get('schemas'));

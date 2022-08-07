@@ -299,6 +299,7 @@ export class Comment {
 
 }
 
+// @ts-ignore
 export interface LipthusComment extends Comment, Document {
 
 }

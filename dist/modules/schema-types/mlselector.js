@@ -38,22 +38,23 @@ class MlSelector extends mongoose_1.SchemaType {
     checkRequired(val) {
         return null !== val;
     }
-    //noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
-    /**
-     * Implement casting.
-     *
-     * @param {*} val
-     * @param {Object} [scope]
-     * @param {Boolean} [init]
-     * @return {any}
-     */
-    cast(val, scope, init) {
-        if (null === val || val instanceof MlSelector)
-            return val;
-        const ret = new MlSelector(this.path, this.options);
-        ret.val = val;
-        return ret;
-    }
+    // /**
+    //  * Implement casting.
+    //  *
+    //  * @param {*} val
+    //  * @param {Object} [scope]
+    //  * @param {Boolean} [init]
+    //  * @return {any}
+    //  */
+    // cast(val: any, scope: any, init: any) {
+    // 	if (null === val || val instanceof MlSelector) return val;
+    //
+    // 	const ret = new MlSelector(this.path, this.options);
+    //
+    // 	ret.val = val;
+    //
+    // 	return ret;
+    // }
     //noinspection JSUnusedGlobalSymbols
     /**
      * Implement query casting, for mongoose 3.0
@@ -75,6 +76,7 @@ class MlSelector extends mongoose_1.SchemaType {
                 return $conditional.val;
         }
     }
+    // noinspection JSUnusedGlobalSymbols
     getVal(req, db) {
         db = db || req.db;
         if (this.options.origType === 'nationality') {

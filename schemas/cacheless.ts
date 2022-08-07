@@ -23,7 +23,7 @@ export function getSchema() {
 	s.statics = {
 		getCachedFile: function (file, compress) {
 			return fsPromises.stat(file)
-				.then(stat => this.getCached({
+				.then(stat => (this as any).getCached({
 					src: file,
 					compress: compress,
 					code: '@import "' + file + '";',
@@ -55,7 +55,7 @@ export function getSchema() {
 
 						mtime = Math.floor(mtime / 1000);
 
-						return this.getCached({
+						return (this as any).getCached({
 							src: basename,
 							compress: true,
 							code: code,
@@ -76,7 +76,7 @@ export function getSchema() {
 			const src = opt.src;
 			const compress = opt.compress;
 			const mtime = opt.mtime;
-			const db = this.db.lipthusDb;
+			const db = (this.db as any).lipthusDb;
 			const mapUrl = opt.mapUrl;
 			const site = db.site;
 
