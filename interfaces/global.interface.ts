@@ -38,6 +38,7 @@ export interface CssResponse {
 
 export interface DbParams {
 	name: string;
+	url?: string;
 	user?: string;
 	pass?: string;
 	host?: string;

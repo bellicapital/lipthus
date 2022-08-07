@@ -6,7 +6,7 @@ import {schemaGlobalStatics} from "./schema-plugins/schema-statics";
 import * as Debug from "debug";
 import * as path from "path";
 import {EventEmitter} from "events";
-import {GridFS} from "./../lib";
+import {GridFS} from "../lib";
 import {SchemaScript} from "../interfaces/schema-script";
 import {TmpModel} from "../schemas/tmp";
 import {LipthusCacheModel} from "../schemas/cache";
@@ -90,25 +90,29 @@ export class LipthusDb extends EventEmitter {
 		if (options.useUnifiedTopology === undefined)
 			options.useUnifiedTopology = true;
 
-		let uri = 'mongodb://';
+		let uri = this.params.url;
 
-		if (this.params.user && this.params.pass)
-			uri += this.params.user + ':' + this.params.pass + '@';
+		if (!uri) {
+			uri = 'mongodb://';
 
-		if (this.params.replicaSet) {
-			options.replicaSet = this.params.replicaSet.name;
+			if (this.params.user && this.params.pass)
+				uri += this.params.user + ':' + this.params.pass + '@';
 
-			uri += this.params.replicaSet.members.join(',');
-		} else {
-			uri += (this.params.host || 'localhost');
+			if (this.params.replicaSet) {
+				options.replicaSet = this.params.replicaSet.name;
 
-			if (this.params.port)
-				uri += ':' + this.params.port;
+				uri += this.params.replicaSet.members.join(',');
+			} else {
+				uri += (this.params.host || 'localhost');
+
+				if (this.params.port)
+					uri += ':' + this.params.port;
+			}
+
+			uri += '/' + this.name;
 		}
 
-		uri += '/' + this.name;
-
-		return {uri: uri, options: options};
+		return {uri, options};
 	}
 
 	addLipthusSchemas() {
@@ -333,7 +337,7 @@ export class LipthusDb extends EventEmitter {
 						console.error(err);
 					// else
 					// 	debug('No plugins dir for ', dir);
-				}) // catch plugin directory doesn't exists
+				}) // catch plugin directory doesn't exist
 			);
 	}
 
