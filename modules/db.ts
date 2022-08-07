@@ -90,7 +90,7 @@ export class LipthusDb extends EventEmitter {
 			options.useNewUrlParser = true;
 
 		if (options.useUnifiedTopology === undefined)
-			options.useUnifiedTopology = false;
+			options.useUnifiedTopology = true;
 
 		let uri = this.params.url;
 

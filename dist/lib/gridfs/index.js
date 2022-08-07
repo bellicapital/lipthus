@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GridFSVideo = exports.GridFS = exports.GridFSFile = void 0;
 var gridfs_file_1 = require("./gridfs-file");
 Object.defineProperty(exports, "GridFSFile", { enumerable: true, get: function () { return gridfs_file_1.GridFSFile; } });
 var gridfs_1 = require("./gridfs");

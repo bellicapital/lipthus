@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.JsManager = exports.CssManager = exports.HeadManager = void 0;
 var head_1 = require("./lib/head");
 Object.defineProperty(exports, "HeadManager", { enumerable: true, get: function () { return head_1.HeadManager; } });
 var css_1 = require("./lib/css");

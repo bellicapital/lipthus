@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removedPlugin = exports.lastActivated = exports.locationPlugin = exports.modifierPlugin = exports.submitterPlugin = exports.createdPlugin = exports.lastModifiedPlugin = void 0;
 var lastmod_1 = require("./lastmod");
 Object.defineProperty(exports, "lastModifiedPlugin", { enumerable: true, get: function () { return lastmod_1.lastModifiedPlugin; } });
 var created_1 = require("./created");
