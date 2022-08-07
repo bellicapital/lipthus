@@ -1,10 +1,9 @@
 {
 	"name": "lipthus",
-	"version": "3.1.0",
+	"version": "3.2.0",
 	"private": true,
 	"scripts": {
 		"build": "tsc",
-		"postinstall": "node dist/lib/server",
 		"lint": "tslint -p tsconfig.json **/*.ts",
 		"tslint-fix": "tslint --fix -p tsconfig.json **/*.ts"
 	},
@@ -26,7 +25,7 @@
 	},
 	"homepage": "https://github.com/bellicapital/lipthus",
 	"typings": "dist/index.d",
-	"main": "dist/index",
+	"main": "index",
 	"dependencies": {
 		"body-parser": "1.19.0",
 		"compare-versions": "3.6.0",
