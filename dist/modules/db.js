@@ -33,6 +33,7 @@ class LipthusDb extends events_1.EventEmitter {
     }
     connect() {
         const { uri, options } = this.connectParams();
+        console.log("Connecting to db");
         this._conn = Object.assign(mongoose.createConnection(uri, options), {
             lipthusDb: this,
             eucaDb: this,
@@ -52,7 +53,7 @@ class LipthusDb extends events_1.EventEmitter {
         if (options.useNewUrlParser === undefined)
             options.useNewUrlParser = true;
         if (options.useUnifiedTopology === undefined)
-            options.useUnifiedTopology = true;
+            options.useUnifiedTopology = false;
         let uri = this.params.url;
         if (!uri) {
             uri = 'mongodb://';

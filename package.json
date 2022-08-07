@@ -54,7 +54,7 @@
 		"local-lang-names": "1.0.0",
 		"md5": "2.2.1",
 		"mime": "2.4.6",
-		"mongodb": "3.6.2",
+		"mongodb": "3.6.3",
 		"mongoose": "5.10.13",
 		"morgan": "1.10.0",
 		"mstranslator": "3.0.0",
