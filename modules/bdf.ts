@@ -4,8 +4,7 @@ import * as path from "path";
 import {ColRef} from "../interfaces/global.interface";
 import {LipthusRequest} from "../index";
 import fetch from "node-fetch";
-
-const fs = require('fs');
+import {readFile, stat} from "fs";
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
@@ -76,7 +75,7 @@ export class BinDataFile {
 		if (!p.mimetype)
 			p.mimetype = p.type || Mime.getType(p.name || p.path);
 
-		return promisify(fs.readFile)(p.path)
+		return promisify(readFile)(p.path)
 			.then((buffer: Buffer) => {
 				p.buffer = buffer;
 
@@ -84,7 +83,7 @@ export class BinDataFile {
 					return;
 
 				// incrusta mtime si no se ha aportado desde el cliente
-				return promisify(fs.stat)(p.path)
+				return promisify(stat)(p.path)
 					.then((stats: any) => p.mtime = stats.mtime);
 			})
 			.then(() => BinDataFile.fromBuffer({
@@ -217,6 +216,7 @@ export class BinDataFile {
 		return ret;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getUri() {
 		return this.colRef ? this.getPath() + this.uriName() : null;
 	}

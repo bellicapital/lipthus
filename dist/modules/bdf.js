@@ -4,7 +4,7 @@ exports.DbfInfo = exports.BinDataFile = void 0;
 const util_1 = require("util");
 const path = require("path");
 const node_fetch_1 = require("node-fetch");
-const fs = require('fs');
+const fs_1 = require("fs");
 const Mime = require('mime');
 const md5 = require('md5');
 const Binary = require('mongoose').Types.Buffer.Binary;
@@ -66,13 +66,13 @@ class BinDataFile {
         const p = typeof param === 'string' ? { path: param } : param;
         if (!p.mimetype)
             p.mimetype = p.type || Mime.getType(p.name || p.path);
-        return util_1.promisify(fs.readFile)(p.path)
+        return util_1.promisify(fs_1.readFile)(p.path)
             .then((buffer) => {
             p.buffer = buffer;
             if (p.mtime)
                 return;
             // incrusta mtime si no se ha aportado desde el cliente
-            return util_1.promisify(fs.stat)(p.path)
+            return util_1.promisify(fs_1.stat)(p.path)
                 .then((stats) => p.mtime = stats.mtime);
         })
             .then(() => BinDataFile.fromBuffer({
@@ -170,6 +170,7 @@ class BinDataFile {
         ret += this.colRef.collection + '/' + this.colRef.id + '/' + this.colRef.field + '/';
         return ret;
     }
+    // noinspection JSUnusedGlobalSymbols
     getUri() {
         return this.colRef ? this.getPath() + this.uriName() : null;
     }
