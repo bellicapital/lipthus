@@ -8,7 +8,7 @@ const schema_statics_1 = require("./schema-plugins/schema-statics");
 const Debug = require("debug");
 const path = require("path");
 const events_1 = require("events");
-const lib_2 = require("./../lib");
+const lib_2 = require("../lib");
 const fs_1 = require("fs");
 const debug = Debug('site:db');
 mongoose.dbs = {};
@@ -53,20 +53,23 @@ class LipthusDb extends events_1.EventEmitter {
             options.useNewUrlParser = true;
         if (options.useUnifiedTopology === undefined)
             options.useUnifiedTopology = true;
-        let uri = 'mongodb://';
-        if (this.params.user && this.params.pass)
-            uri += this.params.user + ':' + this.params.pass + '@';
-        if (this.params.replicaSet) {
-            options.replicaSet = this.params.replicaSet.name;
-            uri += this.params.replicaSet.members.join(',');
+        let uri = this.params.url;
+        if (!uri) {
+            uri = 'mongodb://';
+            if (this.params.user && this.params.pass)
+                uri += this.params.user + ':' + this.params.pass + '@';
+            if (this.params.replicaSet) {
+                options.replicaSet = this.params.replicaSet.name;
+                uri += this.params.replicaSet.members.join(',');
+            }
+            else {
+                uri += (this.params.host || 'localhost');
+                if (this.params.port)
+                    uri += ':' + this.params.port;
+            }
+            uri += '/' + this.name;
         }
-        else {
-            uri += (this.params.host || 'localhost');
-            if (this.params.port)
-                uri += ':' + this.params.port;
-        }
-        uri += '/' + this.name;
-        return { uri: uri, options: options };
+        return { uri, options };
     }
     addLipthusSchemas() {
         const s = require('../schemas/dynobject');
@@ -239,7 +242,7 @@ class LipthusDb extends events_1.EventEmitter {
                 console.error(err);
             // else
             // 	debug('No plugins dir for ', dir);
-        }) // catch plugin directory doesn't exists
+        }) // catch plugin directory doesn't exist
         );
     }
     addPlugin(file) {

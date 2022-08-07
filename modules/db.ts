@@ -63,6 +63,8 @@ export class LipthusDb extends EventEmitter {
 	connect() {
 		const {uri, options} = this.connectParams();
 
+		console.log("Connecting to db");
+
 		this._conn = <LipthusConnection> Object.assign(mongoose.createConnection(uri, options), {
 			lipthusDb: this,
 			eucaDb: this, // deprecated
@@ -88,7 +90,7 @@ export class LipthusDb extends EventEmitter {
 			options.useNewUrlParser = true;
 
 		if (options.useUnifiedTopology === undefined)
-			options.useUnifiedTopology = true;
+			options.useUnifiedTopology = false;
 
 		let uri = this.params.url;
 
